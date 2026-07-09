@@ -1,0 +1,920 @@
+/* Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+   Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). */
+
+/* Jedna, stala ciemna paleta (szklane karty na prawie-czerni), wspolna dla
+   calej wtyczki: fiolet+cyjan jako akcent, mieta na statusy, czerwien na
+   ostrzezenia. */
+:root {
+  --bg: #05060b;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-2: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.60);
+  --border: rgba(255, 255, 255, 0.10);
+  --accent: #6e56ff;
+  --accent-2: #3ddcff;
+  --accent-soft: rgba(110, 86, 255, 0.16);
+  --ok: #45e0a0;
+  --ok-soft: rgba(69, 224, 160, 0.12);
+  --danger: #ff4d5e;
+  --danger-soft: rgba(255, 77, 94, 0.12);
+  --track: rgba(255, 255, 255, 0.10);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Cala tresc musi miescic sie w limicie 600px wysokosci popupu Chrome -
+   odstepy sa celowo ciasne, zeby nigdy nie pojawil sie pasek przewijania. */
+body {
+  width: 300px;
+  margin: 0;
+  padding: 10px 16px 12px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(260px 150px at 88% -50px, rgba(110, 86, 255, 0.18), transparent 70%),
+    radial-gradient(220px 130px at -10% 105%, rgba(61, 220, 255, 0.09), transparent 70%),
+    var(--bg);
+}
+
+/* Header */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: block;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* Power toggle */
+.power {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.power-track {
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: background 0.18s ease;
+  flex-shrink: 0;
+}
+
+.power-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease;
+}
+
+.power[aria-checked="true"] .power-track {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+}
+
+.power[aria-checked="true"] .power-thumb {
+  transform: translateX(16px);
+}
+
+.power[aria-checked="true"] .power-text {
+  color: var(--accent);
+}
+
+/* Status - stala minimalna wysokosc, zeby zmiana tekstu nie zmieniala rozmiaru popupu */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 7px 11px;
+  min-height: 32px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: var(--card);
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+
+.status-ok {
+  background: var(--ok-soft);
+  border-color: color-mix(in srgb, var(--ok) 35%, transparent);
+  color: var(--ok);
+}
+.status-ok .status-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent);
+}
+.status-idle .status-dot {
+  background: var(--muted);
+}
+.status-unsupported {
+  background: var(--danger-soft);
+}
+.status-unsupported .status-dot {
+  background: var(--danger);
+}
+
+/* Volume */
+.volume-block {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 10px 14px 10px;
+  margin-bottom: 8px;
+}
+
+.volume-readout {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.volume-readout .pct {
+  font-size: 16px;
+  margin-left: 1px;
+}
+
+/* W strefie przesterów odczyt robi sie pomaranczowy, potem czerwony. */
+.volume-readout.warn {
+  background: none;
+  -webkit-text-fill-color: #f59e0b;
+  color: #f59e0b;
+}
+.volume-readout.danger {
+  background: none;
+  -webkit-text-fill-color: #ef4444;
+  color: #ef4444;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  outline: none;
+  background: var(--track);
+}
+
+/* Suwak glosnosci: lewa czesc bezpieczna, od okolo 300% zolto, od 600% czerwono. */
+#volume {
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) 14%,
+    #8f9bff 22%,
+    #eab308 34%,
+    #f59e0b 46%,
+    #ef4444 62%,
+    #b91c1c 100%
+  );
+}
+
+.scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.scale-danger {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+input[type="range"]:disabled {
+  opacity: 0.5;
+}
+
+.ticks {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 7px;
+}
+
+.tick {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 3px 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.tick:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Effects */
+.effects {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+  padding: 5px 2px;
+  cursor: pointer;
+}
+
+.switch {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.18s ease;
+}
+
+.switch:checked {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+}
+
+.switch:checked::after {
+  transform: translateX(16px);
+}
+
+/* Mix: przycisk otwierajacy osobny panel */
+.mix-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.mix-open:hover {
+  border-color: var(--accent);
+}
+
+.mix-open.active {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+.mix-open-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mix-open-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mix-open-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mix-open-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.mix-open-state {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.mix-open-arrow {
+  font-size: 20px;
+  color: var(--muted);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Panel Miks - ten sam jezyk wizualny co reszta okienka (te same
+   karty, kolory i motyw jasny/ciemny), plus dwa muzyczne akcenty:
+   morphujacy blob za odczytem i mini-analizator w naglowku.
+   ============================================================ */
+
+.mix-view {
+  padding: 2px 0 2px;
+}
+
+.mix-view-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mix-back {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+}
+
+.mix-back:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mix-view-title {
+  font-size: 14px;
+  font-weight: 700;
+  flex: 1;
+}
+
+/* Mini-analizator pasma w naglowku (czysto ozdobny). */
+.mix-analyzer {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.mix-analyzer i {
+  width: 3px;
+  height: 100%;
+  border-radius: 1.5px;
+  background: linear-gradient(to top, var(--accent), var(--accent-2));
+  transform-origin: bottom;
+  animation: mx-eq 1.1s ease-in-out infinite;
+}
+
+.mix-analyzer i:nth-child(1) { animation-delay: 0s; }
+.mix-analyzer i:nth-child(2) { animation-delay: 0.22s; }
+.mix-analyzer i:nth-child(3) { animation-delay: 0.44s; }
+.mix-analyzer i:nth-child(4) { animation-delay: 0.11s; }
+.mix-analyzer i:nth-child(5) { animation-delay: 0.33s; }
+
+@keyframes mx-eq {
+  0%, 100% { transform: scaleY(0.2); }
+  50% { transform: scaleY(1); }
+}
+
+/* Odczyt predkosci z delikatnym, morphujacym blobem w tle. */
+.mix-core {
+  position: relative;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.mix-blob {
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 44% 56% 62% 38% / 46% 38% 62% 54%;
+  filter: blur(16px);
+  opacity: 0.28;
+  animation: mx-morph 9s ease-in-out infinite alternate, mx-turn 16s linear infinite;
+}
+
+@keyframes mx-morph {
+  0% { border-radius: 44% 56% 62% 38% / 46% 38% 62% 54%; transform: scale(1); }
+  50% { border-radius: 58% 42% 40% 60% / 40% 58% 42% 60%; transform: scale(1.12); }
+  100% { border-radius: 38% 62% 55% 45% / 60% 44% 56% 40%; transform: scale(0.94); }
+}
+
+@keyframes mx-turn {
+  to { rotate: 360deg; }
+}
+
+.mix-readout-big {
+  position: relative;
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.mix-readout-big.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mix-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+/* Nieparzysty ostatni preset zajmuje caly wiersz (wyrozniony). */
+.mix-presets .mixp:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.mixp {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.mixp:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mixp.on {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+}
+
+.mixp:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Pelny mikser: przelacznik nad suwakami. */
+.mix-full {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--card);
+  cursor: pointer;
+}
+
+.mix-full-t {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.mix-full-d {
+  display: block;
+  font-size: 9.5px;
+  color: var(--muted);
+}
+
+/* Wiersze suwakow: naglowek z wartoscia + krotki opis, co robi suwak. */
+.mix-slider-row {
+  margin-bottom: 8px;
+}
+
+.mix-slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.mix-val {
+  color: var(--accent);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.mix-sub {
+  font-size: 9.5px;
+  color: var(--muted);
+  line-height: 1.3;
+  margin: 0 0 4px;
+}
+
+/* Segmentowy wybor charakteru basu (Klasyk / Sub / Punch). */
+.mix-seg {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.mix-seg button {
+  flex: 1;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 3px 0;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.mix-seg button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mix-seg button.on {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+}
+
+.mix-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.mix-hint {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 8px 0 0;
+}
+
+/* Wskaznik stanu Mixa: zielony (dziala), czerwony (nie dziala), neutralny. */
+.mix-status {
+  font-size: 11px;
+  line-height: 1.4;
+  border-radius: 9px;
+  padding: 7px 10px;
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+/* Podsumowanie zastosowanych efektow pod presetami. */
+.mix-applied {
+  margin: -2px 2px 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+
+.mix-status.ok {
+  color: var(--ok);
+  background: var(--ok-soft);
+}
+
+.mix-status.bad {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.mix-status.info {
+  color: var(--muted);
+  background: var(--card-2);
+}
+
+/* Audio tabs list */
+.tabs-block {
+  margin-bottom: 8px;
+}
+
+.tabs-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.tabs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 86px;
+  overflow-y: auto;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: var(--card);
+  border: 1px solid transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.12s ease;
+}
+
+.tab-item:hover {
+  border-color: var(--accent);
+}
+
+.tab-item .t-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+
+.tab-item.boosted .t-dot {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent);
+}
+
+.tab-item .t-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-item .t-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--ok);
+  background: var(--ok-soft);
+  padding: 2px 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Klikalny przelacznik ON/OFF przy karcie na liscie. */
+.t-toggle {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 3px 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.t-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.t-toggle.on {
+  color: var(--ok);
+  background: var(--ok-soft);
+  border-color: transparent;
+}
+
+.t-toggle.on:hover {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.t-toggle:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tabs-empty {
+  list-style: none;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 10px;
+  background: var(--card);
+  border-radius: 9px;
+}
+
+/* Stopka */
+.footer-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.footer-row button {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.footer-row button:hover {
+  background: var(--card);
+  color: var(--text);
+}
+
+.settings-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.restore {
+  width: 100%;
+  margin: -2px 0 8px;
+  padding: 7px;
+  border: 1px solid var(--accent);
+  border-radius: 9px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.restore:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.hint {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin: 10px 2px 0;
+  line-height: 1.45;
+}
+
+/* Ocena gwiazdkami */
+.rate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--border);
+}
+
+.rate-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Dyskretny donate na samym dole: szary tekst, akcent dopiero na hover. */
+.donate-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 3px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: color 0.12s ease;
+}
+.donate-link:hover {
+  color: var(--accent-2);
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 1px;
+  font-size: 19px;
+  line-height: 1;
+  color: var(--border);
+  transition: color 0.1s ease, transform 0.1s ease;
+}
+
+.star:hover {
+  transform: scale(1.15);
+}
+
+.star.hl {
+  color: #f5b301;
+}

@@ -1,0 +1,237 @@
+﻿<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Turn It Up, Son!</title>
+  </head>
+  <body>
+    <div id="mainView">
+      <header class="head">
+        <div class="brand">
+          <img class="brand-icon" src="icons/icon32.png" alt="" width="20" height="20" />
+          <span class="brand-name">Turn It Up, Son!</span>
+        </div>
+        <button id="power" class="power" role="switch" aria-checked="false" title="Włącz/wyłącz na tej karcie">
+          <span class="power-track"><span class="power-thumb"></span></span>
+          <span id="powerLabel" class="power-text">Wył.</span>
+        </button>
+      </header>
+
+      <div id="status" class="status status-idle">
+        <span class="status-dot"></span>
+        <span id="statusText" data-i18n="status_checking">Sprawdzam karte...</span>
+      </div>
+
+      <button id="restoreBtn" class="restore" hidden>Przywróć poprzednie</button>
+
+      <section class="volume-block">
+        <div id="volumeReadout" class="volume-readout"><span id="volumeLabel">100</span><span class="pct">%</span></div>
+        <input type="range" id="volume" min="0" max="700" step="10" value="100" />
+        <div class="scale">
+          <span data-i18n="scale_quiet">cicho</span>
+          <span class="scale-danger" data-i18n="scale_danger">strefa przesterów</span>
+        </div>
+        <div class="ticks">
+          <button class="tick" data-v="100">100%</button>
+          <button class="tick" data-v="200">200%</button>
+          <button class="tick" data-v="400">400%</button>
+          <button class="tick" data-v="600">600%</button>
+          <button class="tick" data-v="700">MAX</button>
+        </div>
+      </section>
+
+      <section class="effects">
+        <label class="switch-row">
+          <span data-i18n="eff_mono">Napraw dźwięk na jedno ucho</span>
+          <input type="checkbox" id="monoFix" class="switch" />
+        </label>
+        <label class="switch-row">
+          <span data-i18n="eff_bass">Podbicie basów</span>
+          <input type="checkbox" id="bassBoost" class="switch" />
+        </label>
+        <label class="switch-row">
+          <span data-i18n="eff_yt">Auto-kontynuuj na YouTube</span>
+          <input type="checkbox" id="ytAutoContinue" class="switch" />
+        </label>
+      </section>
+
+      <button id="mixOpen" class="mix-open">
+        <span class="mix-open-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <defs>
+              <linearGradient id="mixg" x1="0" y1="0" x2="18" y2="18" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6e56ff" />
+                <stop offset="1" stop-color="#3ddcff" />
+              </linearGradient>
+            </defs>
+            <path stroke="url(#mixg)" stroke-width="2" stroke-linecap="round" d="M4 2v14M9 2v14M14 2v14" />
+            <circle cx="4" cy="11" r="2.5" fill="url(#mixg)" />
+            <circle cx="9" cy="5" r="2.5" fill="url(#mixg)" />
+            <circle cx="14" cy="12" r="2.5" fill="url(#mixg)" />
+          </svg>
+        </span>
+        <span class="mix-open-text">
+          <span class="mix-open-title" data-i18n="mix_title">Miks i efekty</span>
+          <span class="mix-open-sub" data-i18n="mix_open_sub">Tempo, pogłos, jasność, 8D</span>
+        </span>
+        <span id="mixOpenState" class="mix-open-state" hidden>1.00x</span>
+        <span class="mix-open-arrow">›</span>
+      </button>
+
+      <section class="tabs-block">
+        <div class="tabs-title" data-i18n="tabs_title">Aktywne zakładki odtwarzające dźwięk</div>
+        <ul id="tabsList" class="tabs-list">
+          <li class="tabs-empty" data-i18n="tabs_empty">Nie wykryto kart z dźwiękiem</li>
+        </ul>
+      </section>
+
+      <div class="footer-row">
+        <button id="reset" class="reset" data-i18n="btn_reset">Reset</button>
+        <button id="settingsLink" class="settings-btn" data-i18n="btn_settings">Ustawienia</button>
+      </div>
+      <div class="rate">
+        <span class="rate-label" data-i18n="rate_ext">Oceń wtyczkę</span>
+        <div class="stars" id="rateStars" role="group" aria-label="Oceń wtyczkę">
+          <button class="star" data-v="1" aria-label="1">★</button>
+          <button class="star" data-v="2" aria-label="2">★</button>
+          <button class="star" data-v="3" aria-label="3">★</button>
+          <button class="star" data-v="4" aria-label="4">★</button>
+          <button class="star" data-v="5" aria-label="5">★</button>
+        </div>
+      </div>
+      <button id="donateLink" class="donate-link">
+        <span aria-hidden="true">☕</span>
+        <span data-i18n="engine_donate">Wesprzyj mnie</span>
+      </button>
+    </div>
+
+    <section id="mixView" class="mix-view" hidden>
+      <header class="mix-view-head">
+        <button id="mixBack" class="mix-back" title="Wróć" data-i18n-title="mix_back">‹</button>
+        <span class="mix-view-title" data-i18n="mix_title">Miks i efekty</span>
+        <span class="mix-analyzer" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      </header>
+
+      <div class="mix-core">
+        <div class="mix-blob" aria-hidden="true"></div>
+        <div class="mix-readout-big" id="mixReadout">1.00x</div>
+      </div>
+
+      <p id="mixWarn" class="mix-status" hidden></p>
+
+      <div class="mix-presets">
+        <button class="mixp" data-mix="1" data-ctl="speed" data-i18n="mix_normal">Normalnie</button>
+        <button class="mixp" data-mix="1.25" data-ctl="speed" data-i18n="mix_spedup">Sped Up</button>
+        <button class="mixp" data-mix="1.35" data-treble="0.6" data-reverb="0.1" data-ctl="speed,treble" data-i18n="mix_nightcore">Nightcore</button>
+        <button class="mixp" data-mix="1.25" data-reverb="0.55" data-ctl="speed,reverb" data-i18n="mix_spedup_reverb">Sped Up + Reverb</button>
+        <button class="mixp" data-mix="0.85" data-reverb="0.6" data-ctl="speed,reverb" data-i18n="mix_slowed_reverb">Slowed + Reverb</button>
+        <button class="mixp" data-mix="1" data-spin="1" data-reverb="0.2" data-ctl="spin,reverb" data-i18n="mix_8d">8D Audio</button>
+        <button class="mixp" data-mix="1" data-bass="0.75" data-bassmode="sub" data-reverb="0.2" data-vocal="0.35" data-power="0.3" data-ctl="speed,bass,vocal" data-i18n="mix_drill">Drill / Rap</button>
+        <button class="mixp" data-mix="1" data-bass="0.7" data-bassmode="punch" data-treble="0.35" data-reverb="0.1" data-power="0.4" data-ctl="speed,bass,treble" data-i18n="mix_phonk">Phonk</button>
+        <button class="mixp" data-mix="0.95" data-bass="0.9" data-bassmode="sub" data-reverb="0.35" data-muffle="0.1" data-vocal="0.4" data-ctl="speed,bass,reverb" data-i18n="mix_nydrill">NY Drill</button>
+        <button class="mixp" data-mix="1" data-bass="0.45" data-bassmode="sub" data-reverb="0.15" data-vocal="0.25" data-ctl="speed,bass,reverb" data-i18n="mix_chilldrill">Chill Drill</button>
+      </div>
+
+      <p id="mixApplied" class="mix-applied" hidden></p>
+
+      <!-- Pelny mikser: pokazuje wszystkie suwaki naraz, niezaleznie od presetu. -->
+      <label class="mix-full">
+        <span>
+          <span class="mix-full-t" data-i18n="mix_full_l">Pełny mikser</span>
+          <span class="mix-full-d" data-i18n="mix_full_d">Wszystkie suwaki naraz, kręcisz po swojemu</span>
+        </span>
+        <input type="checkbox" id="fullMix" class="switch" />
+      </label>
+
+      <!-- Kazdy preset pokazuje tylko SWOJE suwaki (data-ctl na przycisku). -->
+      <div class="mix-slider-row" id="rowSpeed">
+        <div class="mix-slider-head">
+          <span data-i18n="mix_speed_l">Prędkość</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_speed_d">Tempo utworu. Szybciej podnosi też głos, wolniej go pogłębia.</p>
+        <input type="range" id="mixSpeed" min="50" max="160" step="5" value="100" />
+        <div class="mix-scale">
+          <span>0.5x</span>
+          <span>1x</span>
+          <span>1.6x</span>
+        </div>
+      </div>
+
+      <div class="mix-slider-row" id="rowReverb" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_reverb_l">Pogłos</span>
+          <span class="mix-val" id="mixReverbVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_reverb_d">Echo jak w dużej sali. Więcej = dźwięk dalej i bardziej rozmarzony.</p>
+        <input type="range" id="mixReverb" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowTreble" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_treble_l">Jasność</span>
+          <span class="mix-val" id="mixTrebleVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_treble_d">Podbija wysokie tony. Dźwięk robi się ostrzejszy i bardziej klarowny.</p>
+        <input type="range" id="mixTreble" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowMuffle" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_muffle_l">Tłumik</span>
+          <span class="mix-val" id="mixMuffleVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_muffle_d">Przytłumia dźwięk jak przez ścianę. Zostaje głównie bas.</p>
+        <input type="range" id="mixMuffle" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowBass" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_bass_l">Bas</span>
+          <span class="mix-val" id="mixBassVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_bass_d">Klasyk = równe podbicie dołu, Sub = najgłębszy bas, Punch = kopnięcie stopy.</p>
+        <div class="mix-seg" id="bassModeSeg">
+          <button data-bm="classic" data-i18n="bm_classic">Klasyk</button>
+          <button data-bm="sub" data-i18n="bm_sub">Sub</button>
+          <button data-bm="punch" data-i18n="bm_punch">Punch</button>
+        </div>
+        <input type="range" id="mixBass" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowVocal" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_vocal_l">Wokal</span>
+          <span class="mix-val" id="mixVocalVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_vocal_d">Wyciąga głos na pierwszy plan, żeby nie ginął pod basem i pogłosem.</p>
+        <input type="range" id="mixVocal" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowPower" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_power_l">Moc</span>
+          <span class="mix-val" id="mixPowerVal">0%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_power_d">Spina miks i dodaje głośności jak w radiu. Limiter pilnuje, żeby nic nie charczało.</p>
+        <input type="range" id="mixPower" min="0" max="100" step="5" value="0" />
+      </div>
+
+      <div class="mix-slider-row" id="rowSpin" hidden>
+        <div class="mix-slider-head">
+          <span data-i18n="mix_spin_l">Krążenie</span>
+          <span class="mix-val" id="mixSpinVal">50%</span>
+        </div>
+        <p class="mix-sub" data-i18n="mix_spin_d">Jak szybko dźwięk okrąża głowę. Najlepiej słychać w słuchawkach.</p>
+        <input type="range" id="mixSpin" min="0" max="100" step="5" value="50" />
+      </div>
+
+      <p id="mixHint" class="mix-hint" data-i18n="mix_hint">Prędkość działa na stronach z odtwarzaczem wideo lub audio. Pozostałe efekty działają wszędzie.</p>
+    </section>
+
+    <script src="i18n.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,476 @@
+﻿<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="icons/icon48.png" />
+    <title>Turn It Up, Son! - ustawienia</title>
+    <style>
+      :root {
+        --bg: #05060b;
+        --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        --panel-2: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.10);
+        --border-strong: rgba(255, 255, 255, 0.20);
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.62);
+        --xdim: rgba(255, 255, 255, 0.40);
+        --accent: #6e56ff;
+        --accent-2: #3ddcff;
+        --ok: #45e0a0;
+        --danger: #ff4d5e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(640px 320px at 18% -120px, rgba(110, 86, 255, 0.14), transparent 70%),
+          radial-gradient(560px 300px at 100% 30%, rgba(61, 220, 255, 0.08), transparent 70%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+        padding: 40px 20px 56px;
+      }
+
+      /* Winyle krecace sie w tle: wyrazne rowki, sunacy odblask, gradientowa
+         naklejka i dziurka posrodku. Pod trescia, nie lapia klikniec. */
+      .bg-vinyl {
+        position: fixed;
+        width: 480px;
+        height: 480px;
+        right: -140px;
+        top: -140px;
+        border-radius: 50%;
+        background:
+          conic-gradient(from 0deg, transparent 0 50deg, rgba(255, 255, 255, 0.11) 78deg, transparent 108deg 226deg, rgba(255, 255, 255, 0.07) 256deg, transparent 288deg 360deg),
+          repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.085) 0 1.5px, transparent 1.5px 6.5px),
+          radial-gradient(circle at 50% 50%, rgba(110, 86, 255, 0.55) 0 10.5%, rgba(61, 220, 255, 0.30) 11.5% 13.5%, rgba(255, 255, 255, 0.06) 14.5% 16%, transparent 17%);
+        box-shadow:
+          0 0 60px rgba(110, 86, 255, 0.22),
+          inset 0 0 90px rgba(0, 0, 0, 0.55);
+        /* Uwaga na pamiec: animowana tarcza dostaje warstwe GPU o koszcie
+           szer x wys x 4 bajty x kwadrat skali ekranu. Dlatego tarcze sa
+           umiarkowanej wielkosci i BEZ will-change (Chrome sam podnosi
+           warstwe na czas animacji i zwalnia ja, gdy nie jest potrzebna). */
+        animation: vinylspin 55s linear infinite;
+        pointer-events: none;
+        z-index: -1;
+      }
+      .bg-vinyl::after {
+        content: "";
+        position: absolute;
+        inset: 48%;
+        border-radius: 50%;
+        background: var(--bg);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+      }
+      .bg-vinyl.b {
+        right: auto;
+        top: auto;
+        left: -170px;
+        bottom: -170px;
+        width: 420px;
+        height: 420px;
+        opacity: 0.85;
+        animation: vinylspin 85s linear infinite reverse;
+      }
+      @keyframes vinylspin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Uzytkownik prosi system o mniej ruchu: wylacz dekoracyjne animacje. */
+      @media (prefers-reduced-motion: reduce) {
+        .bg-vinyl, .bg-vinyl.b { animation: none; }
+      }
+      .wrap { max-width: 640px; margin: 0 auto; }
+
+      /* Naglowek */
+      .head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 22px;
+      }
+      .head img { width: 40px; height: 40px; border-radius: 10px; }
+      .head .txt { flex: 1; min-width: 0; }
+      h1 { font-size: 19px; margin: 0; letter-spacing: -0.2px; }
+      .head .sub { font-size: 13px; color: var(--muted); margin: 1px 0 0; }
+      .head .ver { font-size: 12px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+
+      /* Sekcje i karty */
+      .sec-h {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 26px 0 10px;
+      }
+      .sec-h:first-of-type { margin-top: 0; }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 12px;
+      }
+      .card h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .muted { color: var(--muted); }
+      ul { margin: 6px 0 0; padding-left: 20px; }
+      li { margin-bottom: 6px; font-size: 13.5px; }
+
+      .opt {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: border-color 0.12s ease, background 0.12s ease;
+      }
+      .opt:hover { border-color: var(--border-strong); }
+      .opt.sel { border-color: var(--accent); background: rgba(110, 86, 255, 0.10); }
+      .opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); }
+      .opt .t { font-weight: 600; margin-bottom: 3px; font-size: 13.5px; }
+      .opt .d { font-size: 12.5px; color: var(--muted); }
+
+      .pill {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .note {
+        font-size: 12.5px;
+        color: var(--muted);
+        border-top: 1px solid var(--border);
+        margin-top: 14px;
+        padding-top: 12px;
+      }
+      .saved { font-size: 12px; color: var(--ok); height: 16px; margin-top: 4px; }
+
+      .switch {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 42px;
+        height: 24px;
+        border-radius: 999px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        position: relative;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.18s;
+      }
+      .switch:checked { background: var(--accent); border-color: transparent; }
+      .switch:checked::after { transform: translateX(18px); }
+
+      .btn {
+        margin-top: 12px;
+        padding: 9px 14px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--panel-2);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn:hover { border-color: var(--accent); color: var(--accent); }
+      .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+      select.btn { cursor: pointer; }
+      select.btn option { background: #0c0d10; color: var(--text); }
+
+      .access-list-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      .access-list {
+        list-style: none;
+        margin: 0 0 12px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 160px;
+        overflow-y: auto;
+      }
+      .access-list li {
+        margin: 0;
+        padding: 7px 10px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        word-break: break-all;
+      }
+      .access-list li.muted { background: transparent; border: none; padding: 0; }
+      .access-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+      .access-btns .btn { margin-top: 0; }
+      .access-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
+      .access-note + .access-note { margin-top: 6px; }
+
+      .keys { margin: 12px 0 0; padding-left: 18px; }
+      .keys li { margin-bottom: 6px; font-size: 13px; }
+
+      .featl { padding: 12px 0; border-bottom: 1px solid var(--border); }
+      .featl:first-of-type { padding-top: 2px; }
+      .featl:last-of-type { border-bottom: none; padding-bottom: 0; }
+      .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
+      .featl .d { font-size: 12.5px; color: var(--muted); }
+
+      /* Przycisk wsparcia pod taglinem: widoczny od wejscia, ale spokojny. */
+      .support-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        margin-top: 12px;
+        padding: 10px 20px;
+        border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(110, 86, 255, 0.22), rgba(61, 220, 255, 0.12));
+        color: var(--text);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.15s ease, color 0.15s ease, filter 0.15s ease;
+      }
+      .support-pill:hover {
+        border-color: var(--accent-2);
+        color: var(--accent-2);
+        filter: brightness(1.1);
+      }
+
+      .foot { text-align: center; color: var(--xdim); font-size: 12px; margin-top: 26px; }
+    </style>
+  </head>
+  <body>
+    <div class="bg-vinyl" aria-hidden="true"></div>
+    <div class="bg-vinyl b" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="head">
+        <img src="icons/icon48.png" alt="" />
+        <div class="txt">
+          <h1>Turn It Up, Son!</h1>
+          <p class="sub" data-i18n="app_tagline">Podgłaśniacz dźwięku dla każdej karty. YouTube, Spotify i cała reszta.</p>
+          <button id="supportTop" class="support-pill">
+            <span aria-hidden="true">☕</span>
+            <span data-i18n="engine_donate">Wesprzyj mnie</span>
+          </button>
+        </div>
+        <span class="ver" id="ver"></span>
+      </div>
+
+      <div class="sec-h" data-i18n="sec_settings">Ustawienia</div>
+
+      <div class="card">
+        <div class="row">
+          <h2 style="margin:0" data-i18n="lang_h">Język / Language</h2>
+          <select id="langSelect" class="btn" style="margin:0">
+            <option value="auto" data-i18n="lang_auto">Automatycznie (jak przeglądarka)</option>
+            <option value="pl">Polski</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <h2 style="margin:0" data-i18n="maxvol_h">Maksymalna głośność</h2>
+          <select id="maxVolSelect" class="btn" style="margin:0">
+            <option value="300">300%</option>
+            <option value="500">500%</option>
+            <option value="700" selected>700%</option>
+          </select>
+        </div>
+        <p class="note" style="border:none;padding:0;margin:10px 0 0" data-i18n="maxvol_d">Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.</p>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <h2 style="margin:0" data-i18n="defbass_h">Domyślny charakter basu</h2>
+          <select id="defBassSelect" class="btn" style="margin:0">
+            <option value="classic" selected data-i18n="bm_classic">Klasyk</option>
+            <option value="sub" data-i18n="bm_sub">Sub</option>
+            <option value="punch" data-i18n="bm_punch">Punch</option>
+          </select>
+        </div>
+        <p class="note" style="border:none;padding:0;margin:10px 0 0" data-i18n="defbass_d">Ten charakter basu włącza się na kartach, na których jeszcze go nie wybrano. Zawsze możesz go zmienić w panelu Miks.</p>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="disable_q">Jak chcesz wyłączać wtyczkę?</h2>
+
+        <label class="opt" id="optToggle">
+          <input type="radio" name="mode" value="toggle" />
+          <span>
+            <div class="t" data-i18n="opt_toggle_t">Przełącznikiem on/off (nic się nie otwiera)</div>
+            <div class="d" data-i18n="opt_toggle_d">Włączasz i wyłączasz suwakiem w okienku wtyczki. Nic dodatkowego nie wyskakuje. Polecane, jak nie chcesz mieć extra karty.</div>
+          </span>
+        </label>
+
+        <label class="opt" id="optTab">
+          <input type="radio" name="mode" value="closeTab" />
+          <span>
+            <div class="t" data-i18n="opt_tab_t">Zamknięciem karty silnika</div>
+            <div class="d" data-i18n="opt_tab_d">Przy pierwszym podgłośnieniu otwiera się mała, przypięta karta po lewej (sam favicon). Trzyma cały dźwięk. Zamykasz ją i wtyczka od razu przestaje działać na wszystkich kartach.</div>
+          </span>
+        </label>
+
+        <div class="saved" id="saved"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <h2 style="margin:0"><span data-i18n="binds_h">Skróty klawiszowe</span> <span class="pill" data-i18n="pill_default_off">domyślnie wyłączone</span></h2>
+          <input type="checkbox" class="switch" id="bindsToggle" />
+        </div>
+        <ul class="keys">
+          <li data-i18n="binds_1">Skrót Wyłącz podgłaśnianie ubija wszystko naraz (jak zamknięcie karty silnika).</li>
+          <li data-i18n="binds_2">Skrót Przywróć poprzednie wraca do ustawień z tej karty sprzed wyłączenia.</li>
+        </ul>
+        <p class="note" style="border:none;padding:0;margin-top:10px" data-i18n="binds_note">Klawisze ustawiasz w Chrome. Włącz przełącznik i kliknij poniżej, żeby przypisać kombinacje.</p>
+        <button class="btn" id="openShortcuts" data-i18n="binds_btn">Ustaw klawisze w Chrome</button>
+        <div class="saved" id="bindsSaved"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="access_h">Dostęp do stron</h2>
+        <p class="note" style="border:none;padding:0;margin:0 0 12px" data-i18n="access_d">
+          Wtyczka bierze dostęp do strony dopiero wtedy, gdy włączysz na niej Mix (albo auto-kontynuację YouTube), i oddaje go, gdy wyłączysz. Poniżej widzisz strony, które akurat mają dostęp.
+        </p>
+        <div class="access-list-title" data-i18n="access_current">Strony z dostępem</div>
+        <ul id="accessList" class="access-list">
+          <li class="muted" data-i18n="access_none">Żadna strona nie ma teraz dostępu.</li>
+        </ul>
+        <div class="access-btns">
+          <button class="btn" id="grantYt" data-i18n="access_grant_yt">Nadaj dostęp do YouTube</button>
+          <button class="btn danger" id="revokeAll" data-i18n="access_revoke">Zabierz dostęp wszystkim stronom</button>
+        </div>
+        <p class="access-note" data-i18n="access_grant_yt_d"></p>
+        <p class="access-note" data-i18n="access_revoke_d"></p>
+        <div class="saved" id="accessSaved"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="feats_h">Wszystkie funkcje</h2>
+        <div class="featl">
+          <div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div>
+          <div class="d" data-i18n="featl_vol_d">Zwykły suwak strony kończy się na 100%. Wtyczka przepuszcza dźwięk karty przez własny wzmacniacz, więc może grać do siedmiu razy głośniej. Każda karta ma osobny poziom.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_mix_t">Miks: sped up, nightcore, slowed</div>
+          <div class="d" data-i18n="featl_mix_d">Nightcore to sposób przerabiania piosenek: utwór przyspiesza się o jakieś 10-30%, przez co wokal robi się wyraźnie wyższy. Nazwa wzięła się od norweskiego duetu Nightcore, który tak remiksował utwory na początku lat 2000. Sped up to nowsza odmiana tego samego pomysłu, znana głównie z TikToka, a slowed + reverb to jej przeciwieństwo: wolniej i z pogłosem. Suwak prędkości działa w zakresie 0.5x-1.6x.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_drill_t">Drill / Rap i Chill Drill</div>
+          <div class="d" data-i18n="featl_drill_d">Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki sub-bas, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_8d_t">8D Audio i krążenie</div>
+          <div class="d" data-i18n="featl_8d_d">Dźwięk płynnie krąży wokół głowy (najlepiej w słuchawkach). Suwak Krążenie ustawia szybkość obrotu, a 0% wyłącza efekt.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_full_t">Pełny mikser</div>
+          <div class="d" data-i18n="featl_full_d">Przełącznik w panelu Miks, który odsłania wszystkie suwaki naraz: prędkość, pogłos, jasność, bas i krążenie. Do kręcenia własnych wersji.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_bass_t">Podbicie basów</div>
+          <div class="d" data-i18n="featl_bass_d">Wzmacnia najniższe tony, czyli dół pasma, w którym siedzi bas i stopa perkusji. Muzyka brzmi pełniej, zwłaszcza na małych głośnikach laptopa.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_treble_t">Jasność</div>
+          <div class="d" data-i18n="featl_treble_d">Podbija wysokie tony, dźwięk robi się ostrzejszy i bardziej klarowny. Suwak znajdziesz w panelu Miks.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_reverb_t">Reverb (pogłos)</div>
+          <div class="d" data-i18n="featl_reverb_d">Pogłos to odbicia dźwięku od ścian, które wybrzmiewają chwilę po oryginale. Efekt dodaje je do utworu, więc brzmi on, jakby grał w dużej sali.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_styles_t">Phonk i NY Drill</div>
+          <div class="d" data-i18n="featl_styles_d">Dwa style prosto z remixów. Phonk gra w pełnym tempie: agresywny, kopiący bas, ostra, chrupiąca góra pasma i kompresor dociskający całość jak w memphis rapie lat 90. NY Drill to brzmienie nowojorskiego drillu: bardzo głęboki, ślizgający się sub-bas, ciemny pogłos i wokal, który mimo tego basu nie ginie.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_muffle_t">Tłumik</div>
+          <div class="d" data-i18n="featl_muffle_d">Ścisza wysokie tony jak przegroda z betonu: zostaje bas i zarys melodii, jakby muzyka grała w pokoju obok. Suwak znajdziesz w panelu Miks (pełny mikser).</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_vocal_t">Wokal i Moc</div>
+          <div class="d" data-i18n="featl_vocal_d">Wokal podbija środek pasma, w którym siedzi głos, więc raper czy wokalista nie ginie pod ciężkim basem i pogłosem. Moc to kompresor: ścisza szczyty i podnosi całość, przez co muzyka brzmi głośniej i gęściej, jak w radiu. Oba suwaki znajdziesz w pełnym mikserze.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_mono_t">Naprawa dźwięku na jedno ucho</div>
+          <div class="d" data-i18n="featl_mono_d">Część nagrań ma dźwięk tylko w lewym albo prawym kanale. Ta opcja miksuje oba kanały do środka, więc słychać w obu słuchawkach.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_limiter_t">Limiter</div>
+          <div class="d" data-i18n="featl_limiter_d">Automatyczny strażnik na wyjściu: przy mocnym podbiciu dociska szczyty, żeby dźwięk nie trzeszczał. Działa sam, nic nie trzeba włączać.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_tabs_t">Lista grających kart</div>
+          <div class="d" data-i18n="featl_tabs_d">W okienku widzisz wszystkie karty z dźwiękiem (wstrzymane też, jeśli są podgłośnione) i każdą włączasz lub wyłączasz jednym kliknięciem.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_resume_t">Auto-wznawianie</div>
+          <div class="d" data-i18n="featl_resume_d">Po odświeżeniu strony podgłośnienie i efekty wracają same, bez ponownego klikania.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
+          <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
+        </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_keys_t">Skróty klawiszowe</div>
+          <div class="d" data-i18n="featl_keys_d">Dwa skróty do przypisania w Chrome: wyłącz wszystko naraz i przywróć ustawienia sprzed wyłączenia. Domyślnie wyłączone.</div>
+        </div>
+        <div class="note" data-i18n="whatsnew_note">Nowości w tej wersji: pełny mikser, natychmiastowy test działania Mixa po otwarciu panelu, pewniejsze zabieranie dostępu stronom i dokończenie włączania presetu po zgodzie Chrome.</div>
+      </div>
+
+      <div class="sec-h" data-i18n="privacy_h">Prywatność</div>
+
+      <div class="card">
+        <ul style="margin:0">
+          <li data-i18n="privacy_1">Cała obróbka dźwięku dzieje się lokalnie, w twojej przeglądarce. Wtyczka niczego nie nagrywa, nie zapisuje i nigdzie nie wysyła: zero serwerów, zero analityki, zero kont i logowania.</li>
+          <li data-i18n="privacy_2">Domyślnie nie czyta ani nie zmienia zawartości stron. Bierze tylko sam dźwięk karty, dlatego w menu rozszerzeń siedzi w sekcji Nie potrzebują dostępu.</li>
+          <li data-i18n="privacy_3">Dostęp do konkretnej strony dostaje dopiero, gdy sam włączysz tam zmianę prędkości (Mix) albo auto-kontynuację YouTube, i oddaje go zaraz po wyłączeniu. Aktualną listę stron z dostępem widzisz wyżej, w sekcji Dostęp do stron, i możesz ją wyczyścić jednym przyciskiem.</li>
+          <li data-i18n="privacy_4">Stałe uprawnienia i po co są: dźwięk karty (tabCapture) do podgłaśniania i efektów, lista kart (tabs) do spisu grających kart w okienku, pamięć (storage) do zapamiętania twoich ustawień, dokument w tle (offscreen) jako niewidoczny silnik dźwięku. Żadne z nich nie daje wglądu w treść stron.</li>
+          <li data-i18n="privacy_5">Ustawienia (głośność, efekty, język) trzymane są wyłącznie na twoim komputerze. Po odinstalowaniu wtyczki nic po niej nie zostaje.</li>
+        </ul>
+        <div class="note" data-i18n="privacy_note">
+          Pasek Chrome "ta karta jest udostępniana" to wymóg przeglądarki przy braniu dźwięku karty. Dzięki temu działa też Spotify. Nie da się go schować w żadnej wtyczce tego typu.
+        </div>
+      </div>
+
+      <p class="foot" data-i18n="foot">Tę stronę otworzysz zawsze przez okienko wtyczki, przycisk Ustawienia.</p>
+      <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy</p>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="settings.js"></script>
+  </body>
+</html>

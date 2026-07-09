@@ -1,0 +1,267 @@
+﻿<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="icons/engine48.png" />
+    <title>Turn It Up, Son!</title>
+    <style>
+      :root {
+        --bg: #05060b;
+        --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        --panel-2: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.10);
+        --border-strong: rgba(255, 255, 255, 0.20);
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.62);
+        --xdim: rgba(255, 255, 255, 0.40);
+        --accent: #6e56ff;
+        --accent-2: #3ddcff;
+        --ok: #45e0a0;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(640px 320px at 18% -120px, rgba(110, 86, 255, 0.14), transparent 70%),
+          radial-gradient(560px 300px at 100% 30%, rgba(61, 220, 255, 0.08), transparent 70%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+        padding: 40px 20px 56px;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Winyle krecace sie w tle. Rowki to cienkie okregi z bieli, obrot widac
+         po sunacym odblasku (conic), naklejka ma gradient akcentu, a w srodku
+         jest dziurka jak w prawdziwej plycie. Pod trescia, nie lapie klikniec. */
+      .bg-vinyl {
+        position: fixed;
+        width: 480px;
+        height: 480px;
+        right: -140px;
+        top: -140px;
+        border-radius: 50%;
+        background:
+          conic-gradient(from 0deg, transparent 0 50deg, rgba(255, 255, 255, 0.11) 78deg, transparent 108deg 226deg, rgba(255, 255, 255, 0.07) 256deg, transparent 288deg 360deg),
+          repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.085) 0 1.5px, transparent 1.5px 6.5px),
+          radial-gradient(circle at 50% 50%, rgba(110, 86, 255, 0.55) 0 10.5%, rgba(61, 220, 255, 0.30) 11.5% 13.5%, rgba(255, 255, 255, 0.06) 14.5% 16%, transparent 17%);
+        box-shadow:
+          0 0 60px rgba(110, 86, 255, 0.22),
+          inset 0 0 90px rgba(0, 0, 0, 0.55);
+        /* Uwaga na pamiec: animowana tarcza dostaje warstwe GPU o koszcie
+           szer x wys x 4 bajty x kwadrat skali ekranu. Dlatego tarcze sa
+           umiarkowanej wielkosci i BEZ will-change (Chrome sam podnosi
+           warstwe na czas animacji i zwalnia ja, gdy nie jest potrzebna). */
+        animation: vinylspin 55s linear infinite;
+        pointer-events: none;
+        z-index: -1;
+      }
+      .bg-vinyl::after {
+        content: "";
+        position: absolute;
+        inset: 48%;
+        border-radius: 50%;
+        background: var(--bg);
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+      }
+      .bg-vinyl.b {
+        right: auto;
+        top: auto;
+        left: -170px;
+        bottom: -170px;
+        width: 420px;
+        height: 420px;
+        opacity: 0.85;
+        animation: vinylspin 85s linear infinite reverse;
+      }
+      @keyframes vinylspin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Uzytkownik prosi system o mniej ruchu: wylacz dekoracyjne animacje. */
+      @media (prefers-reduced-motion: reduce) {
+        .bg-vinyl, .bg-vinyl.b { animation: none; }
+        .live .dot { animation: none; }
+      }
+      .wrap { width: 100%; max-width: 640px; }
+
+      /* Naglowek */
+      .head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 22px;
+      }
+      .head img { width: 40px; height: 40px; border-radius: 10px; }
+      .head .txt { flex: 1; min-width: 0; }
+      h1 { font-size: 19px; margin: 0; letter-spacing: -0.2px; }
+      .head .sub { font-size: 13px; color: var(--muted); margin: 1px 0 0; }
+      .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: var(--ok);
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(69, 224, 160, 0.30);
+        background: rgba(69, 224, 160, 0.07);
+        flex-shrink: 0;
+      }
+      .live .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--ok);
+        animation: pulse 1.6s infinite;
+      }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+      /* Karty */
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+      }
+      .card h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card p { margin: 0; font-size: 13.5px; color: var(--muted); }
+      .hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--border); }
+
+      /* Wsparcie: gwiazdki oceny + przycisk donate */
+      .support-d { font-size: 12.5px; margin: 0 0 12px; }
+      .stars { display: flex; gap: 8px; justify-content: center; }
+      .star {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 30px;
+        line-height: 1;
+        color: rgba(255, 255, 255, 0.22);
+        cursor: pointer;
+        transition: color 0.1s ease, transform 0.1s ease, text-shadow 0.1s ease;
+      }
+      .star.hl {
+        color: #f5b301;
+        transform: scale(1.15);
+        text-shadow: 0 0 16px rgba(245, 179, 1, 0.55);
+      }
+      .btn {
+        padding: 9px 16px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--panel-2);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.12s ease, color 0.12s ease;
+      }
+      .btn:hover { border-color: var(--border-strong); }
+      .btn.accent {
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #fff;
+      }
+      .btn.accent:hover { filter: brightness(1.1); }
+
+      .donate-card {
+        border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+        background: linear-gradient(160deg, rgba(110, 86, 255, 0.14), rgba(61, 220, 255, 0.06));
+      }
+      .donate-big {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        padding: 14px 18px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 6px 24px rgba(110, 86, 255, 0.35);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      }
+      .donate-big:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+        box-shadow: 0 10px 30px rgba(110, 86, 255, 0.5);
+      }
+      .donate-big:active { transform: translateY(0); }
+      .donate-big .cup { font-size: 19px; }
+      .donate-url { margin: 10px 0 0; font-size: 12px; color: var(--xdim); text-align: center; }
+
+      .foot { text-align: center; color: var(--xdim); font-size: 12px; margin-top: 26px; }
+      .foot .ver { color: var(--accent); font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="bg-vinyl" aria-hidden="true"></div>
+    <div class="bg-vinyl b" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="head">
+        <img src="icons/engine48.png" alt="" />
+        <div class="txt">
+          <h1>Turn It Up, Son!</h1>
+          <p class="sub" data-i18n="engine_name">Silnik dźwięku</p>
+        </div>
+        <span class="live"><span class="dot"></span> <span data-i18n="engine_live">DZIAŁA</span></span>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="engine_why_h">Dlaczego ta karta jest otwarta?</h2>
+        <p data-i18n="engine_why_d">Ta karta to silnik dźwięku. Przeglądarka pozwala podbić głośność ponad 100% tylko wtedy, gdy dźwięk karty przechodzi przez taką stronę. Możesz ją zostawić w tle, niczego nie nagrywa i nigdzie nie wysyła.</p>
+        <p class="hint" data-i18n="engine_hint">Zamknij tę kartę, a podgłaśnianie od razu się wyłączy.</p>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="rate_ext">Oceń wtyczkę</h2>
+        <p class="support-d" data-i18n="rate_d">Krótka ocena w sklepie pomaga innym znaleźć wtyczkę.</p>
+        <div class="stars" id="engineStars" role="group" aria-label="Oceń wtyczkę">
+          <button class="star" data-v="1" aria-label="1">★</button>
+          <button class="star" data-v="2" aria-label="2">★</button>
+          <button class="star" data-v="3" aria-label="3">★</button>
+          <button class="star" data-v="4" aria-label="4">★</button>
+          <button class="star" data-v="5" aria-label="5">★</button>
+        </div>
+      </div>
+
+      <div class="card donate-card">
+        <h2 data-i18n="engine_support_h">Wesprzyj rozwój</h2>
+        <p class="support-d" data-i18n="donate_d">Wtyczka jest darmowa. Jak się przydaje, możesz wesprzeć autora.</p>
+        <button class="donate-big" id="donateBtn">
+          <span class="cup" aria-hidden="true">☕</span>
+          <span data-i18n="engine_donate">Wesprzyj mnie</span>
+        </button>
+        <p class="donate-url">buymeacoffee.com/romanzbudowy</p>
+      </div>
+
+      <p class="foot">Turn It Up, Son! <span class="ver" id="ver"></span> · © 2026 romanzbudowy</p>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="settings.js"></script>
+    <script src="engine.js"></script>
+  </body>
+</html>

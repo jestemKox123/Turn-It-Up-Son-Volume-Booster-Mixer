@@ -1,0 +1,17 @@
+﻿Turn It Up, Son! Volume Booster & Mixer
+Copyright (c) 2026 romanzbudowy. All rights reserved.
+
+This software and its source code are proprietary. Permission is granted to
+install and use this extension in a web browser for personal purposes only.
+
+Without prior written permission from the copyright holder, you may NOT:
+ - copy, modify, or create derivative works of this software,
+ - redistribute, republish, or resell this software or any part of it,
+ - publish this software or a modified version of it in any extension store
+   or software repository under any name.
+
+This software is provided "as is", without warranty of any kind, express or
+implied. In no event shall the author be liable for any claim, damages or
+other liability arising from the use of this software.
+
+Author: romanzbudowy

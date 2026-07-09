@@ -1,0 +1,38 @@
+﻿{
+  "manifest_version": 3,
+  "name": "Turn It Up, Son! Volume Booster & Mixer",
+  "version": "4.1.0",
+  "author": "romanzbudowy",
+  "description": "Boost any tab up to 700%, Spotify too. Bass boost, 8D audio, full mixer, Sped Up, Nightcore, Slowed + Reverb and Drill mixes.",
+  "permissions": ["storage", "tabCapture", "tabs", "offscreen"],
+  "optional_permissions": ["scripting"],
+  "optional_host_permissions": ["*://*/*"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Turn It Up, Son!",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "settings.html",
+  "commands": {
+    "disable-all": {
+      "description": "Turn It Up, Son!: turn off all boosting at once"
+    },
+    "restore-previous": {
+      "description": "Turn It Up, Son!: restore settings from before turning off"
+    }
+  }
+}
