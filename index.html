@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turn It Up, Son! Volume Booster & Mixer for Chrome</title>
+<meta name="description" content="Free Chrome extension. Boost any browser tab up to 700%, including Spotify and YouTube. Bass boost, 8D audio and a full mixer with Sped Up, Nightcore, Slowed and Reverb, Drill and Phonk presets. Private, no tracking.">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --blue:#4a90ff;--purple:#b14bff;
+    --grad:linear-gradient(135deg,#3d7bff 0%,#b14bff 100%);
+    --ink:#f4f5fb;--muted:#9698ab;--panel:#12121c;--line:rgba(255,255,255,.08);--bg:#07070d;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(7,7,13,.7);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+  .logo .mark{width:38px;height:38px;border-radius:11px;background:var(--grad);display:grid;place-items:center}
+  .logo .mark svg{width:22px;height:22px}
+  .nav-cta{padding:11px 22px;border-radius:12px;background:var(--grad);font-weight:700;font-size:15px}
+
+  .hero{position:relative;text-align:center;padding:96px 0 80px;overflow:hidden}
+  .glow{position:absolute;width:900px;height:900px;left:50%;top:-360px;transform:translateX(-50%);
+        background:radial-gradient(circle,rgba(80,90,255,.28),transparent 60%);pointer-events:none}
+  .badge-pill{display:inline-block;padding:8px 18px;border-radius:999px;border:1px solid var(--line);
+        background:var(--panel);color:var(--muted);font-size:14px;font-weight:600;margin-bottom:26px}
+  .hero h1{font-size:clamp(42px,7vw,88px);font-weight:900;letter-spacing:-2px;line-height:.98;
+        background:linear-gradient(135deg,#8fb6ff,#c98bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero .sub{font-size:clamp(19px,2.6vw,26px);color:var(--muted);max-width:640px;margin:22px auto 0;font-weight:500}
+  .cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+  .btn{display:inline-flex;align-items:center;gap:12px;padding:18px 34px;border-radius:15px;font-weight:800;font-size:18px}
+  .btn-primary{background:var(--grad);box-shadow:0 14px 40px rgba(80,90,255,.4)}
+  .btn-primary svg{width:24px;height:24px}
+  .btn-ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+  .free{margin-top:18px;color:var(--muted);font-size:15px}
+
+  /* ===== 1:1 replica of the real extension UI ===== */
+  .mocks{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:64px auto 0}
+  .tius{position:relative;width:300px;max-width:100%;padding:10px 16px 12px;border-radius:20px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#fff;text-align:left;border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 100px rgba(0,0,0,.6);
+    --tbg:#05060b;--card:rgba(255,255,255,.04);--card-2:rgba(255,255,255,.08);--tmuted:rgba(255,255,255,.6);--border:rgba(255,255,255,.1);--accent:#6e56ff;--accent-2:#3ddcff;--accent-soft:rgba(110,86,255,.16);--ok:#45e0a0;--ok-soft:rgba(69,224,160,.12);--track:rgba(255,255,255,.1);
+    background:radial-gradient(260px 150px at 88% -50px,rgba(110,86,255,.18),transparent 70%),radial-gradient(220px 130px at -10% 105%,rgba(61,220,255,.09),transparent 70%),#05060b}
+  .tius *{box-sizing:border-box}
+  .tius section{padding:0}
+  .mocks input{pointer-events:none}
+  .tius .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .tius .brand{display:flex;align-items:center;gap:8px}
+  .tius .brand-icon{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+  .tius .brand-icon svg{width:12px;height:12px}
+  .tius .brand-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
+  .tius .power{display:inline-flex;align-items:center;gap:8px;color:var(--accent-2);font-size:12px;font-weight:600}
+  .tius .power-track{width:38px;height:22px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent-2));position:relative;flex-shrink:0}
+  .tius .power-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transform:translateX(16px)}
+  .tius .status{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;line-height:1.35;padding:7px 11px;min-height:32px;border:1px solid transparent;border-radius:10px;margin-bottom:8px;background:var(--card)}
+  .tius .status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--tmuted)}
+  .tius .status-ok{background:var(--ok-soft);border-color:rgba(69,224,160,.35);color:var(--ok)}
+  .tius .status-ok .status-dot{background:var(--ok);box-shadow:0 0 0 3px rgba(69,224,160,.22)}
+  .tius .volume-block{background:var(--card);border-radius:14px;padding:10px 14px}
+  .tius .volume-readout{text-align:center;font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tius .volume-readout .pct{font-size:16px;margin-left:1px}
+  .tius input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:999px;outline:none;background:var(--track);margin:0}
+  .tius .vol{background:linear-gradient(to right,var(--accent) 0%,var(--accent) 14%,#8f9bff 22%,#eab308 34%,#f59e0b 46%,#ef4444 62%,#b91c1c 100%)}
+  .tius .scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--tmuted);margin-top:6px}
+  .tius .scale-danger{color:#ef4444;font-weight:700}
+  .tius input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .tius input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
+  .tius .ticks{display:flex;justify-content:space-between;gap:4px;margin-top:7px}
+  .tius .tick{flex:1;border:1px solid var(--border);background:var(--tbg);color:var(--tmuted);border-radius:7px;padding:3px 0;font-size:10.5px;font-weight:600;text-align:center}
+  .tius .effects{display:flex;flex-direction:column;gap:0;margin:8px 0}
+  .tius .switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 2px}
+  .tius .switch{-webkit-appearance:none;appearance:none;width:38px;height:22px;border-radius:999px;background:var(--card-2);border:1px solid var(--border);position:relative;flex-shrink:0;margin:0}
+  .tius .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+  .tius .mix-open{display:flex;align-items:center;gap:10px;width:100%;background:var(--accent-soft);border:1px solid transparent;border-radius:12px;padding:8px 12px;margin-bottom:8px}
+  .tius .mix-open-icon{display:flex;align-items:center;flex-shrink:0}
+  .tius .mix-open-text{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+  .tius .mix-open-title{font-size:12.5px;font-weight:700;color:#fff}
+  .tius .mix-open-sub{font-size:10.5px;color:var(--tmuted)}
+  .tius .mix-open-state{font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+  .tius .mix-open-arrow{font-size:20px;color:var(--tmuted);line-height:1;flex-shrink:0}
+  .tius .tabs-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tmuted);margin:8px 0 6px}
+  .tius .tabs-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+  .tius .tab-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;background:var(--card);border:1px solid transparent;font-size:12px}
+  .tius .tab-item .t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--ok);box-shadow:0 0 0 3px rgba(69,224,160,.2)}
+  .tius .tab-item .t-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tius .t-toggle{font-size:9.5px;font-weight:700;letter-spacing:.3px;color:var(--ok);background:var(--ok-soft);border:1px solid transparent;padding:3px 9px;border-radius:999px;flex-shrink:0}
+  .tius .footer-row{display:flex;gap:8px;margin-top:8px}
+  .tius .footer-row button{flex:1;padding:7px;border:1px solid var(--border);border-radius:9px;background:var(--tbg);color:var(--tmuted);font-size:12px;font-weight:600}
+  .tius .rate{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+  .tius .rate-label{font-size:12.5px;font-weight:600;color:var(--tmuted)}
+  .tius .stars{display:flex;gap:2px}
+  .tius .star{font-size:19px;line-height:1;color:var(--border)}
+  .tius .donate-link{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:4px;padding:3px 4px;font-size:12px;font-weight:600;color:var(--tmuted)}
+  .tius .mix-view-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .tius .mix-back{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--tbg);color:#fff;font-size:20px;line-height:1;display:grid;place-items:center;flex-shrink:0}
+  .tius .mix-view-title{font-size:14px;font-weight:700;flex:1}
+  .tius .mix-analyzer{display:inline-flex;align-items:flex-end;gap:2px;height:13px;flex-shrink:0}
+  .tius .mix-analyzer i{width:3px;height:100%;border-radius:1.5px;background:linear-gradient(to top,var(--accent),var(--accent-2));transform-origin:bottom;animation:mx-eq 1.1s ease-in-out infinite}
+  .tius .mix-analyzer i:nth-child(1){animation-delay:0s}.tius .mix-analyzer i:nth-child(2){animation-delay:.22s}.tius .mix-analyzer i:nth-child(3){animation-delay:.44s}.tius .mix-analyzer i:nth-child(4){animation-delay:.11s}.tius .mix-analyzer i:nth-child(5){animation-delay:.33s}
+  @keyframes mx-eq{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(1)}}
+  .tius .mix-core{position:relative;height:58px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .tius .mix-blob{position:absolute;width:54px;height:54px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-radius:44% 56% 62% 38%/46% 38% 62% 54%;filter:blur(16px);opacity:.28;animation:mx-morph 9s ease-in-out infinite alternate}
+  @keyframes mx-morph{0%{border-radius:44% 56% 62% 38%/46% 38% 62% 54%;transform:scale(1)}50%{border-radius:58% 42% 40% 60%/40% 58% 42% 60%;transform:scale(1.12)}100%{border-radius:38% 62% 55% 45%/60% 44% 56% 40%;transform:scale(.94)}}
+  .tius .mix-readout-big{position:relative;font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tius .mix-status{font-size:11px;line-height:1.4;border-radius:9px;padding:7px 10px;margin:8px 0;font-weight:600;color:var(--tmuted);background:var(--card-2)}
+  .tius .mix-presets{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+  .tius .mixp{border:1px solid var(--border);background:var(--tbg);color:var(--tmuted);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;text-align:center}
+  .tius .mixp.on{border-color:transparent;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
+  .tius .mix-applied{margin:-2px 2px 8px;font-size:11px;line-height:1.45;font-weight:600;color:var(--accent-2)}
+  .tius .mix-full{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;margin-bottom:8px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
+  .tius .mix-full-t{display:block;font-size:11.5px;font-weight:700}
+  .tius .mix-full-d{display:block;font-size:9.5px;color:var(--tmuted)}
+  .tius .mix-slider-row{margin-bottom:8px}
+  .tius .mix-slider-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;color:#fff;margin-bottom:2px}
+  .tius .mix-val{color:var(--accent);font-weight:800}
+  .tius .mix-sub{font-size:9.5px;color:var(--tmuted);line-height:1.3;margin:0 0 4px}
+  .tius .mix-scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--tmuted);margin-top:6px}
+  .tius .mix-hint{font-size:10px;color:var(--tmuted);line-height:1.4;margin:8px 0 0}
+
+  section{padding:80px 0}
+  .kicker{text-align:center;color:var(--blue);font-weight:800;letter-spacing:2px;font-size:14px;text-transform:uppercase}
+  h2{text-align:center;font-size:clamp(30px,4.5vw,46px);font-weight:900;letter-spacing:-1px;margin:12px 0 8px}
+  .lead{text-align:center;color:var(--muted);max-width:620px;margin:0 auto 48px;font-size:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .card:hover{transform:translateY(-4px);border-color:rgba(110,86,255,.4);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+  .card .ic{width:54px;height:54px;border-radius:14px;background:var(--grad);display:grid;place-items:center;margin-bottom:18px;font-size:26px}
+  .card h3{font-size:21px;font-weight:800;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:16px}
+  .presets{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
+  .preset{padding:12px 22px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-weight:700;transition:transform .15s ease,border-color .15s ease}
+  .preset:hover{transform:translateY(-2px);border-color:rgba(110,86,255,.5)}
+  .preset.hot{background:var(--grad);border-color:transparent}
+
+  .privacy{background:linear-gradient(180deg,rgba(80,90,255,.06),transparent);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .privacy .grid{max-width:900px;margin:0 auto}
+  .privacy .card{text-align:center}
+
+  .final{text-align:center}
+  .final .box{background:var(--grad);border-radius:28px;padding:64px 32px;position:relative;overflow:hidden}
+  .final h2{color:#fff}
+  .final p{color:rgba(255,255,255,.9);max-width:520px;margin:12px auto 30px;font-size:18px}
+  .final .btn-primary{background:#fff;color:#1a1a2e;box-shadow:0 14px 40px rgba(0,0,0,.3)}
+  .final .btn-primary svg path{fill:#1a1a2e}
+
+  footer{padding:56px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:15px}
+  footer .links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  footer a{font-weight:600;color:var(--ink)}
+  footer a:hover{color:var(--blue)}
+
+  .btn{transition:transform .15s ease,filter .15s ease}
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+  .nav-cta{transition:filter .15s ease,transform .15s ease}
+  .nav-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></span> Turn It Up, Son!</div>
+    <a class="nav-cta" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">Add to Chrome</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="glow"></div>
+  <div class="wrap">
+    <span class="badge-pill">Free Chrome extension &bull; No tracking</span>
+    <h1>TURN IT UP,<br>SON!</h1>
+    <p class="sub">Boost any browser tab up to 700%, Spotify and YouTube too. Bass, 8D audio and a full mixer, one click away.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">
+        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 6a4 4 0 110 8 4 4 0 010-8z"/></svg>
+        Add to Chrome
+      </a>
+      <a class="btn btn-ghost" href="#features">See features</a>
+    </div>
+    <div class="free">100% free &bull; works on Chrome, Edge and Brave</div>
+
+    <div class="mocks">
+
+      <!-- Main view (1:1) -->
+      <div class="tius">
+        <header class="head">
+          <div class="brand"><span class="brand-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></span><span class="brand-name">Turn It Up, Son!</span></div>
+          <span class="power"><span class="power-track"><span class="power-thumb"></span></span><span>On</span></span>
+        </header>
+        <div class="status status-ok"><span class="status-dot"></span><span>Active: 100% + Mix 1.25x</span></div>
+        <section class="volume-block">
+          <div class="volume-readout">100<span class="pct">%</span></div>
+          <input type="range" class="vol" min="0" max="700" value="100">
+          <div class="scale"><span>quiet</span><span class="scale-danger">clipping zone</span></div>
+          <div class="ticks"><span class="tick">100%</span><span class="tick">200%</span><span class="tick">400%</span><span class="tick">600%</span><span class="tick">MAX</span></div>
+        </section>
+        <section class="effects">
+          <label class="switch-row"><span>Fix sound stuck in one ear</span><input type="checkbox" class="switch"></label>
+          <label class="switch-row"><span>Bass boost</span><input type="checkbox" class="switch"></label>
+          <label class="switch-row"><span>Auto-continue on YouTube</span><input type="checkbox" class="switch"></label>
+        </section>
+        <div class="mix-open">
+          <span class="mix-open-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path stroke="#3ddcff" stroke-width="2" stroke-linecap="round" d="M4 2v14M9 2v14M14 2v14"/><circle cx="4" cy="11" r="2.5" fill="#6e56ff"/><circle cx="9" cy="5" r="2.5" fill="#6e56ff"/><circle cx="14" cy="12" r="2.5" fill="#6e56ff"/></svg></span>
+          <span class="mix-open-text"><span class="mix-open-title">Mix and effects</span><span class="mix-open-sub">Tempo, reverb, brightness, 8D</span></span>
+          <span class="mix-open-state">1.25x</span>
+          <span class="mix-open-arrow">&rsaquo;</span>
+        </div>
+        <section class="tabs-block">
+          <div class="tabs-title">Tabs currently playing audio</div>
+          <ul class="tabs-list">
+            <li class="tab-item"><span class="t-dot"></span><span class="t-title">Spotify - Daily Mix</span><span class="t-toggle">ON</span></li>
+          </ul>
+        </section>
+        <div class="footer-row"><button>Reset</button><button>Settings</button></div>
+        <div class="rate"><span class="rate-label">Rate the extension</span><div class="stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div></div>
+        <div class="donate-link"><span>&#9749;</span><span>Support me</span></div>
+      </div>
+
+      <!-- Mix panel (1:1) -->
+      <div class="tius">
+        <header class="mix-view-head">
+          <span class="mix-back">&lsaquo;</span>
+          <span class="mix-view-title">Mix and effects</span>
+          <span class="mix-analyzer"><i></i><i></i><i></i><i></i><i></i></span>
+        </header>
+        <div class="mix-core"><div class="mix-blob"></div><div class="mix-readout-big">1.25x</div></div>
+        <div class="mix-status">Start playback to hear the effect</div>
+        <div class="mix-presets">
+          <span class="mixp">Normal</span>
+          <span class="mixp">Sped Up</span>
+          <span class="mixp">Nightcore</span>
+          <span class="mixp on">Sped Up + Reverb</span>
+          <span class="mixp">Slowed + Reverb</span>
+          <span class="mixp">8D Audio</span>
+          <span class="mixp">Drill / Rap</span>
+          <span class="mixp">Phonk</span>
+          <span class="mixp">NY Drill</span>
+          <span class="mixp">Chill Drill</span>
+        </div>
+        <div class="mix-applied">Speed 1.25x, Reverb 55%</div>
+        <div class="mix-full"><span><span class="mix-full-t">Full mixer</span><span class="mix-full-d">All sliders at once, dial it in yourself</span></span><input type="checkbox" class="switch"></div>
+        <div class="mix-slider-row">
+          <div class="mix-slider-head"><span>Speed</span></div>
+          <p class="mix-sub">Song tempo. Faster also raises the voice, slower deepens it.</p>
+          <input type="range" min="50" max="160" value="125">
+          <div class="mix-scale"><span>0.5x</span><span>1x</span><span>1.6x</span></div>
+        </div>
+        <div class="mix-slider-row">
+          <div class="mix-slider-head"><span>Reverb</span><span class="mix-val">55%</span></div>
+          <p class="mix-sub">Echo like in a big hall. More = the sound feels distant and dreamy.</p>
+          <input type="range" min="0" max="100" value="55">
+        </div>
+        <p class="mix-hint">Speed works on pages with a video or audio player. The other effects work everywhere.</p>
+      </div>
+
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="kicker">What it does</div>
+    <h2>More than a volume booster</h2>
+    <p class="lead">A per-tab booster and a full audio mixer in one popup. Boost one tab while the rest stay normal.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🔊</div><h3>Up to 700%, per tab</h3><p>Push one tab way past the system max while every other tab plays at its normal level.</p></div>
+      <div class="card"><div class="ic">🥁</div><h3>Bass boost</h3><p>Three flavors (Classic, Sub, Punch) with harmonic saturation, so the low end is felt even on small speakers.</p></div>
+      <div class="card"><div class="ic">🎧</div><h3>8D audio</h3><p>The sound orbits around your head. Put headphones on and feel it move.</p></div>
+      <div class="card"><div class="ic">🎚️</div><h3>Full mixer</h3><p>Sliders for speed, reverb, brightness, muffle, bass, vocal, power and spin. Flip one switch to reveal them all.</p></div>
+      <div class="card"><div class="ic">🎯</div><h3>Fix one-ear audio</h3><p>Mixes a lopsided stereo track back to the center so both ears get the sound.</p></div>
+      <div class="card"><div class="ic">🛡️</div><h3>Clean limiter</h3><p>On heavy boost the output is smoothly pushed down instead of crackling and clipping.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="kicker">One-click styles</div>
+    <h2>Remix any song, live</h2>
+    <p class="lead">Turn whatever is playing into a different vibe without downloads or uploads.</p>
+    <div class="presets">
+      <span class="preset hot">Sped Up</span>
+      <span class="preset hot">Nightcore</span>
+      <span class="preset">Sped Up + Reverb</span>
+      <span class="preset hot">Slowed + Reverb</span>
+      <span class="preset">Drill / Rap</span>
+      <span class="preset">NY Drill</span>
+      <span class="preset">Chill Drill</span>
+      <span class="preset">Phonk</span>
+      <span class="preset hot">8D Audio</span>
+    </div>
+  </div>
+</section>
+
+<section class="privacy">
+  <div class="wrap">
+    <div class="kicker">Privacy first</div>
+    <h2>Your audio never leaves your device</h2>
+    <p class="lead">Open source on GitHub. See for yourself: there is nothing to hide.</p>
+    <div class="grid">
+      <div class="card"><div class="ic">🚫</div><h3>No data collected</h3><p>No servers, no analytics, no accounts, no tracking of any kind.</p></div>
+      <div class="card"><div class="ic">💻</div><h3>100% local</h3><p>Audio is processed on your device with the Web Audio API and never recorded or sent anywhere.</p></div>
+      <div class="card"><div class="ic">🔐</div><h3>No access by default</h3><p>The extension sits under "No access needed" until you choose to enable a per-site feature.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="box">
+      <h2>Turn it up.</h2>
+      <p>Free, private and loud. Add it to your browser in one click.</p>
+      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 6a4 4 0 110 8 4 4 0 010-8z"/></svg>
+        Add to Chrome, Son
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">Chrome Web Store</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
+      <a href="https://buymeacoffee.com/romanzbudowy">Buy me a coffee</a>
+    </div>
+    <div>Turn It Up, Son! Volume Booster &amp; Mixer &bull; by romanzbudowy &bull; All rights reserved</div>
+  </div>
+</footer>
+
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="romanzbudowy" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+
+</body>
+</html>
