@@ -27,63 +27,102 @@
         margin: 0;
         font-family: system-ui, "Segoe UI", sans-serif;
         background:
-          radial-gradient(640px 320px at 18% -120px, rgba(110, 86, 255, 0.14), transparent 70%),
-          radial-gradient(560px 300px at 100% 30%, rgba(61, 220, 255, 0.08), transparent 70%),
+          radial-gradient(760px 320px at 50% -160px, color-mix(in srgb, var(--accent) 15%, transparent), transparent 70%),
           var(--bg);
         color: var(--text);
         line-height: 1.55;
         padding: 40px 20px 56px;
       }
 
-      /* Winyle krecace sie w tle: wyrazne rowki, sunacy odblask, gradientowa
-         naklejka i dziurka posrodku. Pod trescia, nie lapia klikniec. */
-      .bg-vinyl {
+      /* Cienka gradientowa linia motywu na samej gorze strony. */
+      .bg-topline {
         position: fixed;
-        width: 480px;
-        height: 480px;
-        right: -140px;
-        top: -140px;
-        border-radius: 50%;
-        background:
-          conic-gradient(from 0deg, transparent 0 50deg, rgba(255, 255, 255, 0.11) 78deg, transparent 108deg 226deg, rgba(255, 255, 255, 0.07) 256deg, transparent 288deg 360deg),
-          repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.085) 0 1.5px, transparent 1.5px 6.5px),
-          radial-gradient(circle at 50% 50%, rgba(110, 86, 255, 0.55) 0 10.5%, rgba(61, 220, 255, 0.30) 11.5% 13.5%, rgba(255, 255, 255, 0.06) 14.5% 16%, transparent 17%);
-        box-shadow:
-          0 0 60px rgba(110, 86, 255, 0.22),
-          inset 0 0 90px rgba(0, 0, 0, 0.55);
-        /* Uwaga na pamiec: animowana tarcza dostaje warstwe GPU o koszcie
-           szer x wys x 4 bajty x kwadrat skali ekranu. Dlatego tarcze sa
-           umiarkowanej wielkosci i BEZ will-change (Chrome sam podnosi
-           warstwe na czas animacji i zwalnia ja, gdy nie jest potrzebna). */
-        animation: vinylspin 55s linear infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-2) 70%, transparent);
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Marquee w tle: wielka typografia samym konturem, sunie powoli.
+         Tekst jest w spanie DWA razy, a animacja przesuwa o -50% szerokosci,
+         wiec petla jest bezszwowa. Pod trescia, nie lapie klikniec. */
+      .bg-mq {
+        position: fixed;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;
+        white-space: nowrap;
+      }
+      .bg-mq .tr {
+        display: inline-block;
+        font-size: 120px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        line-height: 1;
+        color: transparent;
+        -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 28%, transparent);
+        animation: mq 80s linear infinite;
+      }
+      .bg-mq.a { top: 40px; }
+      .bg-mq.b { bottom: 36px; }
+      .bg-mq.b .tr {
+        -webkit-text-stroke-color: color-mix(in srgb, var(--accent-2) 20%, transparent);
+        animation: mqr 110s linear infinite;
+      }
+      @keyframes mq {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+      @keyframes mqr {
+        from { transform: translateX(-50%); }
+        to { transform: translateX(0); }
+      }
+
+      /* Wielki bialy neon w TLE (za kartami): pochylony w 3D, prostuje sie
+         w rytm scrollowania (transform ustawia settings.js). */
+      .mark3d-wrap {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        perspective: 800px;
+        overflow: hidden;
+        opacity: 0.8;
         pointer-events: none;
         z-index: -1;
       }
-      .bg-vinyl::after {
-        content: "";
-        position: absolute;
-        inset: 48%;
-        border-radius: 50%;
-        background: var(--bg);
-        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
+      #mark3d {
+        display: inline-block;
+        white-space: nowrap;
+        font-size: min(10vw, 126px);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1;
+        color: #fff;
+        text-shadow:
+          0 0 16px rgba(255, 255, 255, 0.30),
+          0 0 60px color-mix(in srgb, var(--accent) 60%, transparent),
+          0 0 140px color-mix(in srgb, var(--accent) 35%, transparent);
+        transform: rotateX(50deg);
+        animation: markglow 4.5s ease-in-out infinite;
+        will-change: transform;
       }
-      .bg-vinyl.b {
-        right: auto;
-        top: auto;
-        left: -170px;
-        bottom: -170px;
-        width: 420px;
-        height: 420px;
-        opacity: 0.85;
-        animation: vinylspin 85s linear infinite reverse;
-      }
-      @keyframes vinylspin {
-        to { transform: rotate(360deg); }
+      @keyframes markglow {
+        0%, 100% { opacity: 0.9; }
+        50% { opacity: 1; }
       }
 
       /* Uzytkownik prosi system o mniej ruchu: wylacz dekoracyjne animacje. */
       @media (prefers-reduced-motion: reduce) {
-        .bg-vinyl, .bg-vinyl.b { animation: none; }
+        .bg-mq .tr { animation: none; }
+        #mark3d { animation: none; }
       }
       .wrap { max-width: 640px; margin: 0 auto; }
 
@@ -113,7 +152,10 @@
       }
       .sec-h:first-of-type { margin-top: 0; }
       .card {
-        background: var(--panel);
+        /* Solidna baza pod polprzezroczystym gradientem - siatka z tla
+           nie moze przeswitywac przez karty. */
+        background-color: #0a0b12;
+        background-image: var(--panel);
         border: 1px solid var(--border);
         border-radius: 14px;
         padding: 18px 20px;
@@ -121,6 +163,25 @@
       }
       .card h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
       .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .row select { flex-shrink: 0; }
+      /* Kolejne ustawienie w tej samej karcie, oddzielone kreska. */
+      .row.sep { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .mini-d { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.45; max-width: 400px; }
+      /* Rozwijane karty (details): naglowek z obracajaca sie strzalka. */
+      .dsum {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        list-style: none;
+        user-select: none;
+      }
+      .dsum::-webkit-details-marker { display: none; }
+      .dsum .chev { font-size: 19px; color: var(--muted); transition: transform 0.15s ease, color 0.15s ease; }
+      details[open] .dsum .chev { transform: rotate(90deg); }
+      .dsum:hover .chev { color: var(--accent); }
       .muted { color: var(--muted); }
       ul { margin: 6px 0 0; padding-left: 20px; }
       li { margin-bottom: 6px; font-size: 13.5px; }
@@ -245,34 +306,163 @@
       .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
       .featl .d { font-size: 12.5px; color: var(--muted); }
 
-      /* Przycisk wsparcia pod taglinem: widoczny od wejscia, ale spokojny. */
+      /* Przycisk wsparcia: zloty, wypelniony - glowne CTA naglowka,
+         w kolorach Buy Me a Coffee. Reszta pigulek jest szklana. */
       .support-pill {
         display: inline-flex;
         align-items: center;
         gap: 9px;
         margin-top: 12px;
         padding: 10px 20px;
-        border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+        border: none;
         border-radius: 999px;
-        background: linear-gradient(135deg, rgba(110, 86, 255, 0.22), rgba(61, 220, 255, 0.12));
+        background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+        color: #241a00;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(255, 159, 10, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+      }
+      .support-pill:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.06);
+        box-shadow: 0 6px 26px rgba(255, 159, 10, 0.5);
+      }
+
+      /* Wybor motywu koloru: kolka z gradientem, biala obwodka = wybrany. */
+      .themes { display: flex; gap: 16px; flex-wrap: wrap; }
+      .th-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 7px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 11.5px;
+        font-weight: 600;
+        font-family: inherit;
+      }
+      .th-dot {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px var(--border);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+      .th-btn:hover .th-dot { transform: scale(1.08); }
+      .th-btn.sel .th-dot { box-shadow: 0 0 0 2.5px #fff; }
+      .th-btn.sel { color: var(--text); }
+
+      /* Siatka pol do zmiany nazw wbudowanych presetow. */
+      .pnames {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 12px;
+        margin-bottom: 12px;
+      }
+      .pname-row { display: flex; flex-direction: column; gap: 3px; }
+      .pname-row .pl {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .pname-row input {
+        width: 100%;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
         color: var(--text);
+        font-size: 13px;
+        font-family: inherit;
+        padding: 7px 10px;
+        outline: none;
+      }
+      .pname-row input:focus { border-color: var(--accent); }
+      .pname-row input::placeholder { color: var(--xdim); }
+
+      .foot { text-align: center; color: var(--xdim); font-size: 12px; margin-top: 26px; }
+      .foot a { color: var(--muted); text-decoration: none; }
+      .foot a:hover { color: var(--accent-2); }
+
+      /* Drugi pill w naglowku: kod zrodlowy na GitHubie. */
+      .gh-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        margin-left: 8px;
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--panel-2);
+        color: var(--muted);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
-        transition: border-color 0.15s ease, color 0.15s ease, filter 0.15s ease;
+        transition: border-color 0.15s ease, color 0.15s ease;
       }
-      .support-pill:hover {
-        border-color: var(--accent-2);
-        color: var(--accent-2);
-        filter: brightness(1.1);
-      }
+      .gh-pill:hover { border-color: var(--accent); color: var(--accent); }
+      .gh-pill svg { flex-shrink: 0; }
 
-      .foot { text-align: center; color: var(--xdim); font-size: 12px; margin-top: 26px; }
+      /* Pill oceny: gwiazdki zapalaja sie po kolei na hover. */
+      .rate-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        margin-left: 8px;
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--panel-2);
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.15s ease, color 0.15s ease;
+      }
+      .rate-pill:hover { border-color: #f5b301; color: var(--text); }
+      .rp-stars { display: inline-flex; gap: 1px; font-size: 13px; line-height: 1; }
+      .rp-stars i { font-style: normal; color: var(--xdim); transition: color 0.12s ease; }
+      .rate-pill:hover .rp-stars i { color: #f5b301; }
+      .rate-pill:hover .rp-stars i:nth-child(2) { transition-delay: 0.05s; }
+      .rate-pill:hover .rp-stars i:nth-child(3) { transition-delay: 0.1s; }
+      .rate-pill:hover .rp-stars i:nth-child(4) { transition-delay: 0.15s; }
+      .rate-pill:hover .rp-stars i:nth-child(5) { transition-delay: 0.2s; }
+
+      /* Plywajacy przycisk wsparcia (lokalny odpowiednik widzetu BMC -
+         zdalnych skryptow w MV3 uzywac nie wolno). */
+      .bmc-float {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: none;
+        background: #5F7FFF;
+        color: #fff;
+        font-size: 26px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        z-index: 10;
+      }
+      .bmc-float:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 20px rgba(95, 127, 255, 0.45);
+      }
     </style>
   </head>
   <body>
-    <div class="bg-vinyl" aria-hidden="true"></div>
-    <div class="bg-vinyl b" aria-hidden="true"></div>
+    <div class="bg-topline" aria-hidden="true"></div>
+    <div class="bg-mq a" aria-hidden="true"><span class="tr">TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦ TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦ </span></div>
+    <div class="bg-mq b" aria-hidden="true"><span class="tr">BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦ BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦ </span></div>
+    <div class="mark3d-wrap" aria-hidden="true"><span id="mark3d">Turn it up, son!</span></div>
     <div class="wrap">
       <div class="head">
         <img src="icons/icon48.png" alt="" />
@@ -283,11 +473,38 @@
             <span aria-hidden="true">☕</span>
             <span data-i18n="engine_donate">Wesprzyj mnie</span>
           </button>
+          <button id="ratePill" class="rate-pill">
+            <span class="rp-stars" aria-hidden="true"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+            <span data-i18n="rate_ext">Oceń wtyczkę</span>
+          </button>
+          <button id="githubPill" class="gh-pill">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            <span>GitHub</span>
+          </button>
         </div>
         <span class="ver" id="ver"></span>
       </div>
 
-      <div class="sec-h" data-i18n="sec_settings">Ustawienia</div>
+      <div class="sec-h" data-i18n="sec_look">Wygląd</div>
+
+      <div class="card">
+        <h2 data-i18n="theme_h">Kolor wtyczki</h2>
+        <p class="note" style="border:none;padding:0;margin:0 0 14px" data-i18n="theme_d">Wybierz akcent kolorystyczny całej wtyczki: okienka, panelu Miks i tej strony. Zmiana działa od razu.</p>
+        <div id="themeRow" class="themes"></div>
+        <div class="saved" id="themeSaved"></div>
+      </div>
+
+      <details class="card">
+        <summary class="dsum"><span data-i18n="preset_names_h">Własne nazwy presetów</span><span class="chev">›</span></summary>
+        <p class="note" style="border:none;padding:0;margin:12px 0" data-i18n="preset_names_d">Zmień nazwy wbudowanych presetów z panelu Miks na swoje. Puste pole = nazwa domyślna.</p>
+        <div id="presetNames" class="pnames"></div>
+        <button class="btn" id="presetNamesReset" data-i18n="preset_names_reset">Przywróć domyślne nazwy</button>
+        <div class="saved" id="presetNamesSaved"></div>
+      </details>
+
+      <div class="sec-h" data-i18n="sec_basics">Podstawowe</div>
 
       <div class="card">
         <div class="row">
@@ -298,31 +515,34 @@
             <option value="en">English</option>
           </select>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="row">
-          <h2 style="margin:0" data-i18n="maxvol_h">Maksymalna głośność</h2>
+        <div class="row sep">
+          <div>
+            <h2 style="margin:0" data-i18n="maxvol_h">Maksymalna głośność</h2>
+            <p class="mini-d" data-i18n="maxvol_d">Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.</p>
+          </div>
           <select id="maxVolSelect" class="btn" style="margin:0">
             <option value="300">300%</option>
             <option value="500">500%</option>
             <option value="700" selected>700%</option>
           </select>
         </div>
-        <p class="note" style="border:none;padding:0;margin:10px 0 0" data-i18n="maxvol_d">Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.</p>
-      </div>
-
-      <div class="card">
-        <div class="row">
-          <h2 style="margin:0" data-i18n="defbass_h">Domyślny charakter basu</h2>
+        <div class="row sep">
+          <div>
+            <h2 style="margin:0" data-i18n="defbass_h">Domyślny charakter basu</h2>
+            <p class="mini-d" data-i18n="defbass_d">Ten charakter basu włącza się na kartach, na których jeszcze go nie wybrano. Zawsze możesz go zmienić w panelu Miks.</p>
+          </div>
           <select id="defBassSelect" class="btn" style="margin:0">
             <option value="classic" selected data-i18n="bm_classic">Klasyk</option>
             <option value="sub" data-i18n="bm_sub">Sub</option>
             <option value="punch" data-i18n="bm_punch">Punch</option>
+            <option value="rumble" data-i18n="bm_rumble">Grzmot</option>
+            <option value="808" data-i18n="bm_808">808</option>
+            <option value="warm" data-i18n="bm_warm">Ciepły</option>
           </select>
         </div>
-        <p class="note" style="border:none;padding:0;margin:10px 0 0" data-i18n="defbass_d">Ten charakter basu włącza się na kartach, na których jeszcze go nie wybrano. Zawsze możesz go zmienić w panelu Miks.</p>
       </div>
+
+      <div class="sec-h" data-i18n="sec_behavior">Działanie</div>
 
       <div class="card">
         <h2 data-i18n="disable_q">Jak chcesz wyłączać wtyczkę?</h2>
@@ -360,8 +580,9 @@
         <div class="saved" id="bindsSaved"></div>
       </div>
 
+      <div class="sec-h" data-i18n="access_h">Dostęp do stron</div>
+
       <div class="card">
-        <h2 data-i18n="access_h">Dostęp do stron</h2>
         <p class="note" style="border:none;padding:0;margin:0 0 12px" data-i18n="access_d">
           Wtyczka bierze dostęp do strony dopiero wtedy, gdy włączysz na niej Mix (albo auto-kontynuację YouTube), i oddaje go, gdy wyłączysz. Poniżej widzisz strony, które akurat mają dostęp.
         </p>
@@ -378,8 +599,10 @@
         <div class="saved" id="accessSaved"></div>
       </div>
 
-      <div class="card">
-        <h2 data-i18n="feats_h">Wszystkie funkcje</h2>
+      <div class="sec-h" data-i18n="sec_about">O wtyczce</div>
+
+      <details class="card">
+        <summary class="dsum"><span data-i18n="feats_h">Wszystkie funkcje</span><span class="chev">›</span></summary>
         <div class="featl">
           <div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div>
           <div class="d" data-i18n="featl_vol_d">Zwykły suwak strony kończy się na 100%. Wtyczka przepuszcza dźwięk karty przez własny wzmacniacz, więc może grać do siedmiu razy głośniej. Każda karta ma osobny poziom.</div>
@@ -448,7 +671,10 @@
           <div class="t" data-i18n="featl_keys_t">Skróty klawiszowe</div>
           <div class="d" data-i18n="featl_keys_d">Dwa skróty do przypisania w Chrome: wyłącz wszystko naraz i przywróć ustawienia sprzed wyłączenia. Domyślnie wyłączone.</div>
         </div>
-        <div class="note" data-i18n="whatsnew_note">Nowości w tej wersji: pełny mikser, natychmiastowy test działania Mixa po otwarciu panelu, pewniejsze zabieranie dostępu stronom i dokończenie włączania presetu po zgodzie Chrome.</div>
+      </details>
+
+      <div class="card">
+        <div class="note" style="border:none;margin:0;padding:0" data-i18n="whatsnew_note">Nowości w tej wersji: własne mixy, wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu, głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie.</div>
       </div>
 
       <div class="sec-h" data-i18n="privacy_h">Prywatność</div>
@@ -467,8 +693,10 @@
       </div>
 
       <p class="foot" data-i18n="foot">Tę stronę otworzysz zawsze przez okienko wtyczki, przycisk Ustawienia.</p>
-      <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy</p>
+      <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a></p>
     </div>
+
+    <button id="bmcFloat" class="bmc-float" title="Buy me a coffee" aria-label="Buy me a coffee">☕</button>
 
     <script src="i18n.js"></script>
     <script src="settings.js"></script>

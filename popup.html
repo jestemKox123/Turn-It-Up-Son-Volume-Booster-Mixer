@@ -23,9 +23,9 @@
       <div id="status" class="status status-idle">
         <span class="status-dot"></span>
         <span id="statusText" data-i18n="status_checking">Sprawdzam karte...</span>
+        <!-- Chip zamiast osobnego wiersza - nie zmienia wysokosci popupu. -->
+        <button id="restoreBtn" class="restore" hidden>↺</button>
       </div>
-
-      <button id="restoreBtn" class="restore" hidden>Przywróć poprzednie</button>
 
       <section class="volume-block">
         <div id="volumeReadout" class="volume-readout"><span id="volumeLabel">100</span><span class="pct">%</span></div>
@@ -122,17 +122,37 @@
 
       <p id="mixWarn" class="mix-status" hidden></p>
 
-      <div class="mix-presets">
+      <div class="mix-tabs">
+        <button id="mixTabPresets" class="mix-tab on" data-i18n="mix_tab_presets">Presety</button>
+        <button id="mixTabMine" class="mix-tab" data-i18n="mix_tab_mine">Twoje mixy</button>
+      </div>
+
+      <div id="mixPresetsBuiltin" class="mix-presets">
         <button class="mixp" data-mix="1" data-ctl="speed" data-i18n="mix_normal">Normalnie</button>
         <button class="mixp" data-mix="1.25" data-ctl="speed" data-i18n="mix_spedup">Sped Up</button>
         <button class="mixp" data-mix="1.35" data-treble="0.6" data-reverb="0.1" data-ctl="speed,treble" data-i18n="mix_nightcore">Nightcore</button>
         <button class="mixp" data-mix="1.25" data-reverb="0.55" data-ctl="speed,reverb" data-i18n="mix_spedup_reverb">Sped Up + Reverb</button>
         <button class="mixp" data-mix="0.85" data-reverb="0.6" data-ctl="speed,reverb" data-i18n="mix_slowed_reverb">Slowed + Reverb</button>
         <button class="mixp" data-mix="1" data-spin="1" data-reverb="0.2" data-ctl="spin,reverb" data-i18n="mix_8d">8D Audio</button>
-        <button class="mixp" data-mix="1" data-bass="0.75" data-bassmode="sub" data-reverb="0.2" data-vocal="0.35" data-power="0.3" data-ctl="speed,bass,vocal" data-i18n="mix_drill">Drill / Rap</button>
+        <button class="mixp" data-mix="1" data-bass="0.75" data-bassmode="808" data-reverb="0.2" data-vocal="0.35" data-power="0.3" data-ctl="speed,bass,vocal" data-i18n="mix_drill">Drill / Rap</button>
         <button class="mixp" data-mix="1" data-bass="0.7" data-bassmode="punch" data-treble="0.35" data-reverb="0.1" data-power="0.4" data-ctl="speed,bass,treble" data-i18n="mix_phonk">Phonk</button>
         <button class="mixp" data-mix="0.95" data-bass="0.9" data-bassmode="sub" data-reverb="0.35" data-muffle="0.1" data-vocal="0.4" data-ctl="speed,bass,reverb" data-i18n="mix_nydrill">NY Drill</button>
         <button class="mixp" data-mix="1" data-bass="0.45" data-bassmode="sub" data-reverb="0.15" data-vocal="0.25" data-ctl="speed,bass,reverb" data-i18n="mix_chilldrill">Chill Drill</button>
+        <button id="mixAddTile" class="mixp mixp-add" data-i18n-title="mix_tab_mine">＋</button>
+      </div>
+
+      <div id="mixMine" class="mix-mine" hidden>
+        <div id="mixPresetsUser" class="mix-presets"></div>
+        <p id="mixMineEmpty" class="mix-mine-empty" data-i18n="mix_mine_empty">Nie masz jeszcze własnych mixów. Ustaw suwaki po swojemu i kliknij Zapisz jako mój mix.</p>
+        <div class="mix-save">
+          <button id="mixSaveBtn" class="mix-save-btn">＋ <span data-i18n="mix_save">Zapisz jako mój mix</span></button>
+          <div id="mixSaveForm" class="mix-save-form" hidden>
+            <input type="text" id="mixSaveName" maxlength="18" data-i18n-ph="mix_save_name_ph" />
+            <button id="mixSaveOk" class="mix-save-ok" title="OK">✓</button>
+            <button id="mixSaveCancel" class="mix-save-cancel" title="X">✕</button>
+          </div>
+          <p id="mixSaveNote" class="mix-save-note" hidden data-i18n="mix_save_limit">Limit 8 własnych mixów. Usuń któryś krzyżykiem, żeby dodać nowy.</p>
+        </div>
       </div>
 
       <p id="mixApplied" class="mix-applied" hidden></p>
@@ -197,6 +217,9 @@
           <button data-bm="classic" data-i18n="bm_classic">Klasyk</button>
           <button data-bm="sub" data-i18n="bm_sub">Sub</button>
           <button data-bm="punch" data-i18n="bm_punch">Punch</button>
+          <button data-bm="rumble" data-i18n="bm_rumble">Grzmot</button>
+          <button data-bm="808" data-i18n="bm_808">808</button>
+          <button data-bm="warm" data-i18n="bm_warm">Ciepły</button>
         </div>
         <input type="range" id="mixBass" min="0" max="100" step="5" value="0" />
       </div>

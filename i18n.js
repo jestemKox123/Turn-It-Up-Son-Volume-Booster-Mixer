@@ -1,6 +1,36 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
+// Motywy kolorow (wybor w ustawieniach). Wszystkie strony wtyczki uzywaja
+// var(--accent)/var(--accent-2), wiec podmiana dwoch zmiennych przebarwia
+// cala wtyczke. Zmiana w storage od razu przebarwia otwarte strony.
+(function () {
+  const THEMES = {
+    neon: ["#6e56ff", "#3ddcff"],
+    crimson: ["#ff453a", "#ff2d55"],
+    ocean: ["#2f7cf6", "#2fd8f6"],
+    emerald: ["#22c55e", "#a3e635"],
+    gold: ["#ff9f0a", "#ffd60a"],
+    rose: ["#ff2d78", "#b56bff"],
+  };
+  function applyTheme(name) {
+    const t = THEMES[name] || THEMES.neon;
+    const r = document.documentElement.style;
+    r.setProperty("--accent", t[0]);
+    r.setProperty("--accent-2", t[1]);
+  }
+  const store = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local ? chrome.storage.local : null;
+  if (store) {
+    store.get("vbTheme", (d) => {
+      if (d.vbTheme && d.vbTheme !== "neon") applyTheme(d.vbTheme);
+    });
+    chrome.storage.onChanged.addListener((ch, area) => {
+      if (area === "local" && ch.vbTheme) applyTheme(ch.vbTheme.newValue);
+    });
+  }
+  window.VBTHEME = { THEMES, applyTheme };
+})();
+
 // Tlumaczenia PL/EN. Auto-wykrywa jezyk przegladarki, mozna wymusic w
 // ustawieniach. Elementy z data-i18n dostaja tekst automatycznie.
 
@@ -11,12 +41,14 @@
       power_off: "Wył.",
       status_checking: "Sprawdzam kartę...",
       status_on: "Działa: {n}%",
+      status_on_fx: "Działa: {n}% + Mix",
       status_mix: "Mix działa: {n}x",
       status_both: "Działa: {n}% + Mix {m}x",
       status_off: "Wyłączone",
       status_unsupported: "Nie da się tu włączyć (np. strona chrome://, sklep Chrome albo karta bez dźwięku)",
       status_cant_read: "Nie można odczytać aktywnej karty",
       restore: "Przywróć poprzednie ({n}%)",
+      restore_mix: "Przywróć poprzednie ({n}% + Mix {m}x)",
       scale_quiet: "cicho",
       scale_danger: "strefa przesterów",
       eff_mono: "Napraw dźwięk na jedno ucho",
@@ -48,10 +80,13 @@
       mix_power_l: "Moc",
       mix_power_d: "Spina miks i dodaje głośności jak w radiu. Limiter pilnuje, żeby nic nie charczało.",
       mix_bass_l: "Bas",
-      mix_bass_d: "Klasyk = równe podbicie dołu, Sub = najgłębszy bas, Punch = kopnięcie stopy.",
+      mix_bass_d: "Klasyk = równy dół, Sub = najgłębiej, Punch = kopnięcie stopy, Grzmot = kinowy pomruk, 808 = drillowy boom, Ciepły = miękki, lampowy dół.",
       bm_classic: "Klasyk",
       bm_sub: "Sub",
       bm_punch: "Punch",
+      bm_rumble: "Grzmot",
+      bm_808: "808",
+      bm_warm: "Ciepły",
       mix_spin_l: "Krążenie",
       mix_spin_d: "Jak szybko dźwięk okrąża głowę. Najlepiej słychać w słuchawkach.",
       mix_hint: "Prędkość działa na stronach z odtwarzaczem wideo lub audio. Pozostałe efekty działają wszędzie.",
@@ -63,6 +98,13 @@
       mix_full_d: "Wszystkie suwaki naraz, kręcisz po swojemu",
       mix_idle: "Włącz odtwarzanie, żeby usłyszeć efekt",
       mix_checking: "Sprawdzam tę stronę...",
+      mix_save: "Zapisz jako mój mix",
+      mix_save_name_ph: "Nazwa twojego mixu",
+      mix_save_limit: "Limit 8 własnych mixów. Usuń któryś krzyżykiem, żeby dodać nowy.",
+      mix_user_del: "Usuń ten mix",
+      mix_tab_presets: "Presety",
+      mix_tab_mine: "Twoje mixy",
+      mix_mine_empty: "Nie masz jeszcze własnych mixów. Ustaw suwaki po swojemu (np. pełnym mikserem) i kliknij Zapisz jako mój mix.",
       tabs_title: "Aktywne zakładki odtwarzające dźwięk",
       tabs_empty: "Nie wykryto kart z dźwiękiem",
       btn_reset: "Reset",
@@ -70,7 +112,10 @@
       rate_ext: "Oceń wtyczkę",
 
       app_tagline: "Podgłaśniacz dźwięku dla każdej karty. YouTube, Spotify i cała reszta.",
-      sec_settings: "Ustawienia",
+      sec_look: "Wygląd",
+      sec_basics: "Podstawowe",
+      sec_behavior: "Działanie",
+      sec_about: "O wtyczce",
       disable_q: "Jak chcesz wyłączać wtyczkę?",
       opt_toggle_t: "Przełącznikiem on/off (nic się nie otwiera)",
       opt_toggle_d: "Włączasz i wyłączasz suwakiem w okienku wtyczki. Nic dodatkowego nie wyskakuje. Polecane, jak nie chcesz mieć extra karty.",
@@ -80,6 +125,17 @@
       lang_auto: "Automatycznie (jak przeglądarka)",
       maxvol_h: "Maksymalna głośność",
       maxvol_d: "Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.",
+      theme_h: "Kolor wtyczki",
+      theme_d: "Wybierz akcent kolorystyczny całej wtyczki: okienka, panelu Miks i tej strony. Zmiana działa od razu.",
+      theme_neon: "Neon",
+      theme_crimson: "Czerwień",
+      theme_ocean: "Ocean",
+      theme_emerald: "Zieleń",
+      theme_gold: "Złoto",
+      theme_rose: "Róż",
+      preset_names_h: "Własne nazwy presetów",
+      preset_names_d: "Zmień nazwy wbudowanych presetów z panelu Miks na swoje. Puste pole = nazwa domyślna.",
+      preset_names_reset: "Przywróć domyślne nazwy",
       defbass_h: "Domyślny charakter basu",
       defbass_d: "Ten charakter basu włącza się na kartach, na których jeszcze go nie wybrano. Zawsze możesz go zmienić w panelu Miks.",
       privacy_h: "Prywatność",
@@ -127,13 +183,13 @@
       featl_mix_t: "Miks: sped up, nightcore, slowed",
       featl_mix_d: "Nightcore to sposób przerabiania piosenek: utwór przyspiesza się o jakieś 10-30%, przez co wokal robi się wyraźnie wyższy. Nazwa wzięła się od norweskiego duetu Nightcore, który tak remiksował utwory na początku lat 2000. Sped up to nowsza odmiana tego samego pomysłu, znana głównie z TikToka, a slowed + reverb to jej przeciwieństwo: wolniej i z pogłosem. Suwak prędkości działa w zakresie 0.5x-1.6x.",
       featl_drill_t: "Drill / Rap i Chill Drill",
-      featl_drill_d: "Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki sub-bas, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.",
+      featl_drill_d: "Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki, warczący bas 808, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.",
       featl_8d_t: "8D Audio i krążenie",
       featl_8d_d: "Dźwięk płynnie krąży wokół głowy (najlepiej w słuchawkach). Suwak Krążenie ustawia szybkość obrotu, a 0% wyłącza efekt.",
       featl_full_t: "Pełny mikser",
       featl_full_d: "Przełącznik w panelu Miks, który odsłania wszystkie suwaki naraz: prędkość, pogłos, jasność, tłumik, bas i krążenie. Do kręcenia własnych wersji.",
-      featl_bass_t: "Podbicie basów (3 charaktery)",
-      featl_bass_d: "Wzmacnia dół pasma, w którym siedzi bas i stopa perkusji. Do wyboru trzy charaktery: Klasyk (równe podbicie całego dołu), Sub (najgłębsze częstotliwości, czuć je w słuchawkach i na subwooferze) i Punch (wąskie kopnięcie stopy). Przełącznik w głównym widoku włącza bas jednym kliknięciem, a suwak w panelu Miks reguluje moc.",
+      featl_bass_t: "Podbicie basów (6 charakterów)",
+      featl_bass_d: "Wzmacnia dół pasma, w którym siedzi bas i stopa perkusji. Do wyboru sześć charakterów: Klasyk (równe podbicie całego dołu), Sub (najgłębsze częstotliwości, czuć je w słuchawkach i na subwooferze), Punch (wąskie kopnięcie stopy), Grzmot (kinowy pomruk 30-55 Hz), 808 (drillowy boom, słychać go też na telefonie) i Ciepły (miękkie, lampowe ocieplenie bez dudnienia). Przełącznik w głównym widoku włącza bas jednym kliknięciem, a suwak w panelu Miks reguluje moc.",
       featl_treble_t: "Jasność",
       featl_treble_d: "Podbija wysokie tony, dźwięk robi się ostrzejszy i bardziej klarowny. Suwak znajdziesz w panelu Miks.",
       featl_reverb_t: "Reverb (pogłos)",
@@ -156,19 +212,21 @@
       featl_yt_d: "Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.",
       featl_keys_t: "Skróty klawiszowe",
       featl_keys_d: "Dwa skróty do przypisania w Chrome: wyłącz wszystko naraz i przywróć ustawienia sprzed wyłączenia. Domyślnie wyłączone.",
-      whatsnew_note: "Nowości w tej wersji: style Phonk, NY Drill i Chill Drill, suwaki Tłumik, Wokal i Moc, limit maksymalnej głośności i domyślny charakter basu w ustawieniach.",
+      whatsnew_note: "Nowości w tej wersji: własne mixy (zakładka Twoje mixy), wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu (Grzmot, 808, Ciepły), głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie (łapie też Mix).",
     },
     en: {
       power_on: "On",
       power_off: "Off",
       status_checking: "Checking tab...",
       status_on: "Active: {n}%",
+      status_on_fx: "Active: {n}% + Mix",
       status_mix: "Mix active: {n}x",
       status_both: "Active: {n}% + Mix {m}x",
       status_off: "Off",
       status_unsupported: "Can't enable here (e.g. a chrome:// page, the Chrome store, or a tab with no audio)",
       status_cant_read: "Can't read the active tab",
       restore: "Restore previous ({n}%)",
+      restore_mix: "Restore previous ({n}% + Mix {m}x)",
       scale_quiet: "quiet",
       scale_danger: "clipping zone",
       eff_mono: "Fix sound stuck in one ear",
@@ -200,10 +258,13 @@
       mix_power_l: "Power",
       mix_power_d: "Glues the mix and adds radio-style loudness. The limiter keeps it from crackling.",
       mix_bass_l: "Bass",
-      mix_bass_d: "Classic = even low-end lift, Sub = the deepest bass, Punch = kick drum thump.",
+      mix_bass_d: "Classic = even low-end lift, Sub = the deepest bass, Punch = kick thump, Rumble = cinematic roar, 808 = drill boom, Warm = soft vintage low end.",
       bm_classic: "Classic",
       bm_sub: "Sub",
       bm_punch: "Punch",
+      bm_rumble: "Rumble",
+      bm_808: "808",
+      bm_warm: "Warm",
       mix_spin_l: "Rotation",
       mix_spin_d: "How fast the sound circles your head. Best with headphones.",
       mix_hint: "Speed works on pages with a video or audio player. The other effects work everywhere.",
@@ -215,6 +276,13 @@
       mix_full_d: "All sliders at once, dial it in yourself",
       mix_idle: "Start playback to hear the effect",
       mix_checking: "Checking this page...",
+      mix_save: "Save as my mix",
+      mix_save_name_ph: "Name your mix",
+      mix_save_limit: "Limit of 8 custom mixes. Delete one with the × to add a new one.",
+      mix_user_del: "Delete this mix",
+      mix_tab_presets: "Presets",
+      mix_tab_mine: "Your mixes",
+      mix_mine_empty: "No custom mixes yet. Dial in the sliders (e.g. with the full mixer) and hit Save as my mix.",
       tabs_title: "Tabs currently playing audio",
       tabs_empty: "No tabs with audio detected",
       btn_reset: "Reset",
@@ -222,7 +290,10 @@
       rate_ext: "Rate the extension",
 
       app_tagline: "A volume booster for any tab. YouTube, Spotify and everything else.",
-      sec_settings: "Settings",
+      sec_look: "Appearance",
+      sec_basics: "Basics",
+      sec_behavior: "Behavior",
+      sec_about: "About",
       disable_q: "How do you want to turn the extension off?",
       opt_toggle_t: "With the on/off switch (nothing opens)",
       opt_toggle_d: "You turn it on and off with the slider in the popup. Nothing extra pops up. Recommended if you don't want an extra tab.",
@@ -232,6 +303,17 @@
       lang_auto: "Automatic (match browser)",
       maxvol_h: "Maximum volume",
       maxvol_d: "The upper limit of the volume slider in the popup. Set it lower to protect your ears or speakers from an accidental 700%.",
+      theme_h: "Extension color",
+      theme_d: "Pick the accent color for the whole extension: the popup, the Mix panel and this page. Applies instantly.",
+      theme_neon: "Neon",
+      theme_crimson: "Crimson",
+      theme_ocean: "Ocean",
+      theme_emerald: "Emerald",
+      theme_gold: "Gold",
+      theme_rose: "Rose",
+      preset_names_h: "Custom preset names",
+      preset_names_d: "Rename the built-in presets from the Mix panel. An empty field = the default name.",
+      preset_names_reset: "Restore default names",
       defbass_h: "Default bass flavor",
       defbass_d: "This bass flavor is used on tabs where you have not picked one yet. You can always change it in the Mix panel.",
       privacy_h: "Privacy",
@@ -279,13 +361,13 @@
       featl_mix_t: "Mix: sped up, nightcore, slowed",
       featl_mix_d: "Nightcore is a way of editing songs: the track is sped up by roughly 10-30%, which makes the vocals noticeably higher. The name comes from the Norwegian duo Nightcore, who remixed songs this way in the early 2000s. Sped up is the newer take on the same idea, known mostly from TikTok, and slowed + reverb is its opposite: slower and drenched in echo. The speed slider covers 0.5x-1.6x.",
       featl_drill_t: "Drill / Rap and Chill Drill",
-      featl_drill_d: "Two presets made for rap, both at full tempo so the beat keeps its energy. Drill / Rap: heavy sub-bass, dark reverb, the vocal pushed to the front and a pinch of compression for punch. Chill Drill is the softer take: moderate sub-bass, gentle reverb and a clear voice, for relaxed listening.",
+      featl_drill_d: "Two presets made for rap, both at full tempo so the beat keeps its energy. Drill / Rap: a heavy growling 808 bass, dark reverb, the vocal pushed to the front and a pinch of compression for punch. Chill Drill is the softer take: moderate sub-bass, gentle reverb and a clear voice, for relaxed listening.",
       featl_8d_t: "8D Audio and rotation",
       featl_8d_d: "The sound smoothly circles your head (best with headphones). The Rotation slider sets how fast it spins, and 0% turns the effect off.",
       featl_full_t: "Full mixer",
       featl_full_d: "A switch in the Mix panel that reveals every slider at once: speed, reverb, brightness, muffle, bass and rotation. For dialing in your own versions.",
-      featl_bass_t: "Bass boost (3 flavors)",
-      featl_bass_d: "Strengthens the low end where the bass and kick drum sit. Three flavors to pick from: Classic (an even lift of the whole low end), Sub (the deepest frequencies, felt in headphones and on a subwoofer) and Punch (a narrow kick-drum thump). The switch in the main view enables bass with one click, the slider in the Mix panel sets the amount.",
+      featl_bass_t: "Bass boost (6 flavors)",
+      featl_bass_d: "Strengthens the low end where the bass and kick drum sit. Six flavors to pick from: Classic (an even lift of the whole low end), Sub (the deepest frequencies, felt in headphones and on a subwoofer), Punch (a narrow kick-drum thump), Rumble (a cinematic 30-55 Hz roar), 808 (a drill boom you can hear even on a phone) and Warm (a soft vintage warmth with no booming). The switch in the main view enables bass with one click, the slider in the Mix panel sets the amount.",
       featl_treble_t: "Brightness",
       featl_treble_d: "Boosts the high tones, making the sound sharper and clearer. You will find the slider in the Mix panel.",
       featl_reverb_t: "Reverb",
@@ -308,7 +390,7 @@
       featl_yt_d: "When YouTube pauses the music asking if you are still watching, the extension clicks it for you. Needs access to youtube.com and gives it back when turned off.",
       featl_keys_t: "Keyboard shortcuts",
       featl_keys_d: "Two shortcuts you can assign in Chrome: turn everything off at once and restore the settings from before turning off. Off by default.",
-      whatsnew_note: "New in this version: the Phonk, NY Drill and Chill Drill styles, the Muffle, Vocal and Power sliders, a maximum volume limit and a default bass flavor in the settings.",
+      whatsnew_note: "New in this version: custom mixes (the Your mixes tab), extension color themes and custom preset names in the settings, 3 new bass flavors (Rumble, 808, Warm), louder high levels and a more reliable Restore previous (it now covers Mix too).",
     },
   };
 
@@ -338,6 +420,9 @@
     });
     r.querySelectorAll("[data-i18n-title]").forEach((el) => {
       el.title = t(el.getAttribute("data-i18n-title"));
+    });
+    r.querySelectorAll("[data-i18n-ph]").forEach((el) => {
+      el.placeholder = t(el.getAttribute("data-i18n-ph"));
     });
   }
 

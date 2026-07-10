@@ -14,14 +14,18 @@ const TREBLE_MAX_DB = 8;
 const SPIN_DEPTH = 0.85; // szerokosc krazenia 8D (0..1)
 
 // Wspolny limiter: niesluszalny przy normalnym poziomie, dociska szczyty
-// przy mocnym podbiciu zamiast pozwolic na trzeszczenie.
+// przy mocnym podbiciu zamiast pozwolic na trzeszczenie. Prog blisko zera -
+// nizszy prog zjadal headroom i 700% nie bylo glosniejsze niz 400%.
 const MASTER = CTX.createDynamicsCompressor();
-MASTER.threshold.value = -4;
-MASTER.knee.value = 6;
-MASTER.ratio.value = 16;
-MASTER.attack.value = 0.003;
+MASTER.threshold.value = -1;
+MASTER.knee.value = 3;
+MASTER.ratio.value = 20;
+MASTER.attack.value = 0.002;
 MASTER.release.value = 0.2;
 MASTER.connect(CTX.destination);
+
+// UWAGA: zadnego clipu/saturacji na torze glosnosci - nawet lagodna krzywa
+// slyszalnie zmienia barwe glosu. Szczyty dociska wylacznie limiter MASTER.
 
 // Odpowiedz impulsowa poglosu generowana raz, algorytmicznie: stereo szum
 // z wykladniczym zanikiem, pre-delayem i ciemniejacym ogonem. Kanaly maja
@@ -199,10 +203,13 @@ function applyMono(engine, monoOn) {
   }
 }
 
-// Trzy charaktery basu: kazdy to dwa filtry + saturacja (harmoniczne).
-//  - classic: szeroki, cieply lift calego dolu,
-//  - sub: gleboki pomruk 45-70 Hz (sluchawki / subwoofer),
-//  - punch: waskie kopniecie stopy + lekki dolek wyzej dla kontrastu.
+// Charaktery basu: dwa filtry + saturacja, kazdy o innym KSZTALCIE (nie mocy):
+//  - classic: szeroki lift calego dolu z lekka saturacja (pelniej i cieplej),
+//  - sub: czysty, gleboki pomruk 45-70 Hz, bez brudu (sluchawki / subwoofer),
+//  - punch: waskie kopniecie stopy 100 Hz + dolek wyzej dla kontrastu,
+//  - rumble: kinowe trzesienie 30-45 Hz + WYCIETY nizszy srodek (czysto nad pomrukiem),
+//  - 808: drillowy boom 55 Hz z mocnym growlem saturacji (slychac tez na telefonie),
+//  - warm: lampowe ocieplenie 120-300 Hz z lekko COFNIETYM sub-basem (zero dudnienia).
 const BASS_MODES = {
   classic: {
     f1: { type: "lowshelf", freq: 200, q: 0.9, max: 15 },
@@ -212,12 +219,27 @@ const BASS_MODES = {
   sub: {
     f1: { type: "lowshelf", freq: 70, q: 0.8, max: 18 },
     f2: { type: "peaking", freq: 45, q: 1.0, max: 7 },
-    harm: 0.3,
+    harm: 0.12,
   },
   punch: {
     f1: { type: "peaking", freq: 100, q: 1.4, max: 14 },
     f2: { type: "peaking", freq: 260, q: 1.4, max: -4 },
     harm: 0.55,
+  },
+  rumble: {
+    f1: { type: "lowshelf", freq: 45, q: 0.9, max: 24 },
+    f2: { type: "peaking", freq: 170, q: 1.1, max: -5 },
+    harm: 0.15,
+  },
+  "808": {
+    f1: { type: "peaking", freq: 55, q: 1.1, max: 17 },
+    f2: { type: "lowshelf", freq: 130, q: 0.8, max: 5 },
+    harm: 0.8,
+  },
+  warm: {
+    f1: { type: "lowshelf", freq: 300, q: 0.7, max: 9 },
+    f2: { type: "peaking", freq: 50, q: 1.0, max: -4 },
+    harm: 0.15,
   },
 };
 

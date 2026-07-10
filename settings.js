@@ -74,6 +74,113 @@ radios.forEach((r) => {
   });
 });
 
+// --- Znak 3D w tle: obraca sie w przestrzeni w rytm scrollowania ---
+const mark3d = document.getElementById("mark3d");
+if (mark3d) {
+  let markRaf = null;
+  const updateMark = () => {
+    markRaf = null;
+    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const p = Math.min(1, window.scrollY / max); // 0..1 postepu strony
+    // Na gorze strony znak lezy pochylony (50deg), przy dole staje prosto.
+    const rx = 50 * (1 - p);
+    const tz = 30 * p;
+    mark3d.style.transform = "rotateX(" + rx + "deg) translateZ(" + tz + "px)";
+  };
+  window.addEventListener("scroll", () => {
+    if (!markRaf) markRaf = requestAnimationFrame(updateMark);
+  }, { passive: true });
+  updateMark();
+}
+
+// --- Motyw koloru wtyczki ---
+const themeRow = document.getElementById("themeRow");
+const themeSaved = document.getElementById("themeSaved");
+
+if (themeRow && HAS_STORAGE && window.VBTHEME) {
+  VBI18N.ready(() => {
+    chrome.storage.local.get("vbTheme", (d) => {
+      const current = VBTHEME.THEMES[d.vbTheme] ? d.vbTheme : "neon";
+      themeRow.innerHTML = "";
+      Object.keys(VBTHEME.THEMES).forEach((name) => {
+        const [c1, c2] = VBTHEME.THEMES[name];
+        const b = document.createElement("button");
+        b.className = "th-btn" + (name === current ? " sel" : "");
+        const dot = document.createElement("span");
+        dot.className = "th-dot";
+        dot.style.background = "linear-gradient(135deg," + c1 + "," + c2 + ")";
+        const lab = document.createElement("span");
+        lab.textContent = VBI18N.t("theme_" + name);
+        b.appendChild(dot);
+        b.appendChild(lab);
+        b.addEventListener("click", () => {
+          chrome.storage.local.set({ vbTheme: name }, () => {
+            VBTHEME.applyTheme(name);
+            themeRow.querySelectorAll(".th-btn").forEach((x) => x.classList.remove("sel"));
+            b.classList.add("sel");
+            themeSaved.textContent = VBI18N.t("saved");
+            setTimeout(() => (themeSaved.textContent = ""), 1400);
+          });
+        });
+        themeRow.appendChild(b);
+      });
+    });
+  });
+}
+
+// --- Wlasne nazwy wbudowanych presetow (pokazuje je panel Miks w popupie) ---
+const PRESET_NAME_KEYS = [
+  "mix_normal", "mix_spedup", "mix_nightcore", "mix_spedup_reverb", "mix_slowed_reverb",
+  "mix_8d", "mix_drill", "mix_phonk", "mix_nydrill", "mix_chilldrill",
+];
+const presetNamesWrap = document.getElementById("presetNames");
+const presetNamesReset = document.getElementById("presetNamesReset");
+const presetNamesSaved = document.getElementById("presetNamesSaved");
+
+function flashPresetSaved() {
+  presetNamesSaved.textContent = VBI18N.t("saved");
+  setTimeout(() => (presetNamesSaved.textContent = ""), 1400);
+}
+
+if (presetNamesWrap && HAS_STORAGE) {
+  VBI18N.ready(() => {
+    chrome.storage.local.get("vbPresetNames", (d) => {
+      const names = d.vbPresetNames || {};
+      presetNamesWrap.innerHTML = "";
+      PRESET_NAME_KEYS.forEach((key) => {
+        const row = document.createElement("label");
+        row.className = "pname-row";
+        const lab = document.createElement("span");
+        lab.className = "pl";
+        lab.textContent = VBI18N.t(key);
+        const inp = document.createElement("input");
+        inp.type = "text";
+        inp.maxLength = 18;
+        inp.placeholder = VBI18N.t(key);
+        inp.value = names[key] || "";
+        inp.addEventListener("change", () => {
+          chrome.storage.local.get("vbPresetNames", (dd) => {
+            const cur = dd.vbPresetNames || {};
+            const v = inp.value.trim().slice(0, 18);
+            if (v) cur[key] = v;
+            else delete cur[key];
+            chrome.storage.local.set({ vbPresetNames: cur }, flashPresetSaved);
+          });
+        });
+        row.appendChild(lab);
+        row.appendChild(inp);
+        presetNamesWrap.appendChild(row);
+      });
+    });
+  });
+  presetNamesReset.addEventListener("click", () => {
+    chrome.storage.local.remove("vbPresetNames", () => {
+      presetNamesWrap.querySelectorAll("input").forEach((i) => (i.value = ""));
+      flashPresetSaved();
+    });
+  });
+}
+
 // --- Skroty klawiszowe ---
 const bindsToggle = document.getElementById("bindsToggle");
 const bindsSaved = document.getElementById("bindsSaved");
@@ -204,4 +311,25 @@ if (donateBtn) {
 const supportTop = document.getElementById("supportTop");
 if (supportTop) {
   supportTop.addEventListener("click", () => openUrl(DONATE_URL));
+}
+
+// Plywajacy przycisk wsparcia (lokalny odpowiednik widzetu BMC).
+const bmcFloat = document.getElementById("bmcFloat");
+if (bmcFloat) {
+  bmcFloat.addEventListener("click", () => openUrl(DONATE_URL));
+}
+
+// Kod zrodlowy na GitHubie.
+const GITHUB_URL = "https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer";
+const githubPill = document.getElementById("githubPill");
+if (githubPill) {
+  githubPill.addEventListener("click", () => openUrl(GITHUB_URL));
+}
+
+// Ocena wtyczki: strona recenzji w Chrome Web Store.
+const ratePill = document.getElementById("ratePill");
+if (ratePill) {
+  ratePill.addEventListener("click", () => {
+    openUrl("https://chrome.google.com/webstore/detail/" + chrome.runtime.id + "/reviews");
+  });
 }

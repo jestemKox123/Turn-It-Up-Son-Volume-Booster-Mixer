@@ -32,7 +32,13 @@ const restoreBtn = document.getElementById("restoreBtn");
 const mixReadoutEl = document.getElementById("mixReadout");
 const mixSpeedEl = document.getElementById("mixSpeed");
 const mixHintEl = document.getElementById("mixHint");
-const mixPresetEls = document.querySelectorAll(".mixp");
+// Wlasne mixy doklejane sa dynamicznie, stad allPresetEls() zamiast stalej listy.
+const builtinPresetEls = document.querySelectorAll(".mixp:not(.mixp-add)");
+let userMixes = [];
+let userPresetEls = [];
+function allPresetEls() {
+  return [...builtinPresetEls, ...userPresetEls];
+}
 const mainViewEl = document.getElementById("mainView");
 const mixViewEl = document.getElementById("mixView");
 const mixOpenEl = document.getElementById("mixOpen");
@@ -69,25 +75,55 @@ const CTL_ROWS = {
 
 let backupSettings = null;
 
+// Reczna zmiana ustawien uniewaznia backup (tez w tle, inaczej wracal po
+// ponownym otwarciu popupu).
+function invalidateBackup() {
+  if (!backupSettings) return;
+  backupSettings = null;
+  chrome.runtime.sendMessage({ type: "vb-clear-backup", tabId: currentTabId }, () => void chrome.runtime.lastError);
+  renderRestore();
+}
+
 function renderRestore() {
   if (backupSettings) {
     const pct = Math.round((backupSettings.volume || 1) * 100);
-    restoreBtn.textContent = VBI18N.t("restore", { n: pct });
+    const rate = Number(backupSettings.mixRate) || 1;
+    restoreBtn.textContent = "↺ " + pct + "%" + (rate !== 1 ? " · " + rate.toFixed(2) + "x" : "");
+    restoreBtn.title = rate !== 1
+      ? VBI18N.t("restore_mix", { n: pct, m: rate.toFixed(2) })
+      : VBI18N.t("restore", { n: pct });
     restoreBtn.hidden = false;
   } else {
     restoreBtn.hidden = true;
   }
 }
 
-restoreBtn.addEventListener("click", async () => {
-  if (!backupSettings) return;
-  settings = { ...DEFAULTS, ...backupSettings };
+// Przywraca komplet z backupu (glosnosc + efekty + predkosc Mixa).
+// Uzywa go przycisk Przywroc i wlacznik (on po off = powrot, nie start od zera).
+async function restoreBackup() {
+  if (!backupSettings) return false;
+  const b = { ...backupSettings };
+  const rate = Number(b.mixRate) || 1;
+  delete b.mixRate;
+  settings = { ...DEFAULTS, ...b };
   renderUI();
-  await ensureActiveAndApply();
+  // Sam Mix (predkosc) nie potrzebuje silnika przechwytywania.
+  const engineOn = settings.volume !== 1 || settings.monoFix || fxBass() > 0 || mixFxOn();
+  if (engineOn) {
+    await ensureActiveAndApply();
+    // Nie udalo sie wystartowac - zostaw backup, zeby nie przepadl.
+    if (!isActive) return false;
+  }
+  if (rate !== 1) await setMixRate(rate);
   chrome.runtime.sendMessage({ type: "vb-clear-backup", tabId: currentTabId }, () => void chrome.runtime.lastError);
   backupSettings = null;
   renderRestore();
-});
+  renderMix();
+  renderStatus();
+  return true;
+}
+
+restoreBtn.addEventListener("click", restoreBackup);
 
 settingsLink.addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
@@ -149,10 +185,14 @@ function setStatus(kind, text) {
 }
 
 function renderStatus() {
+  const n = Math.round(settings.volume * 100);
   if (isActive && mixRate !== 1) {
-    setStatus("ok", VBI18N.t("status_both", { n: Math.round(settings.volume * 100), m: mixRate.toFixed(2) }));
+    setStatus("ok", VBI18N.t("status_both", { n, m: mixRate.toFixed(2) }));
+  } else if (isActive && mixFxOn()) {
+    // Preset bez zmiany tempa (Drill, Phonk, 8D...) tez jest Mixem.
+    setStatus("ok", VBI18N.t("status_on_fx", { n }));
   } else if (isActive) {
-    setStatus("ok", VBI18N.t("status_on", { n: Math.round(settings.volume * 100) }));
+    setStatus("ok", VBI18N.t("status_on", { n }));
   } else if (mixRate !== 1) {
     setStatus("ok", VBI18N.t("status_mix", { n: mixRate.toFixed(2) }));
   } else {
@@ -192,8 +232,7 @@ async function ensureActiveAndApply() {
     setStatus("unsupported", VBI18N.t("status_unsupported"));
   } else {
     renderStatus();
-    backupSettings = null;
-    renderRestore();
+    invalidateBackup();
   }
   renderPower();
   refreshTabs();
@@ -317,6 +356,8 @@ function presetOf(btn) {
     vocal: Number(btn.dataset.vocal) || 0,
     power: Number(btn.dataset.power) || 0,
     spin: btn.dataset.spin === "1",
+    // Wlasne mixy pamietaja tez szybkosc krazenia; wbudowane nie (null).
+    spinSpeed: btn.dataset.spinspeed != null ? Number(btn.dataset.spinspeed) : null,
     bass: Number(btn.dataset.bass) || 0,
     bassMode: btn.dataset.bassmode || "classic",
     ctl: (btn.dataset.ctl || "speed").split(","),
@@ -376,7 +417,7 @@ function renderMix() {
     b.classList.toggle("on", b.dataset.bm === bassMode);
   });
   let matched = null;
-  mixPresetEls.forEach((b) => {
+  allPresetEls().forEach((b) => {
     const p = presetOf(b);
     const on =
       Math.abs(p.rate - mixRate) < 0.001 &&
@@ -387,7 +428,8 @@ function renderMix() {
       Math.abs(p.power - pow) < 0.011 &&
       Math.abs(p.bass - bas) < 0.011 &&
       (p.bass === 0 || p.bassMode === bassMode) &&
-      p.spin === !!settings.spin;
+      p.spin === !!settings.spin &&
+      (!p.spin || p.spinSpeed == null || Math.abs(p.spinSpeed - spd) < 0.011);
     b.classList.toggle("on", on);
     if (on && !matched) matched = p;
   });
@@ -528,7 +570,7 @@ function renderMixSupport() {
   const rateOk = mixSupported && !mixHostUnsupported;
   const fxOk = mixSupported;
   mixSpeedEl.disabled = !rateOk;
-  mixPresetEls.forEach((b) => {
+  allPresetEls().forEach((b) => {
     const needsRate = (Number(b.dataset.mix) || 1) !== 1;
     b.disabled = needsRate ? !rateOk : !fxOk;
   });
@@ -575,6 +617,8 @@ async function setMixRate(rate) {
       mixRate = rate;
       renderMix();
       await sendMsg({ type: "vb-mix-set", tabId: currentTabId, rate, origin });
+      // Reczne wlaczenie Mixa uniewaznia backup (1x nie - to robi wlacznik).
+      invalidateBackup();
     } else {
       mixRate = 1;
       renderMix();
@@ -590,7 +634,160 @@ async function setMixRate(rate) {
 
 mixOpenEl.addEventListener("click", openMix);
 mixBackEl.addEventListener("click", closeMix);
-mixPresetEls.forEach((b) => b.addEventListener("click", () => applyMixPreset(presetOf(b))));
+builtinPresetEls.forEach((b) => b.addEventListener("click", () => applyMixPreset(presetOf(b))));
+
+// --- Wlasne mixy uzytkownika (zakladka Twoje mixy, zapis w storage.local) ---
+const USER_MIX_LIMIT = 8;
+const mixPresetsUserEl = document.getElementById("mixPresetsUser");
+const mixTabPresetsEl = document.getElementById("mixTabPresets");
+const mixTabMineEl = document.getElementById("mixTabMine");
+const mixBuiltinWrapEl = document.getElementById("mixPresetsBuiltin");
+const mixMineWrapEl = document.getElementById("mixMine");
+const mixMineEmptyEl = document.getElementById("mixMineEmpty");
+const mixAddTileEl = document.getElementById("mixAddTile");
+const mixSaveBtn = document.getElementById("mixSaveBtn");
+const mixSaveForm = document.getElementById("mixSaveForm");
+const mixSaveNameEl = document.getElementById("mixSaveName");
+const mixSaveOk = document.getElementById("mixSaveOk");
+const mixSaveCancel = document.getElementById("mixSaveCancel");
+const mixSaveNote = document.getElementById("mixSaveNote");
+
+function persistUserMixes() {
+  chrome.storage.local.set({ vbUserMixes: userMixes });
+}
+
+// Preset pokazuje tylko suwaki efektow, ktore ma niezerowe (plus predkosc).
+function userMixCtl(m) {
+  const ctl = ["speed"];
+  if (m.reverb > 0) ctl.push("reverb");
+  if (m.treble > 0) ctl.push("treble");
+  if (m.muffle > 0) ctl.push("muffle");
+  if (m.bass > 0) ctl.push("bass");
+  if (m.vocal > 0) ctl.push("vocal");
+  if (m.power > 0) ctl.push("power");
+  if (m.spin) ctl.push("spin");
+  return ctl.join(",");
+}
+
+function renderUserMixes() {
+  userPresetEls.forEach((b) => b.remove());
+  userPresetEls = [];
+  userMixes.forEach((m, idx) => {
+    const b = document.createElement("button");
+    b.className = "mixp userp";
+    b.dataset.mix = String(m.rate || 1);
+    b.dataset.reverb = String(m.reverb || 0);
+    b.dataset.treble = String(m.treble || 0);
+    b.dataset.muffle = String(m.muffle || 0);
+    b.dataset.vocal = String(m.vocal || 0);
+    b.dataset.power = String(m.power || 0);
+    b.dataset.bass = String(m.bass || 0);
+    b.dataset.bassmode = m.bassMode || "classic";
+    if (m.spin) {
+      b.dataset.spin = "1";
+      b.dataset.spinspeed = String(m.spinSpeed == null ? DEFAULTS.spinSpeed : m.spinSpeed);
+    }
+    b.dataset.ctl = userMixCtl(m);
+    const name = document.createElement("span");
+    name.className = "userp-name";
+    name.textContent = m.name;
+    b.title = m.name;
+    b.appendChild(name);
+    const del = document.createElement("span");
+    del.className = "userp-del";
+    del.textContent = "×";
+    del.title = VBI18N.t("mix_user_del");
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      userMixes.splice(idx, 1);
+      persistUserMixes();
+      renderUserMixes();
+      updateMixSaveUI();
+    });
+    b.appendChild(del);
+    b.addEventListener("click", () => applyMixPreset(presetOf(b)));
+    mixPresetsUserEl.appendChild(b);
+    userPresetEls.push(b);
+  });
+  mixMineEmptyEl.hidden = userMixes.length > 0;
+  renderMixSupport();
+  renderMix();
+}
+
+// Zakladki: presety wbudowane / mixy uzytkownika. Wybor pamietany lokalnie.
+let mixTab = "presets";
+function switchMixTab(tab, persist) {
+  mixTab = tab === "mine" ? "mine" : "presets";
+  mixTabPresetsEl.classList.toggle("on", mixTab === "presets");
+  mixTabMineEl.classList.toggle("on", mixTab === "mine");
+  mixBuiltinWrapEl.hidden = mixTab !== "presets";
+  mixMineWrapEl.hidden = mixTab !== "mine";
+  if (persist !== false) chrome.storage.local.set({ vbMixTab: mixTab });
+}
+mixTabPresetsEl.addEventListener("click", () => switchMixTab("presets"));
+mixTabMineEl.addEventListener("click", () => switchMixTab("mine"));
+
+function openMixSaveForm() {
+  mixSaveBtn.hidden = true;
+  mixSaveForm.hidden = false;
+  mixSaveNameEl.value = "";
+  mixSaveNameEl.focus();
+}
+
+// Kafelek + w presetach: przejdz do Twoich mixow i od razu otworz zapis.
+mixAddTileEl.addEventListener("click", () => {
+  switchMixTab("mine");
+  if (userMixes.length < USER_MIX_LIMIT) openMixSaveForm();
+});
+
+function updateMixSaveUI() {
+  const full = userMixes.length >= USER_MIX_LIMIT;
+  mixSaveBtn.disabled = full;
+  mixSaveNote.hidden = !full;
+}
+
+function closeMixSaveForm() {
+  mixSaveForm.hidden = true;
+  mixSaveBtn.hidden = false;
+}
+
+function saveCurrentMix() {
+  const name = (mixSaveNameEl.value || "").trim().slice(0, 18);
+  if (!name) {
+    mixSaveNameEl.focus();
+    return;
+  }
+  if (userMixes.length >= USER_MIX_LIMIT) {
+    closeMixSaveForm();
+    updateMixSaveUI();
+    return;
+  }
+  userMixes.push({
+    name,
+    rate: mixRate,
+    reverb: fxReverb(),
+    treble: fxTreble(),
+    muffle: fxMuffle(),
+    vocal: fxVocal(),
+    power: fxPower(),
+    spin: !!settings.spin,
+    spinSpeed: fxSpinSpeed(),
+    bass: fxBass(),
+    bassMode: settings.bassMode || "classic",
+  });
+  persistUserMixes();
+  closeMixSaveForm();
+  renderUserMixes();
+  updateMixSaveUI();
+}
+
+mixSaveBtn.addEventListener("click", openMixSaveForm);
+mixSaveCancel.addEventListener("click", closeMixSaveForm);
+mixSaveOk.addEventListener("click", saveCurrentMix);
+mixSaveNameEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") saveCurrentMix();
+  else if (e.key === "Escape") closeMixSaveForm();
+});
 
 // Preset laczy predkosc (content script) z efektami silnika. streamId bierzemy
 // najpierw (w gescie klikniecia), potem prosimy o zgode na strone - wtedy
@@ -609,7 +806,7 @@ async function applyMixPreset(p) {
     settings.spin = p.spin;
     settings.bassBoost = p.bass;
     if (p.bass > 0) settings.bassMode = p.bassMode;
-    settings.spinSpeed = DEFAULTS.spinSpeed;
+    settings.spinSpeed = p.spinSpeed != null ? p.spinSpeed : DEFAULTS.spinSpeed;
     if (needEngine) {
       await ensureActiveAndApply();
     } else if (isActive) {
@@ -728,10 +925,11 @@ powerEl.addEventListener("click", async () => {
   powerEl.setAttribute("aria-busy", "true");
   try {
     if (!anyActive()) {
-      await ensureActiveAndApply();
+      if (!(await restoreBackup())) await ensureActiveAndApply();
     } else {
       // Wylacznik wylacza WSZYSTKO na tej karcie: podglosnienie i Mix
-      // (Mix oddaje tez dostep do strony).
+      // (Mix oddaje tez dostep do strony). Backup lapie tez predkosc Mixa.
+      const prevRate = mixRate;
       if (isActive) {
         const prev = { ...settings };
         await new Promise((resolve) =>
@@ -741,10 +939,15 @@ powerEl.addEventListener("click", async () => {
           })
         );
         isActive = false;
-        if (prev.volume !== 1 || prev.monoFix || prev.bassBoost || prev.reverb || prev.treble || prev.muffle || prev.vocal || prev.power || prev.spin) {
-          backupSettings = prev;
+        if (prevRate !== 1 || prev.volume !== 1 || prev.monoFix || prev.bassBoost || prev.reverb || prev.treble || prev.muffle || prev.vocal || prev.power || prev.spin) {
+          backupSettings = { ...prev };
+          if (prevRate !== 1) backupSettings.mixRate = prevRate;
         }
         settings = { ...DEFAULTS };
+      } else if (prevRate !== 1) {
+        // Sam Mix: vb-stop sie nie odpali, snapshot na zadanie PRZED wylaczeniem.
+        await sendMsg({ type: "vb-snapshot", tabId: currentTabId });
+        backupSettings = { ...DEFAULTS, mixRate: prevRate };
       }
       if (mixRate !== 1) await setMixRate(1);
       renderUI();
@@ -862,6 +1065,19 @@ async function init() {
   mixHostUnsupported = knownUnsupportedHost(currentTabUrl);
   renderMixSupport();
 
+  // Wlasne mixy + ostatnia zakladka + wlasne nazwy presetow (z ustawien).
+  chrome.storage.local.get(["vbUserMixes", "vbMixTab", "vbPresetNames"], (d) => {
+    userMixes = Array.isArray(d.vbUserMixes) ? d.vbUserMixes : [];
+    renderUserMixes();
+    updateMixSaveUI();
+    if (d.vbMixTab === "mine" && userMixes.length) switchMixTab("mine", false);
+    const names = d.vbPresetNames || {};
+    builtinPresetEls.forEach((b) => {
+      const key = b.getAttribute("data-i18n");
+      if (key && names[key]) b.textContent = names[key];
+    });
+  });
+
   // Opcje ze strony ustawien: limit suwaka glosnosci i domyslny charakter basu.
   chrome.storage.local.get(["vbMaxVol", "vbBassMode"], (d) => {
     const mv = Number(d.vbMaxVol) || 700;
@@ -871,7 +1087,7 @@ async function init() {
         b.hidden = Number(b.dataset.v) > mv;
       });
     }
-    if (d.vbBassMode === "sub" || d.vbBassMode === "punch" || d.vbBassMode === "classic") {
+    if (["classic", "sub", "punch", "rumble", "808", "warm"].includes(d.vbBassMode)) {
       DEFAULTS.bassMode = d.vbBassMode;
       if (!fxBass()) {
         settings.bassMode = d.vbBassMode;

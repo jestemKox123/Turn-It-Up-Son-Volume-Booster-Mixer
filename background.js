@@ -44,12 +44,29 @@ async function clearBackupTab(tabId) {
   }
 }
 
+// Snapshot obejmuje tez predkosc Mixa (mixRate), zeby Przywroc wracalo
+// takze do samego Sped Up / Nightcore.
 async function snapshotTab(tabId) {
   const d = await chrome.storage.session.get(keyFor(tabId));
   const s = d[keyFor(tabId)];
-  if (s && (s.volume !== 1 || s.monoFix || s.bassBoost || s.reverb || s.treble || s.muffle || s.vocal || s.power || s.spin)) {
-    await backupTab(tabId, s);
+  const mix = await getMixState(tabId);
+  const rate = mix && mix.rate && mix.rate !== 1 ? mix.rate : null;
+  const nonDefault = s && (s.volume !== 1 || s.monoFix || s.bassBoost || s.reverb || s.treble || s.muffle || s.vocal || s.power || s.spin);
+  if (!nonDefault && !rate) return;
+  const out = { ...(s || PER_TAB_DEFAULTS) };
+  if (rate) out.mixRate = rate;
+  else delete out.mixRate;
+  await backupTab(tabId, out);
+}
+
+// Podglosnione karty z kluczy sesji (cachedActiveIds ginie przy usnieciu SW).
+async function boostedTabIds() {
+  const all = await chrome.storage.session.get(null);
+  const out = [];
+  for (const k in all) {
+    if (k.indexOf("vb_tab_") === 0) out.push(Number(k.slice(7)));
   }
+  return out;
 }
 
 function wait(ms) {
@@ -501,6 +518,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  // Backup na zadanie popupu (sam Mix nie przechodzi przez stopCapture).
+  if (msg.type === "vb-snapshot") {
+    snapshotTab(msg.tabId).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
   if (msg.type === "vb-set-mode") {
     (async () => {
       const next = msg.mode === "closeTab" ? "closeTab" : "toggle";
@@ -532,11 +555,18 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     }
     const engId = await getEngineTabId();
     if (tabId === engId) {
-      // Zamkniecie karty-silnika wylacza wszystko (tez Mix).
+      // Zamkniecie karty-silnika wylacza wszystko (tez Mix), z backupem
+      // dla kazdej karty (takze tych z samym Mixem).
       await setEngineTabId(null);
-      for (const id of cachedActiveIds) {
+      const ids = await boostedTabIds();
+      for (const id of ids) {
         await snapshotTab(id);
         chrome.storage.session.remove(keyFor(id));
+        setBadge(id, false);
+      }
+      const done = new Set(ids);
+      for (const t of await activeMixTabs()) {
+        if (!done.has(t.tabId)) await snapshotTab(t.tabId);
       }
       clearAllBadges();
       await clearAllMix();
@@ -574,14 +604,20 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (!bindsEnabled) return;
 
   if (command === "disable-all") {
+    const snapshotted = new Set();
     await serialize(async () => {
       const ids = await getActiveTabIds();
       for (const id of ids) {
         await snapshotTab(id);
+        snapshotted.add(id);
         chrome.storage.session.remove(keyFor(id));
       }
       await stopEverything();
     });
+    // Karty z samym Mixem (bez podglosnienia) tez dostaja backup.
+    for (const t of await activeMixTabs()) {
+      if (!snapshotted.has(t.tabId)) await snapshotTab(t.tabId);
+    }
     await clearAllMix();
     return;
   }
