@@ -3,335 +3,701 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Turn It Up, Son! Volume Booster & Mixer for Chrome</title>
-<meta name="description" content="Free Chrome extension. Boost any browser tab up to 700%, including Spotify and YouTube. Bass boost, 8D audio and a full mixer with Sped Up, Nightcore, Slowed and Reverb, Drill and Phonk presets. Private, no tracking.">
+<title>Turn It Up, Son! - Volume Booster & Mixer for Chrome</title>
+<meta name="description" content="Free Chrome extension. Boost any tab up to 700% and remix any song live: Sped Up, Nightcore, Slowed + Reverb, Drill, Phonk, 8D. No account, no tracking.">
+<meta property="og:title" content="Turn It Up, Son!">
+<meta property="og:description" content="Boost any tab to 700%. Remix any song live. Free, private, no account.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff453a'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --blue:#4a90ff;--purple:#b14bff;
-    --grad:linear-gradient(135deg,#3d7bff 0%,#b14bff 100%);
-    --ink:#f4f5fb;--muted:#9698ab;--panel:#12121c;--line:rgba(255,255,255,.08);--bg:#07070d;
+    --bg:#050505;
+    --panel:#0e0e10;
+    --line:rgba(255,255,255,.09);
+    --text:#f5f5f7;
+    --muted:rgba(245,245,247,.55);
+    --dim:rgba(245,245,247,.32);
+    --red:#ff453a;
+    --red2:#ff2d55;
+    --grad:linear-gradient(120deg,#ff6b52,#ff2d55);
   }
   html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
   a{color:inherit;text-decoration:none}
+  img{max-width:100%}
+  ::selection{background:rgba(255,69,58,.35)}
+
   .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 
-  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(7,7,13,.7);border-bottom:1px solid var(--line)}
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:72px}
-  .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
-  .logo .mark{width:38px;height:38px;border-radius:11px;background:var(--grad);display:grid;place-items:center}
-  .logo .mark svg{width:22px;height:22px}
-  .nav-cta{padding:11px 22px;border-radius:12px;background:var(--grad);font-weight:700;font-size:15px}
+  /* ---------- nav ---------- */
+  nav{
+    position:fixed;inset:0 0 auto 0;z-index:50;
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    background:rgba(5,5,5,.55);
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .nav-in{
+    max-width:1080px;margin:0 auto;padding:0 24px;
+    height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.02em;font-size:15px}
+  .brand-dot{
+    width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#ff8a75,var(--red) 55%,#b3170f);
+    box-shadow:0 0 14px rgba(255,69,58,.55);
+    position:relative;flex-shrink:0;
+  }
+  .brand-dot::after{content:"";position:absolute;inset:35%;border-radius:50%;background:var(--bg)}
+  .nav-links{display:flex;align-items:center;gap:22px;font-size:13.5px;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--grad);color:#fff;font-weight:600;
+    border-radius:999px;padding:9px 20px;font-size:13.5px;
+    transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+    box-shadow:0 4px 22px rgba(255,45,85,.35);
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 30px rgba(255,45,85,.45)}
+  .btn.big{padding:16px 34px;font-size:16.5px;box-shadow:0 8px 40px rgba(255,45,85,.4)}
+  .btn.ghost{
+    background:transparent;border:1px solid var(--line);color:var(--muted);
+    box-shadow:none;
+  }
+  .btn.ghost:hover{color:var(--text);border-color:rgba(255,255,255,.25);box-shadow:none}
 
-  .hero{position:relative;text-align:center;padding:96px 0 80px;overflow:hidden}
-  .glow{position:absolute;width:900px;height:900px;left:50%;top:-360px;transform:translateX(-50%);
-        background:radial-gradient(circle,rgba(80,90,255,.28),transparent 60%);pointer-events:none}
-  .badge-pill{display:inline-block;padding:8px 18px;border-radius:999px;border:1px solid var(--line);
-        background:var(--panel);color:var(--muted);font-size:14px;font-weight:600;margin-bottom:26px}
-  .hero h1{font-size:clamp(42px,7vw,88px);font-weight:900;letter-spacing:-2px;line-height:.98;
-        background:linear-gradient(135deg,#8fb6ff,#c98bff);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero .sub{font-size:clamp(19px,2.6vw,26px);color:var(--muted);max-width:640px;margin:22px auto 0;font-weight:500}
-  .cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:40px}
-  .btn{display:inline-flex;align-items:center;gap:12px;padding:18px 34px;border-radius:15px;font-weight:800;font-size:18px}
-  .btn-primary{background:var(--grad);box-shadow:0 14px 40px rgba(80,90,255,.4)}
-  .btn-primary svg{width:24px;height:24px}
-  .btn-ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
-  .free{margin-top:18px;color:var(--muted);font-size:15px}
+  /* ---------- hero ---------- */
+  header{
+    min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;position:relative;padding:120px 24px 80px;
+  }
+  /* breathing sound-orb */
+  .orb{
+    position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+    width:min(62vmin,560px);height:min(62vmin,560px);border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,rgba(255,69,58,.30),rgba(255,45,85,.10) 45%,transparent 70%);
+    filter:blur(38px);
+    animation:breathe var(--orbd,7s) ease-in-out infinite;
+    pointer-events:none;z-index:-1;
+  }
+  @keyframes breathe{
+    0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.85}
+    50%{transform:translate(-50%,-50%) scale(1.18);opacity:1}
+  }
+  /* expanding sound rings */
+  .ring{
+    position:absolute;left:50%;top:46%;
+    width:min(40vmin,360px);height:min(40vmin,360px);border-radius:50%;
+    border:1px solid rgba(255,69,58,.35);
+    transform:translate(-50%,-50%) scale(.6);
+    animation:ring 5.5s ease-out infinite;
+    pointer-events:none;z-index:-1;
+  }
+  .ring.r2{animation-delay:1.8s}
+  .ring.r3{animation-delay:3.6s}
+  @keyframes ring{
+    0%{transform:translate(-50%,-50%) scale(.55);opacity:0}
+    12%{opacity:.7}
+    100%{transform:translate(-50%,-50%) scale(2.4);opacity:0}
+  }
+  .eyebrow{
+    font-size:12.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--red);margin-bottom:26px;
+  }
+  h1{
+    font-size:clamp(52px,11vw,124px);
+    line-height:.98;letter-spacing:-.045em;font-weight:800;
+  }
+  h1 .grad{
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{
+    max-width:620px;margin:30px auto 0;
+    font-size:clamp(16px,2.2vw,20px);color:var(--muted);line-height:1.6;
+  }
+  .sub b{color:var(--text);font-weight:600}
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+  .trust{
+    margin-top:26px;font-size:12.5px;color:var(--dim);
+    display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
+  }
+  .trust .sep{opacity:.5}
+  .trust .stars{color:#f5b301;letter-spacing:2px}
 
-  /* ===== 1:1 replica of the real extension UI ===== */
-  .mocks{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin:64px auto 0}
-  .tius{position:relative;width:300px;max-width:100%;padding:10px 16px 12px;border-radius:20px;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#fff;text-align:left;border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 100px rgba(0,0,0,.6);
-    --tbg:#05060b;--card:rgba(255,255,255,.04);--card-2:rgba(255,255,255,.08);--tmuted:rgba(255,255,255,.6);--border:rgba(255,255,255,.1);--accent:#6e56ff;--accent-2:#3ddcff;--accent-soft:rgba(110,86,255,.16);--ok:#45e0a0;--ok-soft:rgba(69,224,160,.12);--track:rgba(255,255,255,.1);
-    background:radial-gradient(260px 150px at 88% -50px,rgba(110,86,255,.18),transparent 70%),radial-gradient(220px 130px at -10% 105%,rgba(61,220,255,.09),transparent 70%),#05060b}
+  /* hero equalizer - reaguje na suwak demo (--eqd tempo, --eqs wysokosc) */
+  .eq{display:flex;align-items:flex-end;gap:5px;height:44px;margin-top:26px;
+    transform-origin:bottom;transform:scaleY(var(--eqs,1));transition:transform .2s ease}
+  .eq i{
+    width:4px;border-radius:2px;height:100%;
+    background:linear-gradient(to top,#ff2d55,#ff8a75);
+    transform-origin:bottom;animation:eq var(--eqd,1.15s) ease-in-out infinite;
+    opacity:.9;
+  }
+  @keyframes eq{0%,100%{transform:scaleY(.15)}50%{transform:scaleY(1)}}
+
+  /* ---------- sections ---------- */
+  section{padding:clamp(90px,14vh,150px) 0;position:relative}
+  .kicker{
+    font-size:12.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--red);margin-bottom:18px;
+  }
+  h2{
+    font-size:clamp(34px,5.4vw,60px);
+    letter-spacing:-.035em;line-height:1.05;font-weight:800;max-width:760px;
+  }
+  h2 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{max-width:600px;margin-top:22px;font-size:17.5px;color:var(--muted);line-height:1.65}
+  .lead b{color:var(--text);font-weight:600}
+
+  /* reveal on scroll */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s ease}
+  .rv.in{opacity:1;transform:none}
+
+  /* ---------- 700% ---------- */
+  .seven{text-align:center}
+  .seven-num{
+    font-size:clamp(110px,24vw,280px);
+    font-weight:800;letter-spacing:-.06em;line-height:1;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 60px rgba(255,45,85,.28));
+  }
+  .seven .lead{margin-left:auto;margin-right:auto;text-align:center}
+
+  /* ---------- presets ---------- */
+  .pills{display:flex;flex-wrap:wrap;gap:12px;margin-top:44px;max-width:760px}
+  .pill{
+    border:1px solid var(--line);border-radius:999px;
+    padding:12px 22px;font-size:15px;font-weight:600;color:var(--muted);
+    background:rgba(255,255,255,.02);
+    transition:all .2s ease;cursor:default;
+  }
+  .pill em{font-style:normal;color:var(--dim);font-size:12.5px;margin-left:7px}
+  .pill:hover{
+    color:#fff;border-color:rgba(255,69,58,.6);
+    background:rgba(255,69,58,.10);
+    box-shadow:0 0 26px rgba(255,45,85,.22);
+    transform:translateY(-2px);
+  }
+
+  /* ---------- features ---------- */
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:14px;margin-top:52px;
+  }
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:20px;
+    padding:28px 26px;transition:transform .2s ease,border-color .2s ease;
+  }
+  .card:hover{transform:translateY(-4px);border-color:rgba(255,69,58,.4)}
+  .card .ic{
+    width:38px;height:38px;border-radius:11px;
+    background:rgba(255,69,58,.12);border:1px solid rgba(255,69,58,.25);
+    display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  }
+  .card .ic svg{stroke:var(--red);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .card h3{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--muted);line-height:1.6}
+
+  /* ---------- privacy ---------- */
+  .privacy{text-align:center}
+  .privacy h2{margin:0 auto}
+  .privacy .lead{margin-left:auto;margin-right:auto}
+  .priv-row{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:40px;
+  }
+  .priv-chip{
+    border:1px solid var(--line);border-radius:999px;padding:10px 20px;
+    font-size:13.5px;color:var(--muted);background:rgba(255,255,255,.02);
+  }
+  .priv-chip b{color:var(--text)}
+
+  /* ---------- final ---------- */
+  .final{text-align:center;padding-bottom:140px}
+  .final h2{margin:0 auto;font-size:clamp(42px,7vw,84px)}
+  .final .cta-row{margin-top:44px}
+  .final .mini{margin-top:22px;font-size:13px;color:var(--dim)}
+  .final .mini a{color:var(--muted);border-bottom:1px solid rgba(255,255,255,.15)}
+  .final .mini a:hover{color:var(--text)}
+  .final-orb{
+    position:absolute;left:50%;bottom:-180px;transform:translateX(-50%);
+    width:640px;height:420px;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 100%,rgba(255,45,85,.22),transparent 65%);
+    filter:blur(30px);pointer-events:none;
+  }
+
+  /* ---------- footer ---------- */
+  footer{
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:34px 0 46px;font-size:13px;color:var(--dim);
+  }
+  .foot-in{
+    max-width:1080px;margin:0 auto;padding:0 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+  .foot-links{display:flex;gap:20px}
+  .foot-links a:hover{color:var(--text)}
+
+  /* ---------- boost demo (interaktywny suwak w hero) ---------- */
+  .boost-demo{margin-top:52px;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(460px,86vw)}
+  .bd-top{display:flex;align-items:baseline;gap:12px}
+  .bd-num{
+    font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+  .bd-label{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  #bdRange{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;
+    background:#2c2c2e;outline:none;cursor:pointer;
+  }
+  #bdRange::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;
+    background:#fff;border:3px solid var(--red);
+    box-shadow:0 0 16px rgba(255,69,58,.6);cursor:grab;
+  }
+  #bdRange:active::-webkit-slider-thumb{cursor:grabbing}
+  #bdRange::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--red);cursor:grab}
+
+  /* ---------- showcase video ---------- */
+  .video-frame{
+    margin-top:48px;border-radius:24px;overflow:hidden;position:relative;cursor:pointer;
+    border:1px solid var(--line);
+    box-shadow:0 30px 90px rgba(255,45,85,.16),0 12px 44px rgba(0,0,0,.6);
+  }
+  .video-frame video{display:block;width:100%}
+  .vf-play{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:92px;height:92px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--grad);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 44px rgba(255,45,85,.5);
+    transition:transform .18s ease,opacity .25s ease;
+  }
+  .vf-play svg{margin-left:5px}
+  .vf-play:hover{transform:translate(-50%,-50%) scale(1.08)}
+  .video-frame.playing .vf-play{opacity:0;pointer-events:none}
+
+  /* wiekszy kubeczek BMC */
+  #bmc-wbtn{width:86px!important;height:86px!important}
+  #bmc-wbtn img{height:44px!important;width:auto!important}
+
+  /* ---------- 1:1 repliki wtyczki (z prawdziwego popup.css) ---------- */
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:48px;justify-items:center;align-items:start}
+  .tius{width:300px;background:#05060b;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:12px 16px 14px;font-family:system-ui,"Segoe UI",sans-serif;color:#fff;font-size:12.5px;line-height:1.4;box-shadow:0 24px 70px rgba(0,0,0,.6);transition:transform .2s ease,box-shadow .2s ease}
+  .tius:hover{transform:translateY(-5px);box-shadow:0 30px 80px rgba(255,45,85,.14),0 24px 70px rgba(0,0,0,.6)}
   .tius *{box-sizing:border-box}
-  .tius section{padding:0}
-  .mocks input{pointer-events:none}
-  .tius .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .tius .brand{display:flex;align-items:center;gap:8px}
-  .tius .brand-icon{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent-2))}
-  .tius .brand-icon svg{width:12px;height:12px}
-  .tius .brand-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
-  .tius .power{display:inline-flex;align-items:center;gap:8px;color:var(--accent-2);font-size:12px;font-weight:600}
-  .tius .power-track{width:38px;height:22px;border-radius:999px;background:linear-gradient(135deg,var(--accent),var(--accent-2));position:relative;flex-shrink:0}
-  .tius .power-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transform:translateX(16px)}
-  .tius .status{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;line-height:1.35;padding:7px 11px;min-height:32px;border:1px solid transparent;border-radius:10px;margin-bottom:8px;background:var(--card)}
-  .tius .status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--tmuted)}
-  .tius .status-ok{background:var(--ok-soft);border-color:rgba(69,224,160,.35);color:var(--ok)}
-  .tius .status-ok .status-dot{background:var(--ok);box-shadow:0 0 0 3px rgba(69,224,160,.22)}
-  .tius .volume-block{background:var(--card);border-radius:14px;padding:10px 14px}
-  .tius .volume-readout{text-align:center;font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .tius .volume-readout .pct{font-size:16px;margin-left:1px}
-  .tius input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:999px;outline:none;background:var(--track);margin:0}
-  .tius .vol{background:linear-gradient(to right,var(--accent) 0%,var(--accent) 14%,#8f9bff 22%,#eab308 34%,#f59e0b 46%,#ef4444 62%,#b91c1c 100%)}
-  .tius .scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--tmuted);margin-top:6px}
-  .tius .scale-danger{color:#ef4444;font-weight:700}
-  .tius input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-  .tius input[type="range"]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--accent)}
-  .tius .ticks{display:flex;justify-content:space-between;gap:4px;margin-top:7px}
-  .tius .tick{flex:1;border:1px solid var(--border);background:var(--tbg);color:var(--tmuted);border-radius:7px;padding:3px 0;font-size:10.5px;font-weight:600;text-align:center}
-  .tius .effects{display:flex;flex-direction:column;gap:0;margin:8px 0}
-  .tius .switch-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 2px}
-  .tius .switch{-webkit-appearance:none;appearance:none;width:38px;height:22px;border-radius:999px;background:var(--card-2);border:1px solid var(--border);position:relative;flex-shrink:0;margin:0}
-  .tius .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3)}
-  .tius .mix-open{display:flex;align-items:center;gap:10px;width:100%;background:var(--accent-soft);border:1px solid transparent;border-radius:12px;padding:8px 12px;margin-bottom:8px}
-  .tius .mix-open-icon{display:flex;align-items:center;flex-shrink:0}
-  .tius .mix-open-text{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
-  .tius .mix-open-title{font-size:12.5px;font-weight:700;color:#fff}
-  .tius .mix-open-sub{font-size:10.5px;color:var(--tmuted)}
-  .tius .mix-open-state{font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
-  .tius .mix-open-arrow{font-size:20px;color:var(--tmuted);line-height:1;flex-shrink:0}
-  .tius .tabs-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--tmuted);margin:8px 0 6px}
-  .tius .tabs-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
-  .tius .tab-item{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:9px;background:var(--card);border:1px solid transparent;font-size:12px}
-  .tius .tab-item .t-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--ok);box-shadow:0 0 0 3px rgba(69,224,160,.2)}
-  .tius .tab-item .t-title{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .tius .t-toggle{font-size:9.5px;font-weight:700;letter-spacing:.3px;color:var(--ok);background:var(--ok-soft);border:1px solid transparent;padding:3px 9px;border-radius:999px;flex-shrink:0}
-  .tius .footer-row{display:flex;gap:8px;margin-top:8px}
-  .tius .footer-row button{flex:1;padding:7px;border:1px solid var(--border);border-radius:9px;background:var(--tbg);color:var(--tmuted);font-size:12px;font-weight:600}
-  .tius .rate{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
-  .tius .rate-label{font-size:12.5px;font-weight:600;color:var(--tmuted)}
-  .tius .stars{display:flex;gap:2px}
-  .tius .star{font-size:19px;line-height:1;color:var(--border)}
-  .tius .donate-link{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:4px;padding:3px 4px;font-size:12px;font-weight:600;color:var(--tmuted)}
-  .tius .mix-view-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .tius .mix-back{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--tbg);color:#fff;font-size:20px;line-height:1;display:grid;place-items:center;flex-shrink:0}
-  .tius .mix-view-title{font-size:14px;font-weight:700;flex:1}
-  .tius .mix-analyzer{display:inline-flex;align-items:flex-end;gap:2px;height:13px;flex-shrink:0}
-  .tius .mix-analyzer i{width:3px;height:100%;border-radius:1.5px;background:linear-gradient(to top,var(--accent),var(--accent-2));transform-origin:bottom;animation:mx-eq 1.1s ease-in-out infinite}
-  .tius .mix-analyzer i:nth-child(1){animation-delay:0s}.tius .mix-analyzer i:nth-child(2){animation-delay:.22s}.tius .mix-analyzer i:nth-child(3){animation-delay:.44s}.tius .mix-analyzer i:nth-child(4){animation-delay:.11s}.tius .mix-analyzer i:nth-child(5){animation-delay:.33s}
-  @keyframes mx-eq{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(1)}}
-  .tius .mix-core{position:relative;height:58px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
-  .tius .mix-blob{position:absolute;width:54px;height:54px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-radius:44% 56% 62% 38%/46% 38% 62% 54%;filter:blur(16px);opacity:.28;animation:mx-morph 9s ease-in-out infinite alternate}
-  @keyframes mx-morph{0%{border-radius:44% 56% 62% 38%/46% 38% 62% 54%;transform:scale(1)}50%{border-radius:58% 42% 40% 60%/40% 58% 42% 60%;transform:scale(1.12)}100%{border-radius:38% 62% 55% 45%/60% 44% 56% 40%;transform:scale(.94)}}
-  .tius .mix-readout-big{position:relative;font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .tius .mix-status{font-size:11px;line-height:1.4;border-radius:9px;padding:7px 10px;margin:8px 0;font-weight:600;color:var(--tmuted);background:var(--card-2)}
-  .tius .mix-presets{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
-  .tius .mixp{border:1px solid var(--border);background:var(--tbg);color:var(--tmuted);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;text-align:center}
-  .tius .mixp.on{border-color:transparent;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff}
-  .tius .mix-applied{margin:-2px 2px 8px;font-size:11px;line-height:1.45;font-weight:600;color:var(--accent-2)}
-  .tius .mix-full{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;margin-bottom:8px;border:1px solid var(--border);border-radius:9px;background:var(--card)}
-  .tius .mix-full-t{display:block;font-size:11.5px;font-weight:700}
-  .tius .mix-full-d{display:block;font-size:9.5px;color:var(--tmuted)}
-  .tius .mix-slider-row{margin-bottom:8px}
-  .tius .mix-slider-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:700;color:#fff;margin-bottom:2px}
-  .tius .mix-val{color:var(--accent);font-weight:800}
-  .tius .mix-sub{font-size:9.5px;color:var(--tmuted);line-height:1.3;margin:0 0 4px}
-  .tius .mix-scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--tmuted);margin-top:6px}
-  .tius .mix-hint{font-size:10px;color:var(--tmuted);line-height:1.4;margin:8px 0 0}
+  .tius input{pointer-events:none}
+  .tius .thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .tius .tbrand{display:flex;gap:8px;align-items:center;font-weight:700;font-size:15px;letter-spacing:-.2px}
+  .tius .tpow{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#6e56ff}
+  .tius .ptrack{width:38px;height:22px;border-radius:999px;background:linear-gradient(135deg,#6e56ff,#3ddcff);position:relative}
+  .tius .ptrack::after{content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .tius .tstat{display:flex;gap:8px;align-items:center;font-weight:600;font-size:12.5px;padding:7px 11px;border-radius:10px;margin-bottom:8px;background:rgba(69,224,160,.12);border:1px solid rgba(69,224,160,.35);color:#45e0a0}
+  .tius .tstat.info{background:rgba(255,255,255,.07);border-color:transparent;color:rgba(255,255,255,.6)}
+  .tius .tdot{width:9px;height:9px;border-radius:50%;background:#45e0a0;box-shadow:0 0 0 3px rgba(69,224,160,.22);flex-shrink:0}
+  .tius .vbl{background:rgba(255,255,255,.04);border-radius:14px;padding:10px 14px;margin-bottom:8px}
+  .tius .vread{text-align:center;font-size:26px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#6e56ff,#3ddcff);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
+  .tius .vread i{font-style:normal;font-size:16px}
+  .tius input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:999px;background:rgba(255,255,255,.1)}
+  .tius input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #6e56ff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .tius .vol{background:linear-gradient(to right,#6e56ff 0%,#6e56ff 14%,#8f9bff 22%,#eab308 34%,#f59e0b 46%,#ef4444 62%,#b91c1c 100%)}
+  .tius .vscale{display:flex;justify-content:space-between;font-size:9.5px;color:rgba(255,255,255,.6);margin-top:6px}
+  .tius .vscale b{color:#ef4444;font-weight:700}
+  .tius .ticks{display:flex;gap:4px;margin-top:7px}
+  .tius .tick{flex:1;border:1px solid rgba(255,255,255,.1);background:#05060b;color:rgba(255,255,255,.6);border-radius:7px;padding:3px 0;font-size:10.5px;font-weight:600;text-align:center}
+  .tius .srow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 2px;font-size:12.5px}
+  .tius .sw{width:38px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);position:relative;flex-shrink:0}
+  .tius .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .tius .sw.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);border-color:transparent}
+  .tius .sw.on::after{left:auto;right:2px}
+  .tius .mopen{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 12px;margin:8px 0}
+  .tius .mo-x{flex:1;min-width:0}
+  .tius .mo-t{font-weight:700;font-size:12.5px}
+  .tius .mo-s{font-size:10.5px;color:rgba(255,255,255,.6)}
+  .tius .mo-a{font-size:20px;color:rgba(255,255,255,.6)}
+  .tius .tbt{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.6);margin:8px 0 6px}
+  .tius .titem{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.04);border-radius:9px;padding:6px 10px;font-size:12px}
+  .tius .titem span{flex:1}
+  .tius .ton{font-size:9.5px;font-weight:700;color:#45e0a0;background:rgba(69,224,160,.12);padding:3px 9px;border-radius:999px}
+  .tius .frow{display:flex;gap:8px;margin-top:8px}
+  .tius .fbtn{flex:1;padding:7px;border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.6);font-size:12px;font-weight:600;text-align:center}
+  .tius .rrow{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;color:rgba(255,255,255,.6)}
+  .tius .rstars{color:rgba(255,255,255,.18);font-size:17px;letter-spacing:2px}
+  .tius .dono{text-align:center;font-size:12px;color:rgba(255,255,255,.6);margin-top:6px}
+  .tius .mhead{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .tius .mback{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .tius .mtitle{font-weight:700;font-size:14px;flex:1}
+  .tius .anlz{display:inline-flex;gap:2px;align-items:flex-end;height:13px}
+  .tius .anlz i{width:3px;border-radius:1.5px;background:linear-gradient(to top,#6e56ff,#3ddcff)}
+  .tius .mbig{text-align:center;font-size:27px;font-weight:800;letter-spacing:-1px;color:rgba(255,255,255,.6);margin:8px 0}
+  .tius .mtabs{display:flex;gap:3px;padding:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:999px;margin-bottom:8px}
+  .tius .mtab{flex:1;text-align:center;border-radius:999px;padding:4px 0;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.6)}
+  .tius .mtab.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff}
+  .tius .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+  .tius .mp{border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-align:center}
+  .tius .mp.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff;border-color:transparent}
+  .tius .mp.add{grid-column:1/-1;border-style:dashed;font-size:13px}
+  .tius .mfull{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 8px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:8px}
+  .tius .mf-t{display:block;font-size:11.5px;font-weight:700}
+  .tius .mf-d{display:block;font-size:9.5px;color:rgba(255,255,255,.6)}
+  .tius .mrow{margin-bottom:8px}
+  .tius .mrh{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:2px}
+  .tius .mrh b{color:#6e56ff;font-weight:800}
+  .tius .mrd{font-size:9.5px;color:rgba(255,255,255,.6);margin:0 0 4px}
+  .tius .mseg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .tius .msg{flex:1 1 30%;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:3px 0;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-align:center}
+  .tius .msg.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff;border-color:transparent}
+  .tius .mhint{font-size:10px;color:rgba(255,255,255,.6);margin-top:8px}
 
-  section{padding:80px 0}
-  .kicker{text-align:center;color:var(--blue);font-weight:800;letter-spacing:2px;font-size:14px;text-transform:uppercase}
-  h2{text-align:center;font-size:clamp(30px,4.5vw,46px);font-weight:900;letter-spacing:-1px;margin:12px 0 8px}
-  .lead{text-align:center;color:var(--muted);max-width:620px;margin:0 auto 48px;font-size:18px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-  .card:hover{transform:translateY(-4px);border-color:rgba(110,86,255,.4);box-shadow:0 20px 50px rgba(0,0,0,.4)}
-  .card .ic{width:54px;height:54px;border-radius:14px;background:var(--grad);display:grid;place-items:center;margin-bottom:18px;font-size:26px}
-  .card h3{font-size:21px;font-weight:800;margin-bottom:8px}
-  .card p{color:var(--muted);font-size:16px}
-  .presets{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
-  .preset{padding:12px 22px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-weight:700;transition:transform .15s ease,border-color .15s ease}
-  .preset:hover{transform:translateY(-2px);border-color:rgba(110,86,255,.5)}
-  .preset.hot{background:var(--grad);border-color:transparent}
-
-  .privacy{background:linear-gradient(180deg,rgba(80,90,255,.06),transparent);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-  .privacy .grid{max-width:900px;margin:0 auto}
-  .privacy .card{text-align:center}
-
-  .final{text-align:center}
-  .final .box{background:var(--grad);border-radius:28px;padding:64px 32px;position:relative;overflow:hidden}
-  .final h2{color:#fff}
-  .final p{color:rgba(255,255,255,.9);max-width:520px;margin:12px auto 30px;font-size:18px}
-  .final .btn-primary{background:#fff;color:#1a1a2e;box-shadow:0 14px 40px rgba(0,0,0,.3)}
-  .final .btn-primary svg path{fill:#1a1a2e}
-
-  footer{padding:56px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:15px}
-  footer .links{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
-  footer a{font-weight:600;color:var(--ink)}
-  footer a:hover{color:var(--blue)}
-
-  .btn{transition:transform .15s ease,filter .15s ease}
-  .btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
-  .nav-cta{transition:filter .15s ease,transform .15s ease}
-  .nav-cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  @media (prefers-reduced-motion:reduce){
+    .orb,.ring,.eq i{animation:none}
+    .rv{opacity:1;transform:none;transition:none}
+  }
+  @media (max-width:560px){
+    .nav-links .hide-m{display:none}
+    .eq{height:34px}
+  }
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="wrap">
-    <div class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></span> Turn It Up, Son!</div>
-    <a class="nav-cta" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">Add to Chrome</a>
+  <div class="nav-in">
+    <a class="brand" href="#top">
+      <span class="brand-dot" aria-hidden="true"></span>
+      Turn It Up, Son!
+    </a>
+    <div class="nav-links">
+      <a class="hide-m" href="#remix">Mixer</a>
+      <a class="hide-m" href="#features">Features</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
+    </div>
   </div>
 </nav>
 
-<header class="hero">
-  <div class="glow"></div>
-  <div class="wrap">
-    <span class="badge-pill">Free Chrome extension &bull; No tracking</span>
-    <h1>TURN IT UP,<br>SON!</h1>
-    <p class="sub">Boost any browser tab up to 700%, Spotify and YouTube too. Bass, 8D audio and a full mixer, one click away.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">
-        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 6a4 4 0 110 8 4 4 0 010-8z"/></svg>
-        Add to Chrome
-      </a>
-      <a class="btn btn-ghost" href="#features">See features</a>
+<header id="top">
+  <div class="orb" aria-hidden="true"></div>
+  <div class="ring" aria-hidden="true"></div>
+  <div class="ring r2" aria-hidden="true"></div>
+  <div class="ring r3" aria-hidden="true"></div>
+
+  <div class="eyebrow">Free Chrome extension</div>
+  <h1>Turn it up.<br><span class="grad">Way up.</span></h1>
+  <p class="sub">
+    Boost any tab up to <b>700%</b>. Remix any song <b>live</b>: sped up, nightcore,
+    slowed + reverb, drill, 8D. Works on YouTube, Spotify and everywhere else.
+  </p>
+  <div class="cta-row">
+    <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - it's free</a>
+    <a class="btn big ghost" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">View source</a>
+  </div>
+  <div class="trust">
+    <span class="stars" aria-hidden="true">★★★★★</span>
+    <span>on Chrome Web Store</span>
+    <span class="sep">·</span><span>No account</span>
+    <span class="sep">·</span><span>No tracking</span>
+  </div>
+
+  <!-- Interaktywne demo: suwak rozpedza equalizer i puls kuli -->
+  <div class="boost-demo">
+    <div class="bd-top">
+      <span class="bd-num"><span id="bdVal">100</span>%</span>
+      <span class="bd-label">try the boost</span>
     </div>
-    <div class="free">100% free &bull; works on Chrome, Edge and Brave</div>
+    <input type="range" id="bdRange" min="100" max="700" step="10" value="100" aria-label="Boost demo">
+  </div>
 
-    <div class="mocks">
-
-      <!-- Main view (1:1) -->
-      <div class="tius">
-        <header class="head">
-          <div class="brand"><span class="brand-icon"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg></span><span class="brand-name">Turn It Up, Son!</span></div>
-          <span class="power"><span class="power-track"><span class="power-thumb"></span></span><span>On</span></span>
-        </header>
-        <div class="status status-ok"><span class="status-dot"></span><span>Active: 100% + Mix 1.25x</span></div>
-        <section class="volume-block">
-          <div class="volume-readout">100<span class="pct">%</span></div>
-          <input type="range" class="vol" min="0" max="700" value="100">
-          <div class="scale"><span>quiet</span><span class="scale-danger">clipping zone</span></div>
-          <div class="ticks"><span class="tick">100%</span><span class="tick">200%</span><span class="tick">400%</span><span class="tick">600%</span><span class="tick">MAX</span></div>
-        </section>
-        <section class="effects">
-          <label class="switch-row"><span>Fix sound stuck in one ear</span><input type="checkbox" class="switch"></label>
-          <label class="switch-row"><span>Bass boost</span><input type="checkbox" class="switch"></label>
-          <label class="switch-row"><span>Auto-continue on YouTube</span><input type="checkbox" class="switch"></label>
-        </section>
-        <div class="mix-open">
-          <span class="mix-open-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path stroke="#3ddcff" stroke-width="2" stroke-linecap="round" d="M4 2v14M9 2v14M14 2v14"/><circle cx="4" cy="11" r="2.5" fill="#6e56ff"/><circle cx="9" cy="5" r="2.5" fill="#6e56ff"/><circle cx="14" cy="12" r="2.5" fill="#6e56ff"/></svg></span>
-          <span class="mix-open-text"><span class="mix-open-title">Mix and effects</span><span class="mix-open-sub">Tempo, reverb, brightness, 8D</span></span>
-          <span class="mix-open-state">1.25x</span>
-          <span class="mix-open-arrow">&rsaquo;</span>
-        </div>
-        <section class="tabs-block">
-          <div class="tabs-title">Tabs currently playing audio</div>
-          <ul class="tabs-list">
-            <li class="tab-item"><span class="t-dot"></span><span class="t-title">Spotify - Daily Mix</span><span class="t-toggle">ON</span></li>
-          </ul>
-        </section>
-        <div class="footer-row"><button>Reset</button><button>Settings</button></div>
-        <div class="rate"><span class="rate-label">Rate the extension</span><div class="stars"><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span></div></div>
-        <div class="donate-link"><span>&#9749;</span><span>Support me</span></div>
-      </div>
-
-      <!-- Mix panel (1:1) -->
-      <div class="tius">
-        <header class="mix-view-head">
-          <span class="mix-back">&lsaquo;</span>
-          <span class="mix-view-title">Mix and effects</span>
-          <span class="mix-analyzer"><i></i><i></i><i></i><i></i><i></i></span>
-        </header>
-        <div class="mix-core"><div class="mix-blob"></div><div class="mix-readout-big">1.25x</div></div>
-        <div class="mix-status">Start playback to hear the effect</div>
-        <div class="mix-presets">
-          <span class="mixp">Normal</span>
-          <span class="mixp">Sped Up</span>
-          <span class="mixp">Nightcore</span>
-          <span class="mixp on">Sped Up + Reverb</span>
-          <span class="mixp">Slowed + Reverb</span>
-          <span class="mixp">8D Audio</span>
-          <span class="mixp">Drill / Rap</span>
-          <span class="mixp">Phonk</span>
-          <span class="mixp">NY Drill</span>
-          <span class="mixp">Chill Drill</span>
-        </div>
-        <div class="mix-applied">Speed 1.25x, Reverb 55%</div>
-        <div class="mix-full"><span><span class="mix-full-t">Full mixer</span><span class="mix-full-d">All sliders at once, dial it in yourself</span></span><input type="checkbox" class="switch"></div>
-        <div class="mix-slider-row">
-          <div class="mix-slider-head"><span>Speed</span></div>
-          <p class="mix-sub">Song tempo. Faster also raises the voice, slower deepens it.</p>
-          <input type="range" min="50" max="160" value="125">
-          <div class="mix-scale"><span>0.5x</span><span>1x</span><span>1.6x</span></div>
-        </div>
-        <div class="mix-slider-row">
-          <div class="mix-slider-head"><span>Reverb</span><span class="mix-val">55%</span></div>
-          <p class="mix-sub">Echo like in a big hall. More = the sound feels distant and dreamy.</p>
-          <input type="range" min="0" max="100" value="55">
-        </div>
-        <p class="mix-hint">Speed works on pages with a video or audio player. The other effects work everywhere.</p>
-      </div>
-
-    </div>
+  <div class="eq" aria-hidden="true">
+    <i style="animation-delay:0s"></i><i style="animation-delay:.12s"></i><i style="animation-delay:.24s"></i>
+    <i style="animation-delay:.06s"></i><i style="animation-delay:.3s"></i><i style="animation-delay:.18s"></i>
+    <i style="animation-delay:.42s"></i><i style="animation-delay:.09s"></i><i style="animation-delay:.33s"></i>
+    <i style="animation-delay:.21s"></i><i style="animation-delay:.45s"></i><i style="animation-delay:.15s"></i>
+    <i style="animation-delay:.27s"></i><i style="animation-delay:.03s"></i><i style="animation-delay:.39s"></i>
   </div>
 </header>
 
-<section id="features">
-  <div class="wrap">
-    <div class="kicker">What it does</div>
-    <h2>More than a volume booster</h2>
-    <p class="lead">A per-tab booster and a full audio mixer in one popup. Boost one tab while the rest stay normal.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">🔊</div><h3>Up to 700%, per tab</h3><p>Push one tab way past the system max while every other tab plays at its normal level.</p></div>
-      <div class="card"><div class="ic">🥁</div><h3>Bass boost</h3><p>Three flavors (Classic, Sub, Punch) with harmonic saturation, so the low end is felt even on small speakers.</p></div>
-      <div class="card"><div class="ic">🎧</div><h3>8D audio</h3><p>The sound orbits around your head. Put headphones on and feel it move.</p></div>
-      <div class="card"><div class="ic">🎚️</div><h3>Full mixer</h3><p>Sliders for speed, reverb, brightness, muffle, bass, vocal, power and spin. Flip one switch to reveal them all.</p></div>
-      <div class="card"><div class="ic">🎯</div><h3>Fix one-ear audio</h3><p>Mixes a lopsided stereo track back to the center so both ears get the sound.</p></div>
-      <div class="card"><div class="ic">🛡️</div><h3>Clean limiter</h3><p>On heavy boost the output is smoothly pushed down instead of crackling and clipping.</p></div>
+<section id="showcase">
+  <div class="wrap rv">
+    <div class="kicker">See it in action</div>
+    <h2>Loud looks<br>like <span class="grad">this.</span></h2>
+    <div class="video-frame" id="vidFrame">
+      <video id="vid" src="media/showcase.mp4" poster="img/poster.jpg" loop playsinline preload="metadata"></video>
+      <button class="vf-play" id="vfPlay" aria-label="Play video">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+      </button>
     </div>
   </div>
 </section>
 
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="kicker">One-click styles</div>
-    <h2>Remix any song, live</h2>
-    <p class="lead">Turn whatever is playing into a different vibe without downloads or uploads.</p>
-    <div class="presets">
-      <span class="preset hot">Sped Up</span>
-      <span class="preset hot">Nightcore</span>
-      <span class="preset">Sped Up + Reverb</span>
-      <span class="preset hot">Slowed + Reverb</span>
-      <span class="preset">Drill / Rap</span>
-      <span class="preset">NY Drill</span>
-      <span class="preset">Chill Drill</span>
-      <span class="preset">Phonk</span>
-      <span class="preset hot">8D Audio</span>
+<section class="seven">
+  <div class="wrap rv">
+    <div class="seven-num">700%</div>
+    <p class="lead">
+      Seven times louder than your browser allows. <b>Each tab has its own level</b>,
+      so one tab can scream while the rest stay quiet. A built-in limiter keeps it
+      from crackling.
+    </p>
+  </div>
+</section>
+
+<section id="remix">
+  <div class="wrap rv">
+    <div class="kicker">Live mixer</div>
+    <h2>Any song.<br><span class="grad">Your version.</span> Live.</h2>
+    <p class="lead">
+      Stop hunting YouTube for a sped up version that <b>half the time does not exist</b>.
+      One click remixes whatever is already playing - in real time, on any site.
+    </p>
+    <div class="pills">
+      <span class="pill">Sped Up <em>1.25x</em></span>
+      <span class="pill">Nightcore <em>1.35x</em></span>
+      <span class="pill">Sped Up + Reverb</span>
+      <span class="pill">Slowed + Reverb <em>0.85x</em></span>
+      <span class="pill">8D Audio <em>headphones</em></span>
+      <span class="pill">Drill / Rap <em>808</em></span>
+      <span class="pill">Phonk</span>
+      <span class="pill">NY Drill</span>
+      <span class="pill">Chill Drill</span>
+      <span class="pill">Your own mix <em>save it</em></span>
+    </div>
+  </div>
+</section>
+
+<section id="shots">
+  <div class="wrap rv">
+    <div class="kicker">Screenshots</div>
+    <h2>Take a look<br><span class="grad">inside.</span></h2>
+    <div class="shots">
+
+      <!-- Widok glowny -->
+      <div class="tius" aria-label="Extension popup, main view">
+        <div class="thead">
+          <span class="tbrand">🔊 Turn It Up, Son!</span>
+          <span class="tpow"><span class="ptrack"></span>On</span>
+        </div>
+        <div class="tstat"><span class="tdot"></span>Active: 100%</div>
+        <div class="vbl">
+          <div class="vread">100<i>%</i></div>
+          <input type="range" class="vol" min="0" max="700" value="100" tabindex="-1">
+          <div class="vscale"><span>quiet</span><b>clipping zone</b></div>
+          <div class="ticks"><span class="tick">100%</span><span class="tick">200%</span><span class="tick">400%</span><span class="tick">600%</span><span class="tick">MAX</span></div>
+        </div>
+        <div class="srow"><span>Fix sound stuck in one ear</span><span class="sw"></span></div>
+        <div class="srow"><span>Bass boost</span><span class="sw"></span></div>
+        <div class="srow"><span>Auto-continue on YouTube</span><span class="sw"></span></div>
+        <div class="mopen">
+          <span class="anlz"><i style="height:100%"></i><i style="height:45%"></i><i style="height:75%"></i></span>
+          <span class="mo-x"><span class="mo-t">Mix and effects</span><br><span class="mo-s">Tempo, reverb, brightness, 8D</span></span>
+          <span class="mo-a">›</span>
+        </div>
+        <div class="tbt">Tabs currently playing audio</div>
+        <div class="titem"><span class="tdot"></span><span>YouTube</span><span class="ton">ON</span></div>
+        <div class="frow"><span class="fbtn">Reset</span><span class="fbtn">Settings</span></div>
+        <div class="rrow"><span>Rate the extension</span><span class="rstars">★★★★★</span></div>
+        <div class="dono">☕ Support me</div>
+      </div>
+
+      <!-- Panel Miks: presety -->
+      <div class="tius" aria-label="Extension popup, Mix and effects panel">
+        <div class="mhead">
+          <span class="mback">‹</span>
+          <span class="mtitle">Mix and effects</span>
+          <span class="anlz"><i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:80%"></i><i style="height:55%"></i></span>
+        </div>
+        <div class="mbig">1.00x</div>
+        <div class="tstat info">Start playback to hear the effect</div>
+        <div class="mtabs"><span class="mtab on">Presets</span><span class="mtab">Your mixes</span></div>
+        <div class="mgrid">
+          <span class="mp on">Normal</span><span class="mp">Sped Up</span>
+          <span class="mp">Nightcore</span><span class="mp">Sped Up + Reverb</span>
+          <span class="mp">Slowed + Reverb</span><span class="mp">8D Audio</span>
+          <span class="mp">Drill / Rap</span><span class="mp">Phonk</span>
+          <span class="mp">NY Drill</span><span class="mp">Chill Drill</span>
+          <span class="mp add">＋</span>
+        </div>
+        <div class="mfull">
+          <span><span class="mf-t">Full mixer</span><span class="mf-d">All sliders at once, dial it in yourself</span></span>
+          <span class="sw"></span>
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Speed</span></div>
+          <p class="mrd">Song tempo. Faster also raises the voice, slower deepens it.</p>
+          <input type="range" min="50" max="160" value="100" tabindex="-1">
+          <div class="vscale"><span>0.5x</span><span>1x</span><span>1.6x</span></div>
+        </div>
+        <p class="mhint">Speed works on pages with a video or audio player. The other effects work everywhere.</p>
+      </div>
+
+      <!-- Pelny mikser -->
+      <div class="tius" aria-label="Extension popup, full mixer">
+        <div class="mfull">
+          <span><span class="mf-t">Full mixer</span><span class="mf-d">All sliders at once, dial it in yourself</span></span>
+          <span class="sw on"></span>
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Reverb</span><b>0%</b></div>
+          <p class="mrd">Echo like in a big hall. More = the sound feels distant and dreamy.</p>
+          <input type="range" min="0" max="100" value="0" tabindex="-1">
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Brightness</span><b>0%</b></div>
+          <p class="mrd">Boosts the high tones. The sound gets sharper and clearer.</p>
+          <input type="range" min="0" max="100" value="0" tabindex="-1">
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Bass</span><b>0%</b></div>
+          <p class="mrd">Classic = even lift, Sub = deepest, Punch = kick thump, Rumble = cinematic roar, 808 = drill boom, Warm = soft vintage low end.</p>
+          <div class="mseg"><span class="msg on">Classic</span><span class="msg">Sub</span><span class="msg">Punch</span><span class="msg">Rumble</span><span class="msg">808</span><span class="msg">Warm</span></div>
+          <input type="range" min="0" max="100" value="0" tabindex="-1">
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Vocal</span><b>0%</b></div>
+          <p class="mrd">Brings the voice to the front so it does not drown under the bass and reverb.</p>
+          <input type="range" min="0" max="100" value="0" tabindex="-1">
+        </div>
+        <div class="mrow">
+          <div class="mrh"><span>Power</span><b>0%</b></div>
+          <p class="mrd">Glues the mix and adds radio-style loudness. The limiter keeps it from crackling.</p>
+          <input type="range" min="0" max="100" value="0" tabindex="-1">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap rv">
+    <div class="kicker">Everything in one popup</div>
+    <h2>Small window.<br>Serious sound engine.</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4z"/><path d="M16.5 9.5a4 4 0 0 1 0 5"/><path d="M18.5 7a7.5 7.5 0 0 1 0 10"/></svg></div>
+        <h3>Per-tab volume, up to 700%</h3>
+        <p>Boost one tab while the others play at normal level. Green ON badge shows where it is working. Settings survive a page refresh.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M5 4v16M12 4v16M19 4v16"/><circle cx="5" cy="14" r="2.4"/><circle cx="12" cy="8" r="2.4"/><circle cx="19" cy="15" r="2.4"/></svg></div>
+        <h3>Full mixer</h3>
+        <p>Speed, reverb, brightness, muffle, bass, vocal, power and 8D rotation. Dial in your sound and save it as your own named mix.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/></svg></div>
+        <h3>Six bass flavors</h3>
+        <p>Classic, Sub, Punch, Rumble, 808 and Warm. From a cinematic roar you feel in your chest to a drill boom that cuts through laptop speakers.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 6 14.5" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="2.6"/></svg></div>
+        <h3>8D audio</h3>
+        <p>The sound smoothly orbits your head. Best with headphones, with a slider for how fast it spins.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M7 4a8 8 0 0 1 0 16"/><path d="M17 4a8 8 0 0 0 0 16" opacity=".4"/><path d="M12 9v6"/></svg></div>
+        <h3>Fix one-ear sound</h3>
+        <p>Some uploads play only in the left or right channel. One switch mixes both channels to the center so you hear everything in both ears.</p>
+      </div>
+      <div class="card">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="4.5" rx="2"/><rect x="4" y="14.5" width="16" height="4.5" rx="2"/><circle cx="8" cy="7.2" r=".8"/><circle cx="8" cy="16.8" r=".8"/></svg></div>
+        <h3>Every playing tab, listed</h3>
+        <p>The popup shows every tab with audio and each one toggles on or off with a single click. Turning it back on restores your last settings.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="privacy">
-  <div class="wrap">
-    <div class="kicker">Privacy first</div>
-    <h2>Your audio never leaves your device</h2>
-    <p class="lead">Open source on GitHub. See for yourself: there is nothing to hide.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">🚫</div><h3>No data collected</h3><p>No servers, no analytics, no accounts, no tracking of any kind.</p></div>
-      <div class="card"><div class="ic">💻</div><h3>100% local</h3><p>Audio is processed on your device with the Web Audio API and never recorded or sent anywhere.</p></div>
-      <div class="card"><div class="ic">🔐</div><h3>No access by default</h3><p>The extension sits under "No access needed" until you choose to enable a per-site feature.</p></div>
+  <div class="wrap rv">
+    <div class="kicker">Privacy</div>
+    <h2>Nothing leaves<br>your device. <span class="grad">Ever.</span></h2>
+    <p class="lead">
+      All audio processing happens locally in your browser. Nothing is recorded,
+      stored remotely or sent anywhere.
+    </p>
+    <div class="priv-row">
+      <span class="priv-chip"><b>0</b> servers</span>
+      <span class="priv-chip"><b>0</b> analytics</span>
+      <span class="priv-chip"><b>0</b> accounts</span>
+      <span class="priv-chip">Site access <b>only on demand</b>, revoked when off</span>
+      <span class="priv-chip">Source <b>public on GitHub</b></span>
     </div>
   </div>
 </section>
 
 <section class="final">
-  <div class="wrap">
-    <div class="box">
-      <h2>Turn it up.</h2>
-      <p>Free, private and loud. Add it to your browser in one click.</p>
-      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">
-        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 6a4 4 0 110 8 4 4 0 010-8z"/></svg>
-        Add to Chrome, Son
-      </a>
+  <div class="final-orb" aria-hidden="true"></div>
+  <div class="wrap rv">
+    <h2>Your speakers<br>are <span class="grad">holding back.</span></h2>
+    <div class="cta-row">
+      <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - it's free</a>
     </div>
+    <p class="mini">
+      Works on Chrome, Edge and Brave ·
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">Source on GitHub</a> ·
+      <a href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">Buy me a coffee</a>
+    </p>
   </div>
 </section>
 
 <footer>
-  <div class="wrap">
-    <div class="links">
-      <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik">Chrome Web Store</a>
-      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
-      <a href="https://buymeacoffee.com/romanzbudowy">Buy me a coffee</a>
+  <div class="foot-in">
+    <span>© 2026 romanzbudowy · Turn It Up, Son!</span>
+    <div class="foot-links">
+      <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Chrome Web Store</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">Buy me a coffee</a>
     </div>
-    <div>Turn It Up, Son! Volume Booster &amp; Mixer &bull; by romanzbudowy &bull; All rights reserved</div>
   </div>
 </footer>
 
-<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="romanzbudowy" data-description="Support me on Buy me a coffee!" data-message="" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+<script>
+  // Reveal on scroll
+  const io = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".rv").forEach((el) => io.observe(el));
 
+  // Boost demo: suwak rozpedza equalizer i oddech kuli
+  const bdRange = document.getElementById("bdRange");
+  const bdVal = document.getElementById("bdVal");
+  const rootEl = document.documentElement;
+  function boostDemo() {
+    const v = Number(bdRange.value);
+    const k = (v - 100) / 600; // 0..1
+    bdVal.textContent = v;
+    bdRange.style.background = "linear-gradient(to right,#ff6b52," + "#ff2d55 " + (k * 100) + "%,#2c2c2e " + (k * 100) + "%)";
+    rootEl.style.setProperty("--eqd", (1.15 - 0.82 * k) + "s");
+    rootEl.style.setProperty("--eqs", String(1 + 0.7 * k));
+    rootEl.style.setProperty("--orbd", (7 - 4.6 * k) + "s");
+  }
+  bdRange.addEventListener("input", boostDemo);
+  boostDemo();
+
+  // Showcase: przycisk Play startuje z dzwiekiem, klik pauzuje/wznawia,
+  // wyjechanie poza ekran pauzuje.
+  const vid = document.getElementById("vid");
+  const vidFrame = document.getElementById("vidFrame");
+  if (vid) {
+    vidFrame.addEventListener("click", () => {
+      if (vid.paused) { vid.muted = false; vid.play(); }
+      else vid.pause();
+    });
+    vid.addEventListener("play", () => vidFrame.classList.add("playing"));
+    vid.addEventListener("pause", () => vidFrame.classList.remove("playing"));
+    new IntersectionObserver((es) => {
+      es.forEach((e) => { if (!e.isIntersecting && !vid.paused) vid.pause(); });
+    }, { threshold: 0.25 }).observe(vid);
+  }
+
+</script>
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="romanzbudowy" data-description="Support me on Buy me a coffee!" data-message="" data-color="#ff453a" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 </html>
