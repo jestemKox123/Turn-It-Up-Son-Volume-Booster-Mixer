@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
      Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="pl">
@@ -36,9 +36,6 @@
         justify-content: center;
       }
 
-      /* Winyle krecace sie w tle. Rowki to cienkie okregi z bieli, obrot widac
-         po sunacym odblasku (conic), naklejka ma gradient akcentu, a w srodku
-         jest dziurka jak w prawdziwej plycie. Pod trescia, nie lapie klikniec. */
       .bg-vinyl {
         position: fixed;
         width: 480px;
@@ -53,10 +50,7 @@
         box-shadow:
           0 0 60px rgba(110, 86, 255, 0.22),
           inset 0 0 90px rgba(0, 0, 0, 0.55);
-        /* Uwaga na pamiec: animowana tarcza dostaje warstwe GPU o koszcie
-           szer x wys x 4 bajty x kwadrat skali ekranu. Dlatego tarcze sa
-           umiarkowanej wielkosci i BEZ will-change (Chrome sam podnosi
-           warstwe na czas animacji i zwalnia ja, gdy nie jest potrzebna). */
+
         animation: vinylspin 55s linear infinite;
         pointer-events: none;
         z-index: -1;
@@ -83,14 +77,12 @@
         to { transform: rotate(360deg); }
       }
 
-      /* Uzytkownik prosi system o mniej ruchu: wylacz dekoracyjne animacje. */
       @media (prefers-reduced-motion: reduce) {
         .bg-vinyl, .bg-vinyl.b { animation: none; }
         .live .dot { animation: none; }
       }
       .wrap { width: 100%; max-width: 640px; }
 
-      /* Naglowek */
       .head {
         display: flex;
         align-items: center;
@@ -126,7 +118,6 @@
       }
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-      /* Karty */
       .card {
         background: var(--panel);
         border: 1px solid var(--border);
@@ -145,7 +136,6 @@
       .card p { margin: 0; font-size: 13.5px; color: var(--muted); }
       .hint { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--border); }
 
-      /* Wsparcie: gwiazdki oceny + przycisk donate */
       .support-d { font-size: 12.5px; margin: 0 0 12px; }
       .stars { display: flex; gap: 8px; justify-content: center; }
       .star {

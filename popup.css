@@ -1,9 +1,6 @@
 /* Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
    Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). */
 
-/* Jedna, stala ciemna paleta (szklane karty na prawie-czerni), wspolna dla
-   calej wtyczki: fiolet+cyjan jako akcent, mieta na statusy, czerwien na
-   ostrzezenia. */
 :root {
   --bg: #05060b;
   --card: rgba(255, 255, 255, 0.04);
@@ -25,14 +22,10 @@
   box-sizing: border-box;
 }
 
-/* Atrybut hidden ma zawsze wygrywac - display:grid/flex na klasie potrafi
-   go nadpisac (przez to zakladka Twoje mixy nie chowala presetow). */
 [hidden] {
   display: none !important;
 }
 
-/* Cala tresc musi miescic sie w limicie 600px wysokosci popupu Chrome -
-   odstepy sa celowo ciasne, zeby nigdy nie pojawil sie pasek przewijania. */
 body {
   width: 300px;
   margin: 0;
@@ -45,7 +38,6 @@ body {
     var(--bg);
 }
 
-/* Header */
 .head {
   display: flex;
   align-items: center;
@@ -72,7 +64,6 @@ body {
   letter-spacing: -0.2px;
 }
 
-/* Power toggle */
 .power {
   display: inline-flex;
   align-items: center;
@@ -122,7 +113,6 @@ body {
   color: var(--accent);
 }
 
-/* Status - stala minimalna wysokosc, zeby zmiana tekstu nie zmieniala rozmiaru popupu */
 .status {
   display: flex;
   align-items: center;
@@ -131,8 +121,7 @@ body {
   font-weight: 600;
   line-height: 1.35;
   padding: 5px 11px;
-  /* Stala wysokosc z zapasem na chip Przywroc - pojawienie sie go nie moze
-     zmienic wysokosci paska (popup by drgnal). */
+
   min-height: 36px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -172,7 +161,6 @@ body {
   background: var(--danger);
 }
 
-/* Volume */
 .volume-block {
   background: var(--card);
   border-radius: 14px;
@@ -198,7 +186,6 @@ body {
   margin-left: 1px;
 }
 
-/* W strefie przesterów odczyt robi sie pomaranczowy, potem czerwony. */
 .volume-readout.warn {
   background: none;
   -webkit-text-fill-color: #f59e0b;
@@ -220,7 +207,6 @@ input[type="range"] {
   background: var(--track);
 }
 
-/* Suwak glosnosci: lewa czesc bezpieczna, od okolo 300% zolto, od 600% czerwono. */
 #volume {
   background: linear-gradient(
     to right,
@@ -234,7 +220,6 @@ input[type="range"] {
   );
 }
 
-/* Ikona miksera (SVG) ma podazac za motywem koloru. */
 #mixg stop:first-child {
   stop-color: var(--accent);
 }
@@ -296,7 +281,6 @@ input[type="range"]:disabled {
   color: var(--accent);
 }
 
-/* Effects */
 .effects {
   display: flex;
   flex-direction: column;
@@ -350,7 +334,6 @@ input[type="range"]:disabled {
   transform: translateX(16px);
 }
 
-/* Mix: przycisk otwierajacy osobny panel */
 .mix-open {
   display: flex;
   align-items: center;
@@ -415,12 +398,6 @@ input[type="range"]:disabled {
   flex-shrink: 0;
 }
 
-/* ============================================================
-   Panel Miks - ten sam jezyk wizualny co reszta okienka (te same
-   karty, kolory i motyw jasny/ciemny), plus dwa muzyczne akcenty:
-   morphujacy blob za odczytem i mini-analizator w naglowku.
-   ============================================================ */
-
 .mix-view {
   padding: 2px 0 2px;
 }
@@ -457,7 +434,6 @@ input[type="range"]:disabled {
   flex: 1;
 }
 
-/* Mini-analizator pasma w naglowku (czysto ozdobny). */
 .mix-analyzer {
   display: inline-flex;
   align-items: flex-end;
@@ -486,7 +462,6 @@ input[type="range"]:disabled {
   50% { transform: scaleY(1); }
 }
 
-/* Odczyt predkosci z delikatnym, morphujacym blobem w tle. */
 .mix-core {
   position: relative;
   height: 58px;
@@ -541,7 +516,6 @@ input[type="range"]:disabled {
   margin-bottom: 8px;
 }
 
-/* Nieparzysty ostatni preset zajmuje caly wiersz (wyrozniony). */
 .mix-presets .mixp:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
@@ -574,9 +548,6 @@ input[type="range"]:disabled {
   cursor: default;
 }
 
-/* Zakladki panelu Miks: presety wbudowane / mixy uzytkownika. Segmentowy
-   przelacznik w kapsule - celowo wyglada INACZEJ niz przyciski presetow
-   ponizej, zeby sie z nimi nie zlewal. */
 .mix-tabs {
   display: flex;
   gap: 3px;
@@ -610,7 +581,6 @@ input[type="range"]:disabled {
   box-shadow: 0 1px 5px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
-/* Kafelek + na koncu presetow: skrot do zakladki Twoje mixy. */
 .mixp-add {
   border-style: dashed;
   font-size: 13px;
@@ -624,8 +594,6 @@ input[type="range"]:disabled {
   margin: 0 2px 8px;
 }
 
-/* Wlasne mixy uzytkownika: przerywana ramka odroznia je od wbudowanych,
-   krzyzyk do usuwania pojawia sie na hover. */
 .mixp.userp {
   position: relative;
   border-style: dashed;
@@ -674,7 +642,6 @@ input[type="range"]:disabled {
   color: var(--danger);
 }
 
-/* Zapis wlasnego mixu: przycisk zamienia sie w pole nazwy + OK/anuluj. */
 .mix-save {
   margin: -3px 0 8px;
 }
@@ -752,7 +719,6 @@ input[type="range"]:disabled {
   margin: 5px 2px 0;
 }
 
-/* Pelny mikser: przelacznik nad suwakami. */
 .mix-full {
   display: flex;
   align-items: center;
@@ -778,7 +744,6 @@ input[type="range"]:disabled {
   color: var(--muted);
 }
 
-/* Wiersze suwakow: naglowek z wartoscia + krotki opis, co robi suwak. */
 .mix-slider-row {
   margin-bottom: 8px;
 }
@@ -806,7 +771,6 @@ input[type="range"]:disabled {
   margin: 0 0 4px;
 }
 
-/* Segmentowy wybor charakteru basu (6 charakterow, 2 rzedy po 3). */
 .mix-seg {
   display: flex;
   flex-wrap: wrap;
@@ -853,7 +817,6 @@ input[type="range"]:disabled {
   margin: 8px 0 0;
 }
 
-/* Wskaznik stanu Mixa: zielony (dziala), czerwony (nie dziala), neutralny. */
 .mix-status {
   font-size: 11px;
   line-height: 1.4;
@@ -863,7 +826,6 @@ input[type="range"]:disabled {
   font-weight: 600;
 }
 
-/* Podsumowanie zastosowanych efektow pod presetami. */
 .mix-applied {
   margin: -2px 2px 8px;
   font-size: 11px;
@@ -887,7 +849,6 @@ input[type="range"]:disabled {
   background: var(--card-2);
 }
 
-/* Audio tabs list */
 .tabs-block {
   margin-bottom: 8px;
 }
@@ -949,7 +910,6 @@ input[type="range"]:disabled {
   text-overflow: ellipsis;
 }
 
-/* Klikalny przelacznik ON/OFF przy karcie na liscie. */
 .t-toggle {
   font-size: 9.5px;
   font-weight: 700;
@@ -994,7 +954,6 @@ input[type="range"]:disabled {
   border-radius: 9px;
 }
 
-/* Stopka */
 .footer-row {
   display: flex;
   gap: 8px;
@@ -1023,7 +982,6 @@ input[type="range"]:disabled {
   color: var(--accent);
 }
 
-/* Chip przywracania w pasku statusu: staly wiersz, zadnego skakania. */
 .restore {
   flex-shrink: 0;
   margin: 0;
@@ -1043,7 +1001,6 @@ input[type="range"]:disabled {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-/* Ocena gwiazdkami */
 .rate {
   display: flex;
   align-items: center;
@@ -1060,7 +1017,6 @@ input[type="range"]:disabled {
   color: var(--muted);
 }
 
-/* Dyskretny donate na samym dole: szary tekst, akcent dopiero na hover. */
 .donate-link {
   display: flex;
   align-items: center;

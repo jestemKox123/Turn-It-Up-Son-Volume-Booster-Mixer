@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
      Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="pl">
@@ -23,7 +23,7 @@
       <div id="status" class="status status-idle">
         <span class="status-dot"></span>
         <span id="statusText" data-i18n="status_checking">Sprawdzam karte...</span>
-        <!-- Chip zamiast osobnego wiersza - nie zmienia wysokosci popupu. -->
+
         <button id="restoreBtn" class="restore" hidden>↺</button>
       </div>
 
@@ -157,7 +157,6 @@
 
       <p id="mixApplied" class="mix-applied" hidden></p>
 
-      <!-- Pelny mikser: pokazuje wszystkie suwaki naraz, niezaleznie od presetu. -->
       <label class="mix-full">
         <span>
           <span class="mix-full-t" data-i18n="mix_full_l">Pełny mikser</span>
@@ -166,7 +165,6 @@
         <input type="checkbox" id="fullMix" class="switch" />
       </label>
 
-      <!-- Kazdy preset pokazuje tylko SWOJE suwaki (data-ctl na przycisku). -->
       <div class="mix-slider-row" id="rowSpeed">
         <div class="mix-slider-head">
           <span data-i18n="mix_speed_l">Prędkość</span>

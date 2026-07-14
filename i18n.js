@@ -1,9 +1,6 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// Motywy kolorow (wybor w ustawieniach). Wszystkie strony wtyczki uzywaja
-// var(--accent)/var(--accent-2), wiec podmiana dwoch zmiennych przebarwia
-// cala wtyczke. Zmiana w storage od razu przebarwia otwarte strony.
 (function () {
   const THEMES = {
     neon: ["#6e56ff", "#3ddcff"],
@@ -30,9 +27,6 @@
   }
   window.VBTHEME = { THEMES, applyTheme };
 })();
-
-// Tlumaczenia PL/EN. Auto-wykrywa jezyk przegladarki, mozna wymusic w
-// ustawieniach. Elementy z data-i18n dostaja tekst automatycznie.
 
 (function () {
   const DICT = {
@@ -122,7 +116,6 @@
       opt_tab_t: "Zamknięciem karty silnika",
       opt_tab_d: "Przy pierwszym podgłośnieniu otwiera się mała, przypięta karta po lewej (sam favicon). Trzyma cały dźwięk. Zamykasz ją i wtyczka od razu przestaje działać na wszystkich kartach.",
       lang_h: "Język / Language",
-      lang_auto: "Automatycznie (jak przeglądarka)",
       maxvol_h: "Maksymalna głośność",
       maxvol_d: "Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.",
       theme_h: "Kolor wtyczki",
@@ -156,15 +149,6 @@
       access_revoke: "Zabierz dostęp wszystkim stronom",
       access_granted: "Nadano dostęp.",
       access_revoked: "Zabrano dostęp.",
-      binds_h: "Skróty klawiszowe",
-      pill_default_off: "domyślnie wyłączone",
-      binds_1: "Skrót Wyłącz podgłaśnianie ubija wszystko naraz (jak zamknięcie karty silnika).",
-      binds_2: "Skrót Przywróć poprzednie wraca do ustawień z tej karty sprzed wyłączenia.",
-      binds_note: "Klawisze ustawiasz w Chrome. Włącz przełącznik i kliknij poniżej, żeby przypisać kombinacje.",
-      binds_btn: "Ustaw klawisze w Chrome",
-      binds_on: "Skróty włączone.",
-      binds_off: "Skróty wyłączone.",
-      shortcuts_manual: "Wejdź ręcznie: chrome://extensions/shortcuts",
       saved: "Zapisano.",
       foot: "Tę stronę otworzysz zawsze przez okienko wtyczki, przycisk Ustawienia.",
 
@@ -210,9 +194,32 @@
       featl_resume_d: "Po odświeżeniu strony podgłośnienie i efekty wracają same, bez ponownego klikania.",
       featl_yt_t: "Auto-kontynuacja YouTube",
       featl_yt_d: "Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.",
-      featl_keys_t: "Skróty klawiszowe",
-      featl_keys_d: "Dwa skróty do przypisania w Chrome: wyłącz wszystko naraz i przywróć ustawienia sprzed wyłączenia. Domyślnie wyłączone.",
-      whatsnew_note: "Nowości w tej wersji: własne mixy (zakładka Twoje mixy), wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu (Grzmot, 808, Ciepły), głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie (łapie też Mix).",
+      tab_general: "Ogólne",
+      tab_privacy: "Prywatność i dostęp",
+      bug_sec: "Zgłoś błąd",
+      bug_h: "Znalazłeś błąd?",
+      bug_d: "Napisz, co nie działa i na jakiej stronie. Wiadomość wysyła się anonimowo, bez konta i logowania.",
+      bug_ph: "Opisz problem...",
+      bug_send: "Wyślij",
+      bug_sent: "Wysłane, dzięki!",
+      changelog_h: "Historia zmian",
+      cl_421: "Naprawiona auto-kontynuacja YouTube (działa z nowym wyglądem dialogów i od razu po włączeniu, bez odświeżania strony). Naprawione zacinanie i nakładanie się dźwięku przy bardzo szybkim klikaniu presetów w panelu Miks. Strona powitalna po instalacji (szybki start, wybór języka), domyślny język angielski, ciemny wygląd rozwijanych list, anonimowe zgłaszanie błędów w ustawieniach i strona z pytaniem o powód po odinstalowaniu.",
+      cl_420: "Własne mixy (zakładka Twoje mixy), wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu (Grzmot, 808, Ciepły), głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie (łapie też Mix).",
+      wlc_hi: "Dzięki za instalację!",
+      wlc_start_h: "Szybki start",
+      wlc_step1_t: "Przypnij wtyczkę do paska",
+      wlc_step1_d: "Kliknij ikonę puzzla obok paska adresu i pinezkę przy Turn It Up, Son!",
+      wlc_step2_t: "Włącz coś z dźwiękiem",
+      wlc_step2_d: "YouTube, Spotify, film, cokolwiek gra w karcie.",
+      wlc_step3_t: "Kliknij ikonę wtyczki",
+      wlc_step3_d: "Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.",
+      wlc_links_h: "Podoba się? To pomaga najbardziej",
+      wlc_rate_t: "Oceń wtyczkę",
+      wlc_rate_d: "Dobra ocena w Chrome Web Store pomaga innym ją znaleźć.",
+      wlc_gh_d: "Kod jest publiczny. Zostaw gwiazdkę na repozytorium!",
+      wlc_bmac_d: "Wtyczka jest w 100% darmowa. Jeśli się przyda, możesz postawić kawę.",
+      wlc_priv: "Zero analityki, zero kont, zero serwerów. Cały dźwięk przetwarzany lokalnie w przeglądarce.",
+      wlc_settings: "Ustawienia",
     },
     en: {
       power_on: "On",
@@ -300,7 +307,6 @@
       opt_tab_t: "By closing the engine tab",
       opt_tab_d: "On the first boost a small pinned tab opens on the left (just a favicon). It holds all the audio. Close it and the extension stops on every tab at once.",
       lang_h: "Language / Język",
-      lang_auto: "Automatic (match browser)",
       maxvol_h: "Maximum volume",
       maxvol_d: "The upper limit of the volume slider in the popup. Set it lower to protect your ears or speakers from an accidental 700%.",
       theme_h: "Extension color",
@@ -334,15 +340,6 @@
       access_revoke: "Revoke access from all sites",
       access_granted: "Access granted.",
       access_revoked: "Access revoked.",
-      binds_h: "Keyboard shortcuts",
-      pill_default_off: "off by default",
-      binds_1: "The Turn off boosting shortcut kills everything at once (like closing the engine tab).",
-      binds_2: "The Restore previous shortcut brings back this tab's settings from before you turned it off.",
-      binds_note: "You set the keys in Chrome. Turn on the switch and click below to assign the combinations.",
-      binds_btn: "Set keys in Chrome",
-      binds_on: "Shortcuts on.",
-      binds_off: "Shortcuts off.",
-      shortcuts_manual: "Open manually: chrome://extensions/shortcuts",
       saved: "Saved.",
       foot: "You can reopen this page anytime from the popup, the Settings button.",
 
@@ -388,9 +385,32 @@
       featl_resume_d: "After a page refresh the boost and effects come back on their own, no clicking needed.",
       featl_yt_t: "YouTube auto-continue",
       featl_yt_d: "When YouTube pauses the music asking if you are still watching, the extension clicks it for you. Needs access to youtube.com and gives it back when turned off.",
-      featl_keys_t: "Keyboard shortcuts",
-      featl_keys_d: "Two shortcuts you can assign in Chrome: turn everything off at once and restore the settings from before turning off. Off by default.",
-      whatsnew_note: "New in this version: custom mixes (the Your mixes tab), extension color themes and custom preset names in the settings, 3 new bass flavors (Rumble, 808, Warm), louder high levels and a more reliable Restore previous (it now covers Mix too).",
+      tab_general: "General",
+      tab_privacy: "Privacy & access",
+      bug_sec: "Report a bug",
+      bug_h: "Found a bug?",
+      bug_d: "Tell us what broke and on which site. The message is sent anonymously, no account or sign-in needed.",
+      bug_ph: "Describe the problem...",
+      bug_send: "Send",
+      bug_sent: "Sent, thanks!",
+      changelog_h: "Changelog",
+      cl_421: "Fixed YouTube auto-continue (works with the new dialog design and right after enabling, no page refresh needed). Fixed audio stutter and overlap when clicking Mix presets very fast. Welcome page after install (quick start, language picker), English as the default language, dark styling for dropdown lists, anonymous bug reports in the settings and a page asking why after uninstall.",
+      cl_420: "Custom mixes (the Your mixes tab), extension color themes and custom preset names in the settings, 3 new bass flavors (Rumble, 808, Warm), louder high levels and a more reliable Restore previous (it now covers Mix too).",
+      wlc_hi: "Thanks for installing!",
+      wlc_start_h: "Quick start",
+      wlc_step1_t: "Pin the extension to your toolbar",
+      wlc_step1_d: "Click the puzzle icon next to the address bar, then the pin next to Turn It Up, Son!",
+      wlc_step2_t: "Play something with sound",
+      wlc_step2_d: "YouTube, Spotify, a movie, anything playing in a tab.",
+      wlc_step3_t: "Click the extension icon",
+      wlc_step3_d: "Drag the volume slider up to 700% or open the Mix panel and pick a preset.",
+      wlc_links_h: "Enjoying it? This helps the most",
+      wlc_rate_t: "Rate the extension",
+      wlc_rate_d: "A good rating on the Chrome Web Store helps others find it.",
+      wlc_gh_d: "The code is public. Leave a star on the repo!",
+      wlc_bmac_d: "The extension is 100% free. If it helps you, you can buy me a coffee.",
+      wlc_priv: "No analytics, no accounts, no servers. All audio is processed locally in your browser.",
+      wlc_settings: "Settings",
     },
   };
 
@@ -398,13 +418,8 @@
   let ready = false;
   const queue = [];
 
-  function pickAuto() {
-    const l = (navigator.language || "en").toLowerCase();
-    return l.startsWith("pl") ? "pl" : "en";
-  }
-
   function resolveLang(stored) {
-    LANG = !stored || stored === "auto" ? pickAuto() : DICT[stored] ? stored : "en";
+    LANG = stored && DICT[stored] ? stored : "en";
   }
 
   function t(key, vars) {
@@ -426,8 +441,6 @@
     });
   }
 
-  // W dokumencie offscreen (tryb "toggle") chrome.storage nie istnieje.
-  // Wtedy jezyk bierzemy z przegladarki i nie dotykamy storage.
   const store = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local ? chrome.storage.local : null;
 
   function setLang(l) {
@@ -457,7 +470,7 @@
   if (store) {
     store.get("lang", (d) => boot(d.lang));
   } else {
-    boot("auto");
+    boot("en");
   }
 
   window.VBI18N = {

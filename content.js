@@ -1,32 +1,76 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// Auto-kontynuacja YouTube. Rejestrowany tylko na youtube.com i tylko gdy
-// uzytkownik wlaczy te opcje (opcjonalna zgoda, cofana przy wylaczeniu).
-// Bezpieczenstwo: nie klika na slepo pierwszego przycisku dialogu -
-// yt-confirm-dialog-renderer sluzy tez do prawdziwych pytan (np. usuwanie
-// playlisty). Ogolne dialogi potwierdzamy wylacznie bez widocznego "Anuluj".
-
 if (!window.__vbYtContinue) {
   window.__vbYtContinue = true;
 
-  const visible = (el) => !!el && el.offsetParent !== null;
+  let vbEnabled = true;
+  try {
+    chrome.storage.local.get("ytAutoContinue", (d) => {
+      if (!chrome.runtime.lastError && d) vbEnabled = !!d.ytAutoContinue;
+    });
+    chrome.storage.onChanged.addListener((ch, area) => {
+      if (area === "local" && ch.ytAutoContinue) vbEnabled = !!ch.ytAutoContinue.newValue;
+    });
+  } catch (e) {}
+
+  const visible = (el) => {
+    if (!el) return false;
+    if (el.checkVisibility && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0;
+  };
+
+  const norm = (s) =>
+    (s || "")
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/ł/g, "l")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+  const IDLE_RX = /(continue watching|still watching|still listening|are you (there|still)|video paused|chcesz ogladac|ogladac dalej|nadal ogladasz|nadal sluchasz|zostal wstrzymany|zostalo wstrzymane|wideo wstrzymane)/;
+  const YES_RX = /^(tak|yes|ok|okej|continue|kontynuuj|dalej|resume|wznow)\b/;
+  const NO_RX = /(anuluj|cancel|not now|nie teraz|^nie\b|^no\b)/;
+
+  const label = (b) => norm(b.textContent || b.getAttribute("aria-label"));
+
+  function press(b) {
+    const inner = b.tagName === "BUTTON" ? b : b.querySelector("button");
+    (inner || b).click();
+  }
+
+  function tryDialog(d) {
+    if (!visible(d)) return false;
+    if (!IDLE_RX.test(norm(d.textContent))) return false;
+    const btns = [...d.querySelectorAll("button, [role='button']")].filter(visible);
+    if (!btns.length) return false;
+    const yes = btns.find((b) => YES_RX.test(label(b)));
+    if (yes) {
+      press(yes);
+      return true;
+    }
+    if (btns.length === 1 && !NO_RX.test(label(btns[0]))) {
+      press(btns[0]);
+      return true;
+    }
+    return false;
+  }
 
   function clickIdleDialog() {
-    // Dialog odtwarzacza: "Wideo zatrzymane. Kontynuowac ogladanie?".
+    if (!vbEnabled) return;
+
     const player = document.querySelector(".ytp-confirm-dialog-renderer");
     if (visible(player)) {
-      const buttons = player.querySelectorAll("button");
-      const btn =
-        player.querySelector(".ytp-confirm-dialog-confirm-button") ||
-        (buttons.length === 1 ? buttons[0] : null);
-      if (btn) {
+      const btn = player.querySelector(".ytp-confirm-dialog-confirm-button");
+      if (btn && visible(btn)) {
         btn.click();
         return;
       }
+      if (tryDialog(player)) return;
     }
 
-    // YouTube Music: "Nadal sluchasz?".
     const music = document.querySelector("ytmusic-you-there-renderer");
     if (visible(music)) {
       const btn = music.querySelector("button");
@@ -36,22 +80,14 @@ if (!window.__vbYtContinue) {
       }
     }
 
-    // Ogolny dialog bezczynnosci: potwierdzamy tylko bez widocznego "Anuluj".
-    const dialogs = document.querySelectorAll("yt-confirm-dialog-renderer");
-    for (const d of dialogs) {
-      if (!visible(d)) continue;
-      const cancel = d.querySelector("#cancel-button");
-      if (cancel && visible(cancel)) continue;
-      const ok = d.querySelector("#confirm-button button") || d.querySelector("#confirm-button");
-      if (ok && visible(ok)) {
-        ok.click();
-        return;
-      }
+    const nodes = document.querySelectorAll(
+      "yt-confirm-dialog-renderer, tp-yt-paper-dialog, dialog, [role='dialog'], [role='alertdialog']"
+    );
+    for (const d of nodes) {
+      if (tryDialog(d)) return;
     }
   }
 
-  // YouTube mutuje DOM bez przerwy - sprawdzamy najwyzej raz na 400 ms,
-  // plus siatka bezpieczenstwa co 5 s.
   let scheduled = false;
   function schedule() {
     if (scheduled) return;

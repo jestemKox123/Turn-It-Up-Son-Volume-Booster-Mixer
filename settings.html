@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
      Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="pl">
@@ -9,6 +9,8 @@
     <title>Turn It Up, Son! - ustawienia</title>
     <style>
       :root {
+
+        color-scheme: dark;
         --bg: #05060b;
         --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
         --panel-2: rgba(255, 255, 255, 0.05);
@@ -34,7 +36,6 @@
         padding: 40px 20px 56px;
       }
 
-      /* Cienka gradientowa linia motywu na samej gorze strony. */
       .bg-topline {
         position: fixed;
         top: 0;
@@ -47,9 +48,6 @@
         z-index: 1;
       }
 
-      /* Marquee w tle: wielka typografia samym konturem, sunie powoli.
-         Tekst jest w spanie DWA razy, a animacja przesuwa o -50% szerokosci,
-         wiec petla jest bezszwowa. Pod trescia, nie lapie klikniec. */
       .bg-mq {
         position: fixed;
         left: 0;
@@ -84,8 +82,6 @@
         to { transform: translateX(0); }
       }
 
-      /* Wielki bialy neon w TLE (za kartami): pochylony w 3D, prostuje sie
-         w rytm scrollowania (transform ustawia settings.js). */
       .mark3d-wrap {
         position: fixed;
         inset: 0;
@@ -119,14 +115,12 @@
         50% { opacity: 1; }
       }
 
-      /* Uzytkownik prosi system o mniej ruchu: wylacz dekoracyjne animacje. */
       @media (prefers-reduced-motion: reduce) {
         .bg-mq .tr { animation: none; }
         #mark3d { animation: none; }
       }
       .wrap { max-width: 640px; margin: 0 auto; }
 
-      /* Naglowek */
       .head {
         display: flex;
         align-items: center;
@@ -141,7 +135,6 @@
       .head .sub { font-size: 13px; color: var(--muted); margin: 1px 0 0; }
       .head .ver { font-size: 12px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
 
-      /* Sekcje i karty */
       .sec-h {
         font-size: 11px;
         font-weight: 700;
@@ -152,8 +145,7 @@
       }
       .sec-h:first-of-type { margin-top: 0; }
       .card {
-        /* Solidna baza pod polprzezroczystym gradientem - siatka z tla
-           nie moze przeswitywac przez karty. */
+
         background-color: #0a0b12;
         background-image: var(--panel);
         border: 1px solid var(--border);
@@ -164,10 +156,10 @@
       .card h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
       .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
       .row select { flex-shrink: 0; }
-      /* Kolejne ustawienie w tej samej karcie, oddzielone kreska. */
+
       .row.sep { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
       .mini-d { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.45; max-width: 400px; }
-      /* Rozwijane karty (details): naglowek z obracajaca sie strzalka. */
+
       .dsum {
         display: flex;
         align-items: center;
@@ -203,16 +195,6 @@
       .opt .t { font-weight: 600; margin-bottom: 3px; font-size: 13.5px; }
       .opt .d { font-size: 12.5px; color: var(--muted); }
 
-      .pill {
-        display: inline-block;
-        padding: 2px 9px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        color: var(--muted);
-      }
       .note {
         font-size: 12.5px;
         color: var(--muted);
@@ -264,6 +246,58 @@
       select.btn { cursor: pointer; }
       select.btn option { background: #0c0d10; color: var(--text); }
 
+      .tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 0 0 22px;
+      }
+      .tab {
+        padding: 9px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+      }
+      .tab:hover { border-color: var(--border-strong); color: var(--text); }
+      .tab.on {
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
+        color: #fff;
+      }
+      .tabpane { display: none; }
+      .tabpane.on { display: block; }
+
+      .bugcard {
+        border-color: var(--accent);
+        margin-bottom: 22px;
+        animation: bugin 0.25s ease;
+      }
+      @keyframes bugin {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .bugbox {
+        width: 100%;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+        padding: 10px 12px;
+        resize: vertical;
+        min-height: 72px;
+      }
+      .bugbox:focus { outline: none; border-color: var(--accent); }
+
       .access-list-title {
         font-size: 11px;
         font-weight: 700;
@@ -297,17 +331,12 @@
       .access-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
       .access-note + .access-note { margin-top: 6px; }
 
-      .keys { margin: 12px 0 0; padding-left: 18px; }
-      .keys li { margin-bottom: 6px; font-size: 13px; }
-
       .featl { padding: 12px 0; border-bottom: 1px solid var(--border); }
       .featl:first-of-type { padding-top: 2px; }
       .featl:last-of-type { border-bottom: none; padding-bottom: 0; }
       .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
       .featl .d { font-size: 12.5px; color: var(--muted); }
 
-      /* Przycisk wsparcia: zloty, wypelniony - glowne CTA naglowka,
-         w kolorach Buy Me a Coffee. Reszta pigulek jest szklana. */
       .support-pill {
         display: inline-flex;
         align-items: center;
@@ -330,7 +359,6 @@
         box-shadow: 0 6px 26px rgba(255, 159, 10, 0.5);
       }
 
-      /* Wybor motywu koloru: kolka z gradientem, biala obwodka = wybrany. */
       .themes { display: flex; gap: 16px; flex-wrap: wrap; }
       .th-btn {
         display: flex;
@@ -356,7 +384,6 @@
       .th-btn.sel .th-dot { box-shadow: 0 0 0 2.5px #fff; }
       .th-btn.sel { color: var(--text); }
 
-      /* Siatka pol do zmiany nazw wbudowanych presetow. */
       .pnames {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -387,7 +414,6 @@
       .foot a { color: var(--muted); text-decoration: none; }
       .foot a:hover { color: var(--accent-2); }
 
-      /* Drugi pill w naglowku: kod zrodlowy na GitHubie. */
       .gh-pill {
         display: inline-flex;
         align-items: center;
@@ -407,7 +433,6 @@
       .gh-pill:hover { border-color: var(--accent); color: var(--accent); }
       .gh-pill svg { flex-shrink: 0; }
 
-      /* Pill oceny: gwiazdki zapalaja sie po kolei na hover. */
       .rate-pill {
         display: inline-flex;
         align-items: center;
@@ -433,8 +458,6 @@
       .rate-pill:hover .rp-stars i:nth-child(4) { transition-delay: 0.15s; }
       .rate-pill:hover .rp-stars i:nth-child(5) { transition-delay: 0.2s; }
 
-      /* Plywajacy przycisk wsparcia (lokalny odpowiednik widzetu BMC -
-         zdalnych skryptow w MV3 uzywac nie wolno). */
       .bmc-float {
         position: fixed;
         right: 18px;
@@ -483,11 +506,32 @@
             </svg>
             <span>GitHub</span>
           </button>
+          <button id="bugPill" class="gh-pill">
+            <span aria-hidden="true">&#128027;</span>
+            <span data-i18n="bug_sec">Zgłoś błąd</span>
+          </button>
         </div>
         <span class="ver" id="ver"></span>
       </div>
 
-      <div class="sec-h" data-i18n="sec_look">Wygląd</div>
+      <div class="card bugcard" id="bugCard" hidden>
+        <h2 data-i18n="bug_h">Znalazłeś błąd?</h2>
+        <p class="mini-d" style="max-width:none;margin:0 0 12px" data-i18n="bug_d">Napisz, co nie działa i na jakiej stronie. Wiadomość wysyła się anonimowo, bez konta i logowania.</p>
+        <textarea id="bugText" class="bugbox" rows="3" maxlength="2000" data-i18n-ph="bug_ph" placeholder="Opisz problem..."></textarea>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button id="bugSend" class="btn" type="button" data-i18n="bug_send">Wyślij</button>
+          <span id="bugSent" class="saved" style="height:auto;margin:12px 0 0" hidden data-i18n="bug_sent">Wysłane, dzięki!</span>
+        </div>
+      </div>
+
+      <nav class="tabs" id="tabs">
+        <button type="button" class="tab on" data-pane="general" data-i18n="tab_general">Ogólne</button>
+        <button type="button" class="tab" data-pane="look" data-i18n="sec_look">Wygląd</button>
+        <button type="button" class="tab" data-pane="privacy" data-i18n="tab_privacy">Prywatność i dostęp</button>
+        <button type="button" class="tab" data-pane="about" data-i18n="sec_about">O wtyczce</button>
+      </nav>
+
+      <div class="tabpane" data-pane="look">
 
       <div class="card">
         <h2 data-i18n="theme_h">Kolor wtyczki</h2>
@@ -504,15 +548,18 @@
         <div class="saved" id="presetNamesSaved"></div>
       </details>
 
+      </div>
+
+      <div class="tabpane on" data-pane="general">
+
       <div class="sec-h" data-i18n="sec_basics">Podstawowe</div>
 
       <div class="card">
         <div class="row">
           <h2 style="margin:0" data-i18n="lang_h">Język / Language</h2>
           <select id="langSelect" class="btn" style="margin:0">
-            <option value="auto" data-i18n="lang_auto">Automatycznie (jak przeglądarka)</option>
-            <option value="pl">Polski</option>
             <option value="en">English</option>
+            <option value="pl">Polski</option>
           </select>
         </div>
         <div class="row sep">
@@ -566,19 +613,9 @@
         <div class="saved" id="saved"></div>
       </div>
 
-      <div class="card">
-        <div class="row">
-          <h2 style="margin:0"><span data-i18n="binds_h">Skróty klawiszowe</span> <span class="pill" data-i18n="pill_default_off">domyślnie wyłączone</span></h2>
-          <input type="checkbox" class="switch" id="bindsToggle" />
-        </div>
-        <ul class="keys">
-          <li data-i18n="binds_1">Skrót Wyłącz podgłaśnianie ubija wszystko naraz (jak zamknięcie karty silnika).</li>
-          <li data-i18n="binds_2">Skrót Przywróć poprzednie wraca do ustawień z tej karty sprzed wyłączenia.</li>
-        </ul>
-        <p class="note" style="border:none;padding:0;margin-top:10px" data-i18n="binds_note">Klawisze ustawiasz w Chrome. Włącz przełącznik i kliknij poniżej, żeby przypisać kombinacje.</p>
-        <button class="btn" id="openShortcuts" data-i18n="binds_btn">Ustaw klawisze w Chrome</button>
-        <div class="saved" id="bindsSaved"></div>
       </div>
+
+      <div class="tabpane" data-pane="privacy">
 
       <div class="sec-h" data-i18n="access_h">Dostęp do stron</div>
 
@@ -598,6 +635,10 @@
         <p class="access-note" data-i18n="access_revoke_d"></p>
         <div class="saved" id="accessSaved"></div>
       </div>
+
+      </div>
+
+      <div class="tabpane" data-pane="about">
 
       <div class="sec-h" data-i18n="sec_about">O wtyczce</div>
 
@@ -667,15 +708,24 @@
           <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
           <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
         </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_keys_t">Skróty klawiszowe</div>
-          <div class="d" data-i18n="featl_keys_d">Dwa skróty do przypisania w Chrome: wyłącz wszystko naraz i przywróć ustawienia sprzed wyłączenia. Domyślnie wyłączone.</div>
-        </div>
       </details>
 
+      <div class="sec-h" data-i18n="changelog_h">Historia zmian</div>
+
       <div class="card">
-        <div class="note" style="border:none;margin:0;padding:0" data-i18n="whatsnew_note">Nowości w tej wersji: własne mixy, wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu, głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie.</div>
+        <div class="featl">
+          <div class="t">4.2.1</div>
+          <div class="d" data-i18n="cl_421">Strona powitalna po instalacji (szybki start, wybór języka), domyślny język angielski, ciemny wygląd rozwijanych list i strona z pytaniem o powód po odinstalowaniu.</div>
+        </div>
+        <div class="featl">
+          <div class="t">4.2.0</div>
+          <div class="d" data-i18n="cl_420">Własne mixy (zakładka Twoje mixy), wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu (Grzmot, 808, Ciepły), głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie (łapie też Mix).</div>
+        </div>
       </div>
+
+      </div>
+
+      <div class="tabpane" data-pane="privacy">
 
       <div class="sec-h" data-i18n="privacy_h">Prywatność</div>
 
@@ -690,6 +740,8 @@
         <div class="note" data-i18n="privacy_note">
           Pasek Chrome "ta karta jest udostępniana" to wymóg przeglądarki przy braniu dźwięku karty. Dzięki temu działa też Spotify. Nie da się go schować w żadnej wtyczce tego typu.
         </div>
+      </div>
+
       </div>
 
       <p class="foot" data-i18n="foot">Tę stronę otworzysz zawsze przez okienko wtyczki, przycisk Ustawienia.</p>

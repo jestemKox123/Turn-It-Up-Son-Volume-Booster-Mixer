@@ -6,8 +6,6 @@ const optTab = document.getElementById("optTab");
 const savedEl = document.getElementById("saved");
 const radios = document.querySelectorAll('input[name="mode"]');
 
-// engine.html laduje ten skrypt takze jako dokument offscreen, gdzie nie ma
-// chrome.storage ani chrome.permissions - te czesci wtedy pomijamy.
 const HAS_STORAGE = typeof chrome !== "undefined" && !!(chrome.storage && chrome.storage.local);
 const HAS_PERMISSIONS = typeof chrome !== "undefined" && !!chrome.permissions;
 
@@ -28,7 +26,7 @@ function flashSaved() {
 const langSelect = document.getElementById("langSelect");
 if (langSelect && HAS_STORAGE) {
   chrome.storage.local.get("lang", (d) => {
-    langSelect.value = d.lang || "auto";
+    langSelect.value = d.lang === "pl" ? "pl" : "en";
   });
   langSelect.addEventListener("change", () => {
     VBI18N.setLang(langSelect.value);
@@ -41,7 +39,6 @@ if (HAS_STORAGE) {
   });
 }
 
-// Limit maksymalnej glosnosci i domyslny charakter basu (czyta je popup).
 const maxVolSelect = document.getElementById("maxVolSelect");
 if (maxVolSelect && HAS_STORAGE) {
   chrome.storage.local.get("vbMaxVol", (d) => {
@@ -74,15 +71,13 @@ radios.forEach((r) => {
   });
 });
 
-// --- Znak 3D w tle: obraca sie w przestrzeni w rytm scrollowania ---
 const mark3d = document.getElementById("mark3d");
 if (mark3d) {
   let markRaf = null;
   const updateMark = () => {
     markRaf = null;
     const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    const p = Math.min(1, window.scrollY / max); // 0..1 postepu strony
-    // Na gorze strony znak lezy pochylony (50deg), przy dole staje prosto.
+    const p = Math.min(1, window.scrollY / max);
     const rx = 50 * (1 - p);
     const tz = 30 * p;
     mark3d.style.transform = "rotateX(" + rx + "deg) translateZ(" + tz + "px)";
@@ -93,7 +88,6 @@ if (mark3d) {
   updateMark();
 }
 
-// --- Motyw koloru wtyczki ---
 const themeRow = document.getElementById("themeRow");
 const themeSaved = document.getElementById("themeSaved");
 
@@ -128,7 +122,6 @@ if (themeRow && HAS_STORAGE && window.VBTHEME) {
   });
 }
 
-// --- Wlasne nazwy wbudowanych presetow (pokazuje je panel Miks w popupie) ---
 const PRESET_NAME_KEYS = [
   "mix_normal", "mix_spedup", "mix_nightcore", "mix_spedup_reverb", "mix_slowed_reverb",
   "mix_8d", "mix_drill", "mix_phonk", "mix_nydrill", "mix_chilldrill",
@@ -181,32 +174,6 @@ if (presetNamesWrap && HAS_STORAGE) {
   });
 }
 
-// --- Skroty klawiszowe ---
-const bindsToggle = document.getElementById("bindsToggle");
-const bindsSaved = document.getElementById("bindsSaved");
-const openShortcuts = document.getElementById("openShortcuts");
-
-if (bindsToggle) {
-  chrome.storage.local.get("bindsEnabled", (data) => {
-    bindsToggle.checked = !!data.bindsEnabled;
-  });
-  bindsToggle.addEventListener("change", () => {
-    chrome.runtime.sendMessage({ type: "vb-set-binds", enabled: bindsToggle.checked }, () => {
-      void chrome.runtime.lastError;
-      bindsSaved.textContent = VBI18N.t(bindsToggle.checked ? "binds_on" : "binds_off");
-      setTimeout(() => (bindsSaved.textContent = ""), 1400);
-    });
-  });
-  openShortcuts.addEventListener("click", () => {
-    chrome.tabs.create({ url: "chrome://extensions/shortcuts" }, () => {
-      if (chrome.runtime.lastError) {
-        bindsSaved.textContent = VBI18N.t("shortcuts_manual");
-      }
-    });
-  });
-}
-
-// --- Dostep do stron (on-demand: dostep tylko gdy funkcja go potrzebuje) ---
 const YT_ACCESS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*"] };
 const accessList = document.getElementById("accessList");
 const grantYt = document.getElementById("grantYt");
@@ -273,13 +240,11 @@ if (HAS_PERMISSIONS && chrome.permissions.onRemoved) chrome.permissions.onRemove
 
 if (HAS_PERMISSIONS) VBI18N.ready(renderAccessList);
 
-// engine.html laduje ten skrypt razem z engine.js, ktory ma wlasne "verEl".
 const verHeroEl = document.getElementById("ver");
 if (verHeroEl && chrome.runtime && typeof chrome.runtime.getManifest === "function") {
   verHeroEl.textContent = "v" + chrome.runtime.getManifest().version;
 }
 
-// --- Wsparcie (strona silnika i ustawienia) ---
 const DONATE_URL = "https://buymeacoffee.com/romanzbudowy";
 const donateBtn = document.getElementById("donateBtn");
 const engineStars = document.getElementById("engineStars");
@@ -307,29 +272,73 @@ if (donateBtn) {
   donateBtn.addEventListener("click", () => openUrl(DONATE_URL));
 }
 
-// Staly przycisk wsparcia w naglowku strony ustawien.
 const supportTop = document.getElementById("supportTop");
 if (supportTop) {
   supportTop.addEventListener("click", () => openUrl(DONATE_URL));
 }
 
-// Plywajacy przycisk wsparcia (lokalny odpowiednik widzetu BMC).
 const bmcFloat = document.getElementById("bmcFloat");
 if (bmcFloat) {
   bmcFloat.addEventListener("click", () => openUrl(DONATE_URL));
 }
 
-// Kod zrodlowy na GitHubie.
 const GITHUB_URL = "https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer";
 const githubPill = document.getElementById("githubPill");
 if (githubPill) {
   githubPill.addEventListener("click", () => openUrl(GITHUB_URL));
 }
 
-// Ocena wtyczki: strona recenzji w Chrome Web Store.
 const ratePill = document.getElementById("ratePill");
 if (ratePill) {
   ratePill.addEventListener("click", () => {
     openUrl("https://chrome.google.com/webstore/detail/" + chrome.runtime.id + "/reviews");
+  });
+}
+
+const FEEDBACK_FORM = "https://docs.google.com/forms/d/e/1FAIpQLScyvm-FU6kLwyjPL0qpIXS-48m-jQ-F63kFdvA3Z7JjRaT0dg/formResponse";
+const bugText = document.getElementById("bugText");
+const bugSend = document.getElementById("bugSend");
+const bugSent = document.getElementById("bugSent");
+if (bugText && bugSend) {
+  bugSend.addEventListener("click", async () => {
+    const txt = bugText.value.trim();
+    if (!txt) return;
+    bugSend.disabled = true;
+    bugText.disabled = true;
+    let ver = "?";
+    try { ver = chrome.runtime.getManifest().version; } catch (e) {}
+    const body =
+      "entry.225153063=" + encodeURIComponent("Other reason") +
+      "&entry.688777186=" + encodeURIComponent("[BUG v" + ver + "] " + txt);
+    try {
+      await fetch(FEEDBACK_FORM, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      });
+    } catch (e) {}
+    if (bugSent) bugSent.hidden = false;
+  });
+}
+
+const tabButtons = document.querySelectorAll(".tab");
+const tabPanes = document.querySelectorAll(".tabpane");
+function showPane(name) {
+  tabButtons.forEach((b) => b.classList.toggle("on", b.dataset.pane === name));
+  tabPanes.forEach((p) => p.classList.toggle("on", p.dataset.pane === name));
+  window.scrollTo(0, 0);
+}
+tabButtons.forEach((b) => b.addEventListener("click", () => showPane(b.dataset.pane)));
+
+const bugPill = document.getElementById("bugPill");
+const bugCard = document.getElementById("bugCard");
+if (bugPill && bugCard) {
+  bugPill.addEventListener("click", () => {
+    bugCard.hidden = !bugCard.hidden;
+    if (!bugCard.hidden) {
+      window.scrollTo(0, 0);
+      if (bugText) bugText.focus();
+    }
   });
 }

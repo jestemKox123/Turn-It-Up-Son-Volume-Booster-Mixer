@@ -1,0 +1,363 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="icons/icon48.png" />
+    <title>Turn It Up, Son!</title>
+    <style>
+      :root {
+
+        color-scheme: dark;
+        --bg: #05060b;
+        --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        --panel-2: rgba(255, 255, 255, 0.05);
+        --border: rgba(255, 255, 255, 0.10);
+        --border-strong: rgba(255, 255, 255, 0.20);
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.62);
+        --xdim: rgba(255, 255, 255, 0.40);
+        --accent: #6e56ff;
+        --accent-2: #3ddcff;
+        --ok: #45e0a0;
+        --danger: #ff4d5e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(900px 420px at 50% -180px, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+        padding: 48px 20px 56px;
+      }
+
+      .bg-topline {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-2) 70%, transparent);
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .bg-mq {
+        position: fixed;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: -1;
+        white-space: nowrap;
+      }
+      .bg-mq .tr {
+        display: inline-block;
+        font-size: 120px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        line-height: 1;
+        color: transparent;
+        -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 28%, transparent);
+        animation: mq 80s linear infinite;
+      }
+      .bg-mq.a { top: 40px; }
+      .bg-mq.b { bottom: 36px; }
+      .bg-mq.b .tr {
+        -webkit-text-stroke-color: color-mix(in srgb, var(--accent-2) 20%, transparent);
+        animation: mqr 110s linear infinite;
+      }
+      @keyframes mq {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+      @keyframes mqr {
+        from { transform: translateX(-50%); }
+        to { transform: translateX(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .bg-mq .tr { animation: none; }
+        .hero img { animation: none; }
+        .rise { animation: none; opacity: 1; }
+      }
+
+      .wrap { max-width: 640px; margin: 0 auto; }
+
+      .rise {
+        opacity: 0;
+        animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+      }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .hero { text-align: center; padding: 18px 0 30px; }
+      .hero img {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+        box-shadow:
+          0 0 34px color-mix(in srgb, var(--accent) 55%, transparent),
+          0 0 90px color-mix(in srgb, var(--accent) 30%, transparent);
+        animation: pulse 4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 90px color-mix(in srgb, var(--accent) 30%, transparent); }
+        50% { box-shadow: 0 0 46px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 120px color-mix(in srgb, var(--accent) 45%, transparent); }
+      }
+      .hero h1 {
+        font-size: 34px;
+        letter-spacing: -0.5px;
+        margin: 20px 0 0;
+        background: linear-gradient(100deg, #fff 30%, var(--accent-2) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero .brand {
+        margin: 6px 0 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: 0.2px;
+      }
+      .hero .brand .ver { color: var(--xdim); font-weight: 600; margin-left: 6px; }
+      .hero .sub { color: var(--muted); font-size: 15px; margin: 12px auto 0; max-width: 440px; }
+
+      .sec-h {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 26px 0 10px;
+      }
+      .card {
+        background-color: #0a0b12;
+        background-image: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 12px;
+      }
+
+      .steps { list-style: none; margin: 0; padding: 0; counter-reset: st; }
+      .steps li {
+        counter-increment: st;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 11px 0;
+      }
+      .steps li + li { border-top: 1px solid var(--border); }
+      .steps li::before {
+        content: counter(st);
+        flex-shrink: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
+        margin-top: 1px;
+      }
+      .steps .t { font-size: 14px; }
+      .steps .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+      .lang-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .lang-row h2 { font-size: 14px; font-weight: 600; margin: 0; }
+      .lang-row select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding: 7px 28px 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background-color: #0a0b12;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-opacity='0.6' stroke-width='1.6' stroke-linecap='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        color-scheme: dark;
+      }
+      .lang-row select:hover { border-color: var(--accent); }
+      .lang-row select option { background: #0c0d10; color: var(--text); }
+
+      a.linkcard {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background-color: #0a0b12;
+        background-image: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 15px 18px;
+        margin-bottom: 10px;
+        color: var(--text);
+        text-decoration: none;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+      }
+      a.linkcard:hover { border-color: var(--accent); transform: translateY(-1px); }
+      .lc-ico {
+        flex-shrink: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+      }
+      .lc-ico svg { width: 22px; height: 22px; fill: var(--text); }
+      a.linkcard.gold .lc-ico {
+        background: linear-gradient(135deg, #ffd60a, #ff9f0a);
+        border-color: transparent;
+      }
+      a.linkcard.stars .lc-ico {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-color: transparent;
+      }
+      .lc-txt { flex: 1; min-width: 0; }
+      .lc-txt .t { display: block; font-size: 14.5px; font-weight: 700; }
+      .lc-txt .d { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+      .lc-arrow { color: var(--xdim); font-size: 18px; flex-shrink: 0; }
+
+      .priv {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--muted);
+        margin: 20px 0 0;
+        text-align: center;
+      }
+      .priv .dot { color: var(--ok); font-size: 15px; }
+
+      .foot {
+        text-align: center;
+        font-size: 12px;
+        color: var(--xdim);
+        margin-top: 30px;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+      }
+      .foot a { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="bg-topline"></div>
+    <div class="bg-mq a" aria-hidden="true">
+      <span class="tr">TURN IT UP, SON! &nbsp; VOLUME BOOSTER &amp; MIXER &nbsp; TURN IT UP, SON! &nbsp; VOLUME BOOSTER &amp; MIXER &nbsp; </span>
+    </div>
+    <div class="bg-mq b" aria-hidden="true">
+      <span class="tr">SPED UP &nbsp; NIGHTCORE &nbsp; SLOWED + REVERB &nbsp; 8D AUDIO &nbsp; BASS BOOST &nbsp; PHONK &nbsp; SPED UP &nbsp; NIGHTCORE &nbsp; SLOWED + REVERB &nbsp; 8D AUDIO &nbsp; BASS BOOST &nbsp; PHONK &nbsp; </span>
+    </div>
+
+    <div class="wrap">
+      <div class="hero rise" style="animation-delay: 0s">
+        <img src="icons/icon128.png" alt="" />
+        <h1 data-i18n="wlc_hi">Dzięki za instalację!</h1>
+        <p class="brand">Turn It Up, Son!<span class="ver" id="ver"></span></p>
+      </div>
+
+      <div class="rise" style="animation-delay: 0.1s">
+        <div class="card">
+          <div class="lang-row">
+            <h2>&#127760; <span data-i18n="lang_h">Język / Language</span></h2>
+            <select id="langSelect" aria-label="Language">
+              <option value="en">English</option>
+              <option value="pl">Polski</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="sec-h" data-i18n="wlc_start_h">Szybki start</p>
+        <div class="card">
+          <ol class="steps">
+            <li>
+              <div>
+                <div class="t" data-i18n="wlc_step1_t">Przypnij wtyczkę do paska</div>
+                <div class="d" data-i18n="wlc_step1_d">Kliknij ikonę puzzla obok paska adresu i pinezkę przy Turn It Up, Son!</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="t" data-i18n="wlc_step2_t">Włącz coś z dźwiękiem</div>
+                <div class="d" data-i18n="wlc_step2_d">YouTube, Spotify, film, cokolwiek gra w karcie.</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="t" data-i18n="wlc_step3_t">Kliknij ikonę wtyczki</div>
+                <div class="d" data-i18n="wlc_step3_d">Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.</div>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="rise" style="animation-delay: 0.2s">
+        <p class="sec-h" data-i18n="wlc_links_h">Podoba się? To pomaga najbardziej</p>
+
+        <a class="linkcard stars" id="rateLink" href="#" target="_blank" rel="noopener">
+          <span class="lc-ico">★</span>
+          <span class="lc-txt">
+            <span class="t" data-i18n="wlc_rate_t">Oceń wtyczkę</span>
+            <span class="d" data-i18n="wlc_rate_d">Dobra ocena w Chrome Web Store pomaga innym ją znaleźć.</span>
+          </span>
+          <span class="lc-arrow">&#8250;</span>
+        </a>
+
+        <a class="linkcard" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">
+          <span class="lc-ico">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          </span>
+          <span class="lc-txt">
+            <span class="t">GitHub</span>
+            <span class="d" data-i18n="wlc_gh_d">Kod jest publiczny. Zostaw gwiazdkę na repozytorium!</span>
+          </span>
+          <span class="lc-arrow">&#8250;</span>
+        </a>
+
+        <a class="linkcard gold" href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">
+          <span class="lc-ico">☕</span>
+          <span class="lc-txt">
+            <span class="t">Buy Me a Coffee</span>
+            <span class="d" data-i18n="wlc_bmac_d">Wtyczka jest w 100% darmowa. Jeśli się przyda, możesz postawić kawę.</span>
+          </span>
+          <span class="lc-arrow">&#8250;</span>
+        </a>
+      </div>
+
+      <div class="rise" style="animation-delay: 0.3s">
+        <p class="priv"><span class="dot">&#9679;</span><span data-i18n="wlc_priv">Zero analityki, zero kont, zero serwerów. Cały dźwięk przetwarzany lokalnie w przeglądarce.</span></p>
+        <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="settings.html" data-i18n="wlc_settings">Ustawienia</a></p>
+      </div>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="welcome.js"></script>
+  </body>
+</html>

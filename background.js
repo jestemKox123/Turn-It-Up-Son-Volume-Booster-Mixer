@@ -1,17 +1,12 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// Service worker: pobiera dzwiek karty (tabCapture) i kieruje go do silnika
-// audio (offscreen document albo widoczna karta engine.html, zaleznie od ustawien).
-
 const PER_TAB_DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_SCRIPT_ID = "yt-continue";
 
 let engineTabId = null;
 let cachedActiveIds = [];
 
-// Kolejka operacji na silniku: bez niej szybkie on/off nakladalo start i stop
-// na siebie i przechwytywanie sie psulo.
 let opChain = Promise.resolve();
 function serialize(fn) {
   const run = opChain.then(fn, fn);
@@ -23,7 +18,6 @@ function keyFor(tabId) {
   return "vb_tab_" + tabId;
 }
 
-// --- Kopia ustawien sprzed wylaczenia (do "Przywroc poprzednie") ---
 async function getBackup() {
   const { vbBackup } = await chrome.storage.local.get("vbBackup");
   return vbBackup || {};
@@ -44,8 +38,6 @@ async function clearBackupTab(tabId) {
   }
 }
 
-// Snapshot obejmuje tez predkosc Mixa (mixRate), zeby Przywroc wracalo
-// takze do samego Sped Up / Nightcore.
 async function snapshotTab(tabId) {
   const d = await chrome.storage.session.get(keyFor(tabId));
   const s = d[keyFor(tabId)];
@@ -59,7 +51,6 @@ async function snapshotTab(tabId) {
   await backupTab(tabId, out);
 }
 
-// Podglosnione karty z kluczy sesji (cachedActiveIds ginie przy usnieciu SW).
 async function boostedTabIds() {
   const all = await chrome.storage.session.get(null);
   const out = [];
@@ -93,14 +84,11 @@ async function getMode() {
   return disableMode === "closeTab" ? "closeTab" : "toggle";
 }
 
-// --- Silnik: offscreen albo widoczna karta ---
 async function hasOffscreen() {
   const c = await chrome.runtime.getContexts({ contextTypes: ["OFFSCREEN_DOCUMENT"] });
   return c.length > 0;
 }
 
-// engineTabId trzymany tez w storage.session: service worker bywa usypiany
-// i traci zmienne, a zgubiona karta silnika = kolizja przechwytywania.
 async function getEngineTabId() {
   if (engineTabId != null) return engineTabId;
   const { vb_engine_tab } = await chrome.storage.session.get("vb_engine_tab");
@@ -134,26 +122,38 @@ async function engineTabExists() {
   }
 }
 
+async function engineReady() {
+  for (let i = 0; i < 20; i++) {
+    const resp = await sendToEngine({ type: "vb-list" });
+    if (resp) return true;
+    await wait(100);
+  }
+  return false;
+}
+
 async function ensureEngine() {
   const mode = await getMode();
   if (mode === "closeTab") {
-    if (await engineTabExists()) return;
-    const tab = await chrome.tabs.create({
-      url: chrome.runtime.getURL("engine.html"),
-      active: false,
-      pinned: true,
-    });
-    await setEngineTabId(tab.id);
-    await wait(300);
+    if (!(await engineTabExists())) {
+      const tab = await chrome.tabs.create({
+        url: chrome.runtime.getURL("engine.html"),
+        active: false,
+        pinned: true,
+      });
+      await setEngineTabId(tab.id);
+    }
   } else {
-    if (await hasOffscreen()) return;
-    await chrome.offscreen.createDocument({
-      url: "engine.html",
-      reasons: ["USER_MEDIA"],
-      justification: "Obrobka i wzmacnianie dzwieku przechwyconej karty.",
-    });
-    await wait(120);
+    if (!(await hasOffscreen())) {
+      try {
+        await chrome.offscreen.createDocument({
+          url: "engine.html",
+          reasons: ["USER_MEDIA"],
+          justification: "Obrobka i wzmacnianie dzwieku przechwyconej karty.",
+        });
+      } catch (e) {}
+    }
   }
+  await engineReady();
 }
 
 function sendToEngine(message) {
@@ -213,7 +213,11 @@ async function stopEverything() {
 async function startCapture(tabId, streamId, settings) {
   chrome.storage.session.set({ [keyFor(tabId)]: settings });
   await ensureEngine();
-  const resp = await sendToEngine({ type: "vb-start", tabId, streamId, settings });
+  let resp = await sendToEngine({ type: "vb-start", tabId, streamId, settings });
+  if (!resp) {
+    await wait(200);
+    resp = await sendToEngine({ type: "vb-start", tabId, streamId, settings });
+  }
   if (!resp || !resp.ok) {
     await closeEngineIfEmpty();
     return { active: false, error: (resp && resp.error) || "start-failed" };
@@ -223,8 +227,6 @@ async function startCapture(tabId, streamId, settings) {
   return { active: true };
 }
 
-// Lekka sciezka dla suwaka w czasie rzeczywistym: bez sprawdzania kontekstow,
-// inaczej zmiany docieraly skokowo.
 async function updateCapture(tabId, settings) {
   chrome.storage.session.set({ [keyFor(tabId)]: settings });
   const resp = await sendToEngine({ type: "vb-update", tabId, settings });
@@ -241,7 +243,6 @@ async function stopCapture(tabId) {
   return { active: false };
 }
 
-// --- YouTube auto-continue (opcjonalne) ---
 async function registerYt() {
   if (!chrome.scripting) return;
   try {
@@ -257,6 +258,17 @@ async function registerYt() {
         allFrames: true,
       },
     ]);
+  } catch (e) {}
+  try {
+    const tabs = await chrome.tabs.query({ url: "*://*.youtube.com/*" });
+    for (const t of tabs) {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: t.id, allFrames: true },
+          files: ["content.js"],
+        });
+      } catch (e) {}
+    }
   } catch (e) {}
 }
 
@@ -277,10 +289,6 @@ async function syncYt() {
   else await unregisterYt();
 }
 
-// --- Tryb Mix (Sped Up / Nightcore / wlasna predkosc) ---
-// Stan per karta w storage.session: { rate, pitchOff, origin }. rate === 1 = off.
-// Efekt robi content script mix.js, wstrzykiwany tylko na stronach, na ktore
-// uzytkownik dal zgode.
 const MIX_SCRIPT_ID = "vb-mix";
 
 function mixKey(tabId) {
@@ -304,8 +312,6 @@ async function activeMixTabs() {
   return out;
 }
 
-// Rejestracja content scriptu na uzywanych (i dozwolonych zgoda) originach,
-// dzieki czemu Mix przezywa przeladowanie strony.
 async function syncMixScript() {
   if (!chrome.scripting) return;
   const tabs = await activeMixTabs();
@@ -334,8 +340,6 @@ async function injectMix(tabId) {
   } catch (e) {}
 }
 
-// Cofnij zgode na origin, jesli zaden Mix juz go nie uzywa (i nie trzyma go
-// auto-kontynuacja YouTube).
 async function maybeRevokeOrigin(origin) {
   if (!origin) return;
   const tabs = await activeMixTabs();
@@ -358,13 +362,27 @@ async function setMix(tabId, rate, origin) {
     if (prev && prev.origin) await maybeRevokeOrigin(prev.origin);
     return { rate: 1 };
   }
-  const o = origin || (await getMixState(tabId) || {}).origin || null;
+  const prev = await getMixState(tabId);
+  const o = origin || (prev && prev.origin) || null;
   await chrome.storage.session.set({ [mixKey(tabId)]: { rate, pitchOff: true, origin: o } });
-  await syncMixScript();
-  await injectMix(tabId);
-  try {
-    chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", rate, pitchOff: true }, () => void chrome.runtime.lastError);
-  } catch (e) {}
+  if (!prev || prev.origin !== o) await syncMixScript();
+  const delivered = await new Promise((resolve) => {
+    try {
+      chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", rate, pitchOff: true }, (r) => {
+        if (chrome.runtime.lastError) resolve(false);
+        else resolve(!!(r && r.ok));
+      });
+    } catch (e) {
+      resolve(false);
+    }
+  });
+  if (!delivered) {
+    await syncMixScript();
+    await injectMix(tabId);
+    try {
+      chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", rate, pitchOff: true }, () => void chrome.runtime.lastError);
+    } catch (e) {}
+  }
   return { rate };
 }
 
@@ -386,7 +404,6 @@ async function clearAllMix() {
   for (const o of origins) await maybeRevokeOrigin(o);
 }
 
-// --- Wiadomosci ---
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.target === "engine") return false;
 
@@ -395,7 +412,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const [data, activeIds, local, mix] = await Promise.all([
         chrome.storage.session.get(keyFor(msg.tabId)),
         getActiveTabIds(),
-        chrome.storage.local.get(["ytAutoContinue", "disableMode", "bindsEnabled"]),
+        chrome.storage.local.get(["ytAutoContinue", "disableMode"]),
         getMixState(msg.tabId),
       ]);
       const backup = await getBackup();
@@ -404,7 +421,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         settings: data[keyFor(msg.tabId)] || PER_TAB_DEFAULTS,
         ytAutoContinue: !!local.ytAutoContinue,
         disableMode: local.disableMode === "closeTab" ? "closeTab" : "toggle",
-        bindsEnabled: !!local.bindsEnabled,
         backup: backup[msg.tabId] || null,
         mix: mix && mix.rate ? mix.rate : 1,
       });
@@ -441,8 +457,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           boosted: activeIds.includes(t.id),
           backup: backup[t.id] || null,
         }));
-      // Podglosnione, ale wstrzymane karty (pauza = brak "audible") tez maja
-      // byc na liscie - doklejamy je na koniec.
       const listed = new Set(list.map((t) => t.tabId));
       for (const id of activeIds) {
         if (listed.has(id) || id === engId) continue;
@@ -478,8 +492,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if (msg.type === "vb-access-revoke-all") {
     (async () => {
-      // Najpierw realnie wylacz Mix: wstrzykniety mix.js zyje w karcie dalej
-      // i samo wyczyszczenie uprawnien by go nie zatrzymalo.
       await clearAllMix();
       const all = await chrome.permissions.getAll();
       const origins = (all && all.origins) || [];
@@ -505,20 +517,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  if (msg.type === "vb-set-binds") {
-    (async () => {
-      await chrome.storage.local.set({ bindsEnabled: !!msg.enabled });
-      sendResponse({ ok: true });
-    })();
-    return true;
-  }
-
   if (msg.type === "vb-clear-backup") {
     clearBackupTab(msg.tabId).then(() => sendResponse({ ok: true }));
     return true;
   }
 
-  // Backup na zadanie popupu (sam Mix nie przechodzi przez stopCapture).
   if (msg.type === "vb-snapshot") {
     snapshotTab(msg.tabId).then(() => sendResponse({ ok: true }));
     return true;
@@ -555,8 +558,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     }
     const engId = await getEngineTabId();
     if (tabId === engId) {
-      // Zamkniecie karty-silnika wylacza wszystko (tez Mix), z backupem
-      // dla kazdej karty (takze tych z samym Mixem).
       await setEngineTabId(null);
       const ids = await boostedTabIds();
       for (const id of ids) {
@@ -576,11 +577,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   })();
 });
 
-// Nawigacja karty celowo NIE zatrzymuje przechwytywania: strumien tabCapture
-// jest przypiety do karty i przezywa zmiane utworu. Pelne przeladowanie (F5)
-// jednak ubija strumien - ustawienia zostaja w storage.session i wznawiamy je
-// automatycznie, gdy strona sie doladuje. Gdy Chrome odmowi streamId bez gestu
-// uzytkownika, wznowi to popup przy najblizszym otwarciu.
 chrome.tabs.onUpdated.addListener((tabId, info) => {
   if (info.status !== "complete") return;
   (async () => {
@@ -598,43 +594,6 @@ chrome.tabs.onUpdated.addListener((tabId, info) => {
   })();
 });
 
-// --- Skroty klawiszowe (domyslnie wylaczone przelacznikiem bindsEnabled) ---
-chrome.commands.onCommand.addListener(async (command) => {
-  const { bindsEnabled } = await chrome.storage.local.get("bindsEnabled");
-  if (!bindsEnabled) return;
-
-  if (command === "disable-all") {
-    const snapshotted = new Set();
-    await serialize(async () => {
-      const ids = await getActiveTabIds();
-      for (const id of ids) {
-        await snapshotTab(id);
-        snapshotted.add(id);
-        chrome.storage.session.remove(keyFor(id));
-      }
-      await stopEverything();
-    });
-    // Karty z samym Mixem (bez podglosnienia) tez dostaja backup.
-    for (const t of await activeMixTabs()) {
-      if (!snapshotted.has(t.tabId)) await snapshotTab(t.tabId);
-    }
-    await clearAllMix();
-    return;
-  }
-
-  if (command === "restore-previous") {
-    const backup = await getBackup();
-    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-    if (tab && tab.id != null && backup[tab.id]) {
-      try {
-        const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tab.id });
-        const r = await startCapture(tab.id, streamId, backup[tab.id]);
-        if (r.active) await clearBackupTab(tab.id);
-      } catch (e) {}
-    }
-  }
-});
-
 if (chrome.permissions.onRemoved) {
   chrome.permissions.onRemoved.addListener(() => {
     syncMixScript();
@@ -649,9 +608,6 @@ if (chrome.permissions.onAdded) {
   });
 }
 
-// Prompt Chrome o zgode na strone zamyka popup (kradnie fokus). Popup przed
-// prosba zapisuje "zamiar" w storage.session, a tlo dokancza go tutaj zaraz
-// po kliknieciu Zezwol.
 async function finishPendingMix() {
   const { vb_pending_mix } = await chrome.storage.session.get("vb_pending_mix");
   if (!vb_pending_mix) return;
@@ -670,10 +626,12 @@ async function finishPendingMix() {
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
-    chrome.tabs.create({ url: chrome.runtime.getURL("settings.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
   }
   syncYt();
 });
+
+chrome.runtime.setUninstallURL("https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/uninstall.html");
 
 syncYt();
 (async () => {

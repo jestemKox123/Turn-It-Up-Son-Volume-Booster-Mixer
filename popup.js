@@ -1,8 +1,6 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// bassBoost: false/true albo 0..1; reverb i treble: 0..1; spin to efekt 8D,
-// spinSpeed (0..1) to szybkosc krazenia.
 const DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_PERMS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*"] };
 
@@ -13,7 +11,7 @@ let isActive = false;
 let tabsTimer = null;
 let mixRate = 1;
 let mixSupported = true;
-let mixHostUnsupported = false; // strony, na ktorych zmiana predkosci nie zadziala (Spotify)
+let mixHostUnsupported = false;
 
 const powerEl = document.getElementById("power");
 const powerLabelEl = document.getElementById("powerLabel");
@@ -32,7 +30,6 @@ const restoreBtn = document.getElementById("restoreBtn");
 const mixReadoutEl = document.getElementById("mixReadout");
 const mixSpeedEl = document.getElementById("mixSpeed");
 const mixHintEl = document.getElementById("mixHint");
-// Wlasne mixy doklejane sa dynamicznie, stad allPresetEls() zamiast stalej listy.
 const builtinPresetEls = document.querySelectorAll(".mixp:not(.mixp-add)");
 let userMixes = [];
 let userPresetEls = [];
@@ -61,7 +58,6 @@ const mixPowerEl = document.getElementById("mixPower");
 const mixPowerValEl = document.getElementById("mixPowerVal");
 const mixAppliedEl = document.getElementById("mixApplied");
 const fullMixEl = document.getElementById("fullMix");
-// Wiersze suwakow - kazdy preset odslania tylko swoje (data-ctl przycisku).
 const CTL_ROWS = {
   speed: document.getElementById("rowSpeed"),
   reverb: document.getElementById("rowReverb"),
@@ -75,8 +71,6 @@ const CTL_ROWS = {
 
 let backupSettings = null;
 
-// Reczna zmiana ustawien uniewaznia backup (tez w tle, inaczej wracal po
-// ponownym otwarciu popupu).
 function invalidateBackup() {
   if (!backupSettings) return;
   backupSettings = null;
@@ -98,8 +92,6 @@ function renderRestore() {
   }
 }
 
-// Przywraca komplet z backupu (glosnosc + efekty + predkosc Mixa).
-// Uzywa go przycisk Przywroc i wlacznik (on po off = powrot, nie start od zera).
 async function restoreBackup() {
   if (!backupSettings) return false;
   const b = { ...backupSettings };
@@ -107,11 +99,9 @@ async function restoreBackup() {
   delete b.mixRate;
   settings = { ...DEFAULTS, ...b };
   renderUI();
-  // Sam Mix (predkosc) nie potrzebuje silnika przechwytywania.
   const engineOn = settings.volume !== 1 || settings.monoFix || fxBass() > 0 || mixFxOn();
   if (engineOn) {
     await ensureActiveAndApply();
-    // Nie udalo sie wystartowac - zostaw backup, zeby nie przepadl.
     if (!isActive) return false;
   }
   if (rate !== 1) await setMixRate(rate);
@@ -129,7 +119,6 @@ settingsLink.addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
 });
 
-// Gwiazdki otwieraja strone recenzji w Chrome Web Store (dziala po publikacji).
 const rateStars = document.getElementById("rateStars");
 if (rateStars) {
   const stars = Array.from(rateStars.querySelectorAll(".star"));
@@ -168,7 +157,6 @@ function renderUI() {
   renderPower();
 }
 
-// Wtyczka jest "wlaczona", jesli dziala podglosnienie ALBO Mix.
 function anyActive() {
   return isActive || mixRate !== 1;
 }
@@ -189,7 +177,6 @@ function renderStatus() {
   if (isActive && mixRate !== 1) {
     setStatus("ok", VBI18N.t("status_both", { n, m: mixRate.toFixed(2) }));
   } else if (isActive && mixFxOn()) {
-    // Preset bez zmiany tempa (Drill, Phonk, 8D...) tez jest Mixem.
     setStatus("ok", VBI18N.t("status_on_fx", { n }));
   } else if (isActive) {
     setStatus("ok", VBI18N.t("status_on", { n }));
@@ -200,7 +187,6 @@ function renderStatus() {
   }
 }
 
-// streamId pobierany TU, w gescie uzytkownika (bez activeTab).
 function activate() {
   return chrome.tabCapture
     .getMediaStreamId({ targetTabId: currentTabId })
@@ -238,7 +224,6 @@ async function ensureActiveAndApply() {
   refreshTabs();
 }
 
-// Suwak dziala w czasie rzeczywistym; pierwsze ruszenie samo wlacza wtyczke.
 let volTimer = null;
 let activating = false;
 
@@ -289,7 +274,6 @@ bassBoostEl.addEventListener("change", () => {
   ensureActiveAndApply();
 });
 
-// Prosba o dostep musi byc pierwszym await po kliknieciu (gest uzytkownika).
 ytAutoContinueEl.addEventListener("change", async () => {
   if (ytAutoContinueEl.checked) {
     let granted = false;
@@ -309,7 +293,6 @@ ytAutoContinueEl.addEventListener("change", async () => {
   }
 });
 
-// --- Tryb Mix ---
 function originPattern(url) {
   try {
     const u = new URL(url);
@@ -320,7 +303,6 @@ function originPattern(url) {
   }
 }
 
-// reverb/bassBoost bywaja zapisane jako true w starszych danych.
 function fxReverb() {
   return settings.reverb === true ? 0.5 : Number(settings.reverb) || 0;
 }
@@ -346,7 +328,6 @@ function mixFxOn() {
   return fxReverb() > 0 || fxTreble() > 0 || fxMuffle() > 0 || fxVocal() > 0 || fxPower() > 0 || !!settings.spin;
 }
 
-// Preset = komplet efektow (takze zera), wiec wybor innego presetu czysci poprzedni.
 function presetOf(btn) {
   return {
     rate: Number(btn.dataset.mix) || 1,
@@ -356,7 +337,6 @@ function presetOf(btn) {
     vocal: Number(btn.dataset.vocal) || 0,
     power: Number(btn.dataset.power) || 0,
     spin: btn.dataset.spin === "1",
-    // Wlasne mixy pamietaja tez szybkosc krazenia; wbudowane nie (null).
     spinSpeed: btn.dataset.spinspeed != null ? Number(btn.dataset.spinspeed) : null,
     bass: Number(btn.dataset.bass) || 0,
     bassMode: btn.dataset.bassmode || "classic",
@@ -407,7 +387,6 @@ function renderMix() {
     mixBassValEl.textContent = Math.round(bas * 100) + "%";
   }
   if (mixSpinEl) {
-    // 0% = spin wylaczony, wiec suwak pokazuje 0, dopoki 8D nie jest wlaczone.
     const spinShown = settings.spin ? spd : 0;
     mixSpinEl.value = Math.round(spinShown * 100);
     mixSpinValEl.textContent = Math.round(spinShown * 100) + "%";
@@ -438,13 +417,10 @@ function renderMix() {
   } else if (matched) {
     showCtls(matched.ctl);
   } else {
-    // Stan nie pasuje do zadnego presetu - pokaz pelen zestaw.
     const all = ["speed", "reverb", "treble", "muffle", "bass", "vocal", "power"];
     if (settings.spin) all.push("spin");
     showCtls(all);
   }
-  // Podsumowanie pod presetami: co dokladnie jest teraz zastosowane (takze
-  // efekty, ktorych suwakow preset akurat nie pokazuje).
   if (mixAppliedEl) {
     const parts = [];
     if (mixRate !== 1) parts.push(VBI18N.t("mix_speed_l") + " " + mixRate.toFixed(2) + "x");
@@ -458,7 +434,6 @@ function renderMix() {
     mixAppliedEl.textContent = parts.join(", ");
     mixAppliedEl.hidden = !parts.length;
   }
-  // Plakietka na przycisku otwierajacym panel: predkosc i/lub efekty.
   let badge = "";
   if (mixRate !== 1) badge = mixRate.toFixed(2) + "x";
   if (settings.spin) badge = badge ? badge + " 8D" : "8D";
@@ -480,7 +455,6 @@ function closeMix() {
   stopMixPoll();
 }
 
-// Spotify odtwarza dzwiek przez Web Audio, nie przez element ze zmienna predkoscia.
 function knownUnsupportedHost(url) {
   try {
     return /(^|\.)spotify\.com$/i.test(new URL(url).host);
@@ -489,7 +463,6 @@ function knownUnsupportedHost(url) {
   }
 }
 
-// Wskaznik stanu Mixa: kind = ok | ready | idle | unavailable | norate | checking | off.
 function setMixStatus(kind) {
   mixWarnEl.className = "mix-status";
   let text = "";
@@ -519,15 +492,11 @@ function setMixStatus(kind) {
   mixWarnEl.hidden = false;
 }
 
-// Chwilowy brak wideo (np. ladowanie YouTube) nie ma od razu zapalac czerwonego:
-// "none" musi sie powtorzyc dwa razy pod rzad.
 let mixNoneStreak = 0;
 function refreshMixStatus() {
   if (!mixSupported) return setMixStatus("unavailable");
   if (mixHostUnsupported) return setMixStatus("norate");
   if (mixRate === 1) {
-    // Mix jeszcze wylaczony: bez zgody nie possniemy strony, ale "karta gra
-    // dzwiek" (chrome.tabs) to wystarczajacy sygnal, ze zadziala.
     chrome.tabs.get(currentTabId, (tab) => {
       if (chrome.runtime.lastError || !tab) return setMixStatus("off");
       setMixStatus(tab.audible ? "ready" : "idle");
@@ -549,7 +518,6 @@ function refreshMixStatus() {
   });
 }
 
-// Polling tylko gdy panel Mix jest otwarty.
 let mixPollTimer = null;
 function startMixPoll() {
   stopMixPoll();
@@ -564,8 +532,6 @@ function stopMixPoll() {
   }
 }
 
-// Zmiana predkosci potrzebuje zwyklego odtwarzacza strony; poglos/jasnosc/8D
-// ida przez silnik (tabCapture), wiec dzialaja wszedzie poza chrome:// itp.
 function renderMixSupport() {
   const rateOk = mixSupported && !mixHostUnsupported;
   const fxOk = mixSupported;
@@ -596,9 +562,6 @@ async function setMixRate(rate) {
         renderMix();
         return;
       }
-      // Zgoda tylko na te strone; request jako pierwszy await, zeby nie zgubic
-      // gestu. Prompt Chrome zamyka popup, dlatego zapisujemy "zamiar", ktory
-      // tlo dokonczy po kliknieciu Zezwol (permissions.onAdded).
       const need = { permissions: ["scripting"], origins: [origin] };
       chrome.storage.session.set({
         vb_pending_mix: { tabId: currentTabId, rate, origin, ts: Date.now() },
@@ -612,12 +575,10 @@ async function setMixRate(rate) {
         renderMix();
         return;
       }
-      // Popup przezyl prompt - dokonczymy sami.
       chrome.storage.session.remove("vb_pending_mix");
       mixRate = rate;
       renderMix();
       await sendMsg({ type: "vb-mix-set", tabId: currentTabId, rate, origin });
-      // Reczne wlaczenie Mixa uniewaznia backup (1x nie - to robi wlacznik).
       invalidateBackup();
     } else {
       mixRate = 1;
@@ -636,7 +597,6 @@ mixOpenEl.addEventListener("click", openMix);
 mixBackEl.addEventListener("click", closeMix);
 builtinPresetEls.forEach((b) => b.addEventListener("click", () => applyMixPreset(presetOf(b))));
 
-// --- Wlasne mixy uzytkownika (zakladka Twoje mixy, zapis w storage.local) ---
 const USER_MIX_LIMIT = 8;
 const mixPresetsUserEl = document.getElementById("mixPresetsUser");
 const mixTabPresetsEl = document.getElementById("mixTabPresets");
@@ -656,7 +616,6 @@ function persistUserMixes() {
   chrome.storage.local.set({ vbUserMixes: userMixes });
 }
 
-// Preset pokazuje tylko suwaki efektow, ktore ma niezerowe (plus predkosc).
 function userMixCtl(m) {
   const ctl = ["speed"];
   if (m.reverb > 0) ctl.push("reverb");
@@ -714,7 +673,6 @@ function renderUserMixes() {
   renderMix();
 }
 
-// Zakladki: presety wbudowane / mixy uzytkownika. Wybor pamietany lokalnie.
 let mixTab = "presets";
 function switchMixTab(tab, persist) {
   mixTab = tab === "mine" ? "mine" : "presets";
@@ -734,7 +692,6 @@ function openMixSaveForm() {
   mixSaveNameEl.focus();
 }
 
-// Kafelek + w presetach: przejdz do Twoich mixow i od razu otworz zapis.
 mixAddTileEl.addEventListener("click", () => {
   switchMixTab("mine");
   if (userMixes.length < USER_MIX_LIMIT) openMixSaveForm();
@@ -789,12 +746,13 @@ mixSaveNameEl.addEventListener("keydown", (e) => {
   else if (e.key === "Escape") closeMixSaveForm();
 });
 
-// Preset laczy predkosc (content script) z efektami silnika. streamId bierzemy
-// najpierw (w gescie klikniecia), potem prosimy o zgode na strone - wtedy
-// aktywacja uzytkownika jeszcze trwa i oba kroki przechodza.
 let mixPresetBusy = false;
+let pendingMixPreset = null;
 async function applyMixPreset(p) {
-  if (mixPresetBusy) return;
+  if (mixPresetBusy) {
+    pendingMixPreset = p;
+    return;
+  }
   mixPresetBusy = true;
   try {
     const needEngine = p.reverb > 0 || p.treble > 0 || p.muffle > 0 || p.vocal > 0 || p.power > 0 || p.spin || p.bass > 0;
@@ -818,18 +776,17 @@ async function applyMixPreset(p) {
     await setMixRate(p.rate);
   } finally {
     mixPresetBusy = false;
+    const next = pendingMixPreset;
+    pendingMixPreset = null;
+    if (next && next !== p) applyMixPreset(next);
   }
 }
 
-// Predkosc: podglad podczas przeciagania, zastosowanie po puszczeniu
-// (mniej promptow o zgode).
 mixSpeedEl.addEventListener("input", () => {
   mixReadoutEl.textContent = (Number(mixSpeedEl.value) / 100).toFixed(2) + "x";
 });
 mixSpeedEl.addEventListener("change", () => setMixRate(Number(mixSpeedEl.value) / 100));
 
-// Suwaki efektow: na zywo gdy silnik gra; wlaczenie silnika (streamId) dopiero
-// na "change", czyli w gescie uzytkownika.
 let fxTimer = null;
 function fxLive() {
   if (!isActive || fxTimer) return;
@@ -847,7 +804,6 @@ function wireFxSlider(el, valEl, key) {
   });
   el.addEventListener("change", async () => {
     settings[key] = Number(el.value) / 100;
-    // Zjazd do zera przy nieaktywnym silniku niczego nie wlacza.
     if (!isActive && settings.volume === 1 && !settings.monoFix && !fxBass() && !mixFxOn()) {
       renderUI();
       renderMix();
@@ -865,7 +821,6 @@ wireFxSlider(mixVocalEl, mixVocalValEl, "vocal");
 wireFxSlider(mixPowerEl, mixPowerValEl, "power");
 wireFxSlider(mixBassEl, mixBassValEl, "bassBoost");
 
-// Krazenie (8D): 0% wylacza efekt, inna wartosc wlacza i ustawia predkosc obrotu.
 if (mixSpinEl) {
   mixSpinEl.addEventListener("input", () => {
     mixSpinValEl.textContent = mixSpinEl.value + "%";
@@ -889,8 +844,6 @@ if (mixSpinEl) {
   });
 }
 
-// Charakter basu: klik ma byc slyszalny od razu - przy basie 0% wybor
-// charakteru sam ustawia moc na 60% i odpala silnik.
 document.querySelectorAll("#bassModeSeg button").forEach((b) => {
   b.addEventListener("click", async () => {
     settings.bassMode = b.dataset.bm || "classic";
@@ -901,7 +854,6 @@ document.querySelectorAll("#bassModeSeg button").forEach((b) => {
   });
 });
 
-// Pelny mikser: przelacznik zapamietywany miedzy otwarciami popupu.
 let fullMix = false;
 if (fullMixEl) {
   chrome.storage.local.get("vbFullMix", (d) => {
@@ -916,8 +868,6 @@ if (fullMixEl) {
   });
 }
 
-// Blokada przed spamowaniem on/off: dopoki jedno przelaczenie trwa, kolejne
-// klikniecia sa ignorowane.
 let powerBusy = false;
 powerEl.addEventListener("click", async () => {
   if (powerBusy) return;
@@ -927,8 +877,6 @@ powerEl.addEventListener("click", async () => {
     if (!anyActive()) {
       if (!(await restoreBackup())) await ensureActiveAndApply();
     } else {
-      // Wylacznik wylacza WSZYSTKO na tej karcie: podglosnienie i Mix
-      // (Mix oddaje tez dostep do strony). Backup lapie tez predkosc Mixa.
       const prevRate = mixRate;
       if (isActive) {
         const prev = { ...settings };
@@ -945,7 +893,6 @@ powerEl.addEventListener("click", async () => {
         }
         settings = { ...DEFAULTS };
       } else if (prevRate !== 1) {
-        // Sam Mix: vb-stop sie nie odpali, snapshot na zadanie PRZED wylaczeniem.
         await sendMsg({ type: "vb-snapshot", tabId: currentTabId });
         backupSettings = { ...DEFAULTS, mixRate: prevRate };
       }
@@ -962,7 +909,7 @@ powerEl.addEventListener("click", async () => {
   }
 });
 
-resetBtn.addEventListener("click", () => {
+resetBtn.addEventListener("click", async () => {
   settings = { ...DEFAULTS };
   renderUI();
   renderMix();
@@ -971,6 +918,13 @@ resetBtn.addEventListener("click", () => {
     renderStatus();
   }
   if (mixRate !== 1) setMixRate(1);
+  if (ytAutoContinueEl.checked) {
+    ytAutoContinueEl.checked = false;
+    chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: false }, () => void chrome.runtime.lastError);
+    try {
+      await chrome.permissions.remove(YT_PERMS);
+    } catch (e) {}
+  }
 });
 
 function refreshTabs() {
@@ -1017,7 +971,6 @@ function renderTabs(tabs) {
   });
 }
 
-// ON przywraca ostatnia zapamietana glosnosc karty (backup), OFF sam robi backup w tle.
 let tabToggleBusy = false;
 async function toggleTab(t, btn) {
   if (tabToggleBusy) return;
@@ -1065,7 +1018,6 @@ async function init() {
   mixHostUnsupported = knownUnsupportedHost(currentTabUrl);
   renderMixSupport();
 
-  // Wlasne mixy + ostatnia zakladka + wlasne nazwy presetow (z ustawien).
   chrome.storage.local.get(["vbUserMixes", "vbMixTab", "vbPresetNames"], (d) => {
     userMixes = Array.isArray(d.vbUserMixes) ? d.vbUserMixes : [];
     renderUserMixes();
@@ -1078,7 +1030,6 @@ async function init() {
     });
   });
 
-  // Opcje ze strony ustawien: limit suwaka glosnosci i domyslny charakter basu.
   chrome.storage.local.get(["vbMaxVol", "vbBassMode"], (d) => {
     const mv = Number(d.vbMaxVol) || 700;
     if (mv < 700) {
@@ -1099,9 +1050,6 @@ async function init() {
   chrome.runtime.sendMessage({ type: "vb-get", tabId: currentTabId }, (resp) => {
     ytAutoContinueEl.checked = !!(resp && resp.ytAutoContinue);
     if (resp) applyCurrentState(resp);
-    // Po przeladowaniu karty (F5) strumien umiera, ale ustawienia zostaja
-    // w sesji. Jesli tlo nie zdolalo wznowic samo, wznawiamy teraz -
-    // otwarcie okienka to gest uzytkownika.
     if (resp && !resp.active && resp.settings) {
       const s = resp.settings;
       if (s.volume !== 1 || s.monoFix || s.bassBoost || s.reverb || s.treble || s.muffle || s.vocal || s.power || s.spin) {
@@ -1116,8 +1064,6 @@ async function init() {
 
 function applyCurrentState(resp) {
   if (resp.settings) settings = { ...DEFAULTS, ...resp.settings };
-  // Dopoki bas nie jest wlaczony, karta trzyma sie domyslnego charakteru
-  // wybranego w ustawieniach.
   if (!fxBass()) settings.bassMode = DEFAULTS.bassMode;
   isActive = !!resp.active;
   backupSettings = resp.backup || null;

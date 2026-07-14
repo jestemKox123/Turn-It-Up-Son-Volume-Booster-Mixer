@@ -1,13 +1,7 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// Tryb Mix: ustawia playbackRate i preservesPitch=false na elementach
-// <video>/<audio> strony (wysokosc idzie w gore razem z tempem - efekt
-// nightcore/sped up). Wstrzykiwany tylko na stronach, na ktore uzytkownik
-// dal zgode; nie czyta ani nie zmienia niczego poza predkoscia odtwarzacza.
-
 (() => {
-  // Jeden kontroler na dokument; ponowne wstrzykniecie tylko odswieza stan.
   if (window.__vbMix) {
     window.__vbMix.refresh();
     return;
@@ -23,7 +17,6 @@
 
   function applyTo(el) {
     setPitch(el, state.pitchOff);
-    // Roznica > 0.001 chroni przed petla (playbackRate sam wywoluje ratechange).
     if (Math.abs((el.playbackRate || 1) - state.rate) > 0.001) {
       try { el.playbackRate = state.rate; } catch (e) {}
     }
@@ -43,8 +36,6 @@
     return anyPlaying ? "ok" : "idle";
   }
 
-  // Playery (YouTube itp.) resetuja playbackRate przy zmianie utworu -
-  // te zdarzenia pozwalaja od razu ja przywrocic.
   function onMedia(e) {
     const el = e.target;
     if (!el || (el.tagName !== "VIDEO" && el.tagName !== "AUDIO")) return;
@@ -86,7 +77,6 @@
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (!msg) return;
-    // Sonda z popupu: ok = cos gra, idle = odtwarzacz stoi, none = brak medium.
     if (msg.type === "vb-mix-probe") {
       sendResponse({ status: computeStatus() });
       return;
@@ -94,11 +84,13 @@
     if (msg.type === "vb-mix-apply") {
       if (msg.off || !msg.rate || msg.rate === 1) {
         teardown();
+        sendResponse({ ok: true });
         return;
       }
       state.rate = msg.rate;
       state.pitchOff = msg.pitchOff !== false;
       applyAll();
+      sendResponse({ ok: true });
     }
   });
 

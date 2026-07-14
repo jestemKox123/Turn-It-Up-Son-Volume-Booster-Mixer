@@ -124,10 +124,33 @@
 
   footer{margin-top:52px;font-size:12px;color:var(--dim)}
   footer a{color:var(--muted)}
+
+  .langs{
+    position:fixed;top:16px;right:18px;z-index:5;
+    display:flex;gap:6px;align-items:center;
+    font-size:12.5px;color:var(--dim);
+  }
+  .langs button{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--muted);
+    font-family:inherit;font-size:12.5px;font-weight:700;
+    padding:6px 13px;cursor:pointer;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  .langs button:hover{border-color:var(--red);color:var(--text)}
+  .langs button.on{border-color:var(--red);color:var(--text);background:rgba(255,69,58,.10)}
 </style>
 </head>
 <body>
   <div class="orb" aria-hidden="true"></div>
+
+  <div class="langs" aria-label="Language">
+    <span aria-hidden="true">&#127760;</span>
+    <button type="button" id="langEn" class="on">EN</button>
+    <button type="button" id="langPl">PL</button>
+  </div>
 
   <div class="wrap">
     <p class="eyebrow">Turn It Up, Son!</p>
@@ -175,44 +198,62 @@
     { v: "Other reason", en: "Other reason", pl: "Inny powód" }
   ];
 
-  var PL = (navigator.language || "").toLowerCase().indexOf("pl") === 0;
-  var T = PL ? {
-    h1: "Szkoda, że odchodzisz",
-    sub: "Wtyczka została całkowicie usunięta. Niczego nie zbierała, więc nic po niej nie zostało: zero danych, zero kont, zero śladów.",
-    why: "Powiesz nam dlaczego?",
-    hint: "Wystarczy jedno kliknięcie. Wysyła się anonimowo - bez konta, bez logowania, bez niczego.",
-    thanks: "Dzięki, wysłane!",
-    ph: "Chcesz dodać coś więcej? (opcjonalnie)",
-    send: "Wyślij szczegóły",
-    sent: "Wysłane, dziękujemy!",
-    back: "Zmiana zdania albo usunięcie przez przypadek?",
-    btn: "Zainstaluj ponownie z Chrome Web Store"
-  } : {
-    h1: "Sorry to see you go",
-    sub: "The extension is fully removed. It never collected anything, so there is nothing left behind: no data, no accounts, no traces.",
-    why: "Mind telling us why?",
-    hint: "One click is enough. It sends anonymously - no account, no sign-in, nothing else to do.",
-    thanks: "Thanks, sent!",
-    ph: "Anything else you want to add? (optional)",
-    send: "Send details",
-    sent: "Sent, thank you!",
-    back: "Changed your mind or removed it by accident?",
-    btn: "Reinstall from the Chrome Web Store"
+  var DICT = {
+    en: {
+      h1: "Sorry to see you go",
+      sub: "The extension is fully removed. It never collected anything, so there is nothing left behind: no data, no accounts, no traces.",
+      why: "Mind telling us why?",
+      hint: "One click is enough. It sends anonymously - no account, no sign-in, nothing else to do.",
+      thanks: "Thanks, sent!",
+      ph: "Anything else you want to add? (optional)",
+      send: "Send details",
+      sent: "Sent, thank you!",
+      back: "Changed your mind or removed it by accident?",
+      btn: "Reinstall from the Chrome Web Store"
+    },
+    pl: {
+      h1: "Szkoda, że odchodzisz",
+      sub: "Wtyczka została całkowicie usunięta. Niczego nie zbierała, więc nic po niej nie zostało: zero danych, zero kont, zero śladów.",
+      why: "Powiesz nam dlaczego?",
+      hint: "Wystarczy jedno kliknięcie. Wysyła się anonimowo - bez konta, bez logowania, bez niczego.",
+      thanks: "Dzięki, wysłane!",
+      ph: "Chcesz dodać coś więcej? (opcjonalnie)",
+      send: "Wyślij szczegóły",
+      sent: "Wysłane, dziękujemy!",
+      back: "Zmiana zdania albo usunięcie przez przypadek?",
+      btn: "Zainstaluj ponownie z Chrome Web Store"
+    }
   };
 
-  document.getElementById("t-h1").textContent = T.h1;
-  document.getElementById("t-sub").textContent = T.sub;
-  document.getElementById("t-why").textContent = T.why;
-  document.getElementById("t-hint").textContent = T.hint;
-  document.getElementById("t-thanks").textContent = T.thanks;
-  document.getElementById("t-back").textContent = T.back;
-  document.getElementById("t-btn").textContent = T.btn;
-  document.getElementById("t-sent").textContent = T.sent;
+  var LANG = "en";
   var detailsEl = document.getElementById("details");
-  detailsEl.placeholder = T.ph;
   var sendBtn = document.getElementById("sendBtn");
-  sendBtn.textContent = T.send;
-  if (PL) document.documentElement.lang = "pl";
+  var langEn = document.getElementById("langEn");
+  var langPl = document.getElementById("langPl");
+
+  function applyLang(l) {
+    LANG = DICT[l] ? l : "en";
+    var T = DICT[LANG];
+    document.getElementById("t-h1").textContent = T.h1;
+    document.getElementById("t-sub").textContent = T.sub;
+    document.getElementById("t-why").textContent = T.why;
+    document.getElementById("t-hint").textContent = T.hint;
+    document.getElementById("t-thanks").textContent = T.thanks;
+    document.getElementById("t-back").textContent = T.back;
+    document.getElementById("t-btn").textContent = T.btn;
+    document.getElementById("t-sent").textContent = T.sent;
+    detailsEl.placeholder = T.ph;
+    sendBtn.textContent = T.send;
+    document.documentElement.lang = LANG;
+    langEn.classList.toggle("on", LANG === "en");
+    langPl.classList.toggle("on", LANG === "pl");
+    buttons.forEach(function (b, i) {
+      b.textContent = LANG === "pl" ? REASONS[i].pl : REASONS[i].en;
+    });
+  }
+
+  langEn.addEventListener("click", function () { applyLang("en"); });
+  langPl.addEventListener("click", function () { applyLang("pl"); });
 
   function post(params) {
     var body = Object.keys(params)
@@ -234,7 +275,7 @@
     var b = document.createElement("button");
     b.type = "button";
     b.className = "reason";
-    b.textContent = PL ? r.pl : r.en;
+    b.textContent = r.en;
     b.addEventListener("click", function () {
       if (chosen) return;
       chosen = r.v;
@@ -267,6 +308,8 @@
     } catch (e) {}
     document.getElementById("t-sent").hidden = false;
   });
+
+  applyLang("en");
 })();
 </script>
 </body>

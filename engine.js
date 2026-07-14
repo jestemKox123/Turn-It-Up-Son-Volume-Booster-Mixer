@@ -1,21 +1,14 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-// Silnik audio: jeden wspolny AudioContext, osobny lancuch wezlow na kazda karte,
-// suma przez wspolny limiter (MASTER) na wyjscie.
-
-// Wiekszy bufor audio = mniej przebudzen CPU; opoznienie reakcji jest niezauwazalne.
 const CTX = new AudioContext({ latencyHint: "playback" });
-const engines = new Map(); // tabId -> engine
+const engines = new Map();
 
-const FADE_IN = 0.35; // s
-const GLIDE = 0.06; // s - plynne dochodzenie do nowej glosnosci
+const FADE_IN = 0.35;
+const GLIDE = 0.06;
 const TREBLE_MAX_DB = 8;
-const SPIN_DEPTH = 0.85; // szerokosc krazenia 8D (0..1)
+const SPIN_DEPTH = 0.85;
 
-// Wspolny limiter: niesluszalny przy normalnym poziomie, dociska szczyty
-// przy mocnym podbiciu zamiast pozwolic na trzeszczenie. Prog blisko zera -
-// nizszy prog zjadal headroom i 700% nie bylo glosniejsze niz 400%.
 const MASTER = CTX.createDynamicsCompressor();
 MASTER.threshold.value = -1;
 MASTER.knee.value = 3;
@@ -24,12 +17,6 @@ MASTER.attack.value = 0.002;
 MASTER.release.value = 0.2;
 MASTER.connect(CTX.destination);
 
-// UWAGA: zadnego clipu/saturacji na torze glosnosci - nawet lagodna krzywa
-// slyszalnie zmienia barwe glosu. Szczyty dociska wylacznie limiter MASTER.
-
-// Odpowiedz impulsowa poglosu generowana raz, algorytmicznie: stereo szum
-// z wykladniczym zanikiem, pre-delayem i ciemniejacym ogonem. Kanaly maja
-// osobny szum, dzieki czemu poglos jest szeroki.
 let IMPULSE = null;
 function getImpulse() {
   if (IMPULSE) return IMPULSE;
@@ -55,7 +42,6 @@ function getImpulse() {
 
 const clamp01 = (v) => Math.max(0, Math.min(1, Number(v) || 0));
 
-// reverb bywa zapisany jako true (stare dane) albo liczba 0..1 (suwak).
 function reverbAmount(v) {
   return v === true ? 0.5 : clamp01(v);
 }
@@ -74,14 +60,11 @@ function buildEngine(stream, settings) {
   bass.frequency.value = 200;
   bass.gain.value = 0;
 
-  // Drugi filtr basu (charaktery Sub/Punch uzywaja dwoch pasm).
   const bass2 = CTX.createBiquadFilter();
   bass2.type = "peaking";
   bass2.frequency.value = 250;
   bass2.gain.value = 0;
 
-  // Saturacja dolu pasma: rownolegla galaz lowpass -> waveshaper -> gain.
-  // Generuje harmoniczne basu, przez ktore czuc go tez na malych glosnikach.
   const subLP = CTX.createBiquadFilter();
   subLP.type = "lowpass";
   subLP.frequency.value = 130;
@@ -97,21 +80,17 @@ function buildEngine(stream, settings) {
   treble.frequency.value = 3200;
   treble.gain.value = 0;
 
-  // Tlumik: lowpass "zza sciany". Przy 20 kHz calkowicie neutralny.
   const muffle = CTX.createBiquadFilter();
   muffle.type = "lowpass";
   muffle.frequency.value = 20000;
   muffle.Q.value = 0.5;
 
-  // Wokal: peaking w srodku pasma (~2.4 kHz), gdzie siedzi obecnosc glosu.
   const vocal = CTX.createBiquadFilter();
   vocal.type = "peaking";
   vocal.frequency.value = 2400;
   vocal.Q.value = 1.1;
   vocal.gain.value = 0;
 
-  // Moc: kompresor per karta (radiowa glosnosc) + makeup gain. Przy ratio 1
-  // i makeup 1 jest neutralny.
   const comp = CTX.createDynamicsCompressor();
   comp.threshold.value = 0;
   comp.knee.value = 10;
@@ -121,7 +100,6 @@ function buildEngine(stream, settings) {
   const makeup = CTX.createGain();
   makeup.gain.value = 1;
 
-  // Efekt 8D: oscylator steruje panorama przez gain-glebokosc.
   const pan = CTX.createStereoPanner();
   const lfo = CTX.createOscillator();
   lfo.type = "sine";
@@ -135,8 +113,6 @@ function buildEngine(stream, settings) {
   const boost = CTX.createGain();
   boost.gain.value = 1;
 
-  // Poglos: convolver NIE jest tu podpinany (najdrozszy wezel Web Audio,
-  // liczy nawet dla ciszy) - wpina go applyReverb dopiero, gdy poglos gra.
   const dry = CTX.createGain();
   dry.gain.value = 1;
   const wet = CTX.createGain();
@@ -185,7 +161,6 @@ function buildEngine(stream, settings) {
   applyReverb(engine, settings.reverb);
   applySpin(engine, settings.spin, settings.spinSpeed);
 
-  // Plynne przejscie od 1.0 do docelowej glosnosci, bez dipu do ciszy.
   const now = CTX.currentTime;
   boost.gain.cancelScheduledValues(now);
   boost.gain.setValueAtTime(1, now);
@@ -203,13 +178,6 @@ function applyMono(engine, monoOn) {
   }
 }
 
-// Charaktery basu: dwa filtry + saturacja, kazdy o innym KSZTALCIE (nie mocy):
-//  - classic: szeroki lift calego dolu z lekka saturacja (pelniej i cieplej),
-//  - sub: czysty, gleboki pomruk 45-70 Hz, bez brudu (sluchawki / subwoofer),
-//  - punch: waskie kopniecie stopy 100 Hz + dolek wyzej dla kontrastu,
-//  - rumble: kinowe trzesienie 30-45 Hz + WYCIETY nizszy srodek (czysto nad pomrukiem),
-//  - 808: drillowy boom 55 Hz z mocnym growlem saturacji (slychac tez na telefonie),
-//  - warm: lampowe ocieplenie 120-300 Hz z lekko COFNIETYM sub-basem (zero dudnienia).
 const BASS_MODES = {
   classic: {
     f1: { type: "lowshelf", freq: 200, q: 0.9, max: 15 },
@@ -265,7 +233,6 @@ function setFilter(f, cfg, v, t) {
 function applyBass(engine, on, mode) {
   const m = BASS_MODES[mode] || BASS_MODES.classic;
   const t = CTX.currentTime;
-  // true (przelacznik w glownym widoku) = 3/4 mocy trybu; liczba 0..1 (suwak).
   const v = on === true ? 0.75 : clamp01(on);
   setFilter(engine.bass, m.f1, v, t);
   setFilter(engine.bass2, m.f2, v, t);
@@ -276,22 +243,16 @@ function applyTreble(engine, v) {
   engine.treble.gain.setTargetAtTime(TREBLE_MAX_DB * clamp01(v), CTX.currentTime, 0.05);
 }
 
-// Tlumik 0..1 -> czestotliwosc odciecia w skali wykladniczej: 0 = 18 kHz
-// (neutralnie), 1 = ~400 Hz (mocno zza sciany).
 function applyMuffle(engine, v) {
   const a = clamp01(v);
   const f = 18000 * Math.pow(0.022, a);
   engine.muffle.frequency.setTargetAtTime(f, CTX.currentTime, 0.06);
 }
 
-// Wokal 0..1 -> do +8 dB obecnosci glosu w srodku pasma.
 function applyVocal(engine, v) {
   engine.vocal.gain.setTargetAtTime(8 * clamp01(v), CTX.currentTime, 0.05);
 }
 
-// Moc 0..1: im wyzej, tym nizszy prog i wyzsze ratio kompresora, a makeup
-// oddaje sciśnieta glosnosc z nawiazka - efekt "radiowego" kopa. Sume i tak
-// pilnuje limiter MASTER.
 function applyPower(engine, v) {
   const a = clamp01(v);
   const t = CTX.currentTime;
@@ -313,11 +274,9 @@ function applyReverb(engine, v) {
       engine.convOn = true;
     }
   }
-  // Sucha sciezke lekko przyciszamy, gdy poglos gra, zeby suma nie przesterowywala.
   engine.wet.gain.setTargetAtTime(amount, t, 0.08);
   engine.dry.gain.setTargetAtTime(1 - 0.3 * amount, t, 0.08);
   if (amount === 0 && engine.convOn) {
-    // Wypnij convolver po wybrzmieniu ogona (impuls ma 2.8 s) - przestaje kosztowac CPU.
     clearTimeout(engine.convOffTimer);
     engine.convOffTimer = setTimeout(() => {
       if (!engine.convOn) return;
@@ -335,7 +294,6 @@ function applyReverb(engine, v) {
 function applySpin(engine, on, speed) {
   const t = CTX.currentTime;
   engine.lfoDepth.gain.setTargetAtTime(on ? SPIN_DEPTH : 0, t, 0.4);
-  // Suwak "Krazenie" (0..1) -> 0.05-0.45 Hz obrotu.
   const v = speed == null ? 0.5 : clamp01(speed);
   engine.lfo.frequency.setTargetAtTime(0.05 + 0.4 * v, t, 0.2);
 }
@@ -383,40 +341,66 @@ function teardown(tabId) {
   }, 260);
 }
 
+const starting = new Map();
+
 async function start(tabId, streamId, settings) {
-  // Karta juz przechwytywana: drugi getUserMedia by sie wywalil, wystarczy update.
   const existing = engines.get(tabId);
   if (existing) {
     applySettings(existing, settings);
     return true;
   }
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: { mandatory: { chromeMediaSource: "tab", chromeMediaSourceId: streamId } },
-      video: false,
-    });
-  } catch (e) {
-    chrome.runtime.sendMessage({ type: "vb-ended", tabId });
+  if (starting.has(tabId)) {
+    try {
+      await starting.get(tabId);
+    } catch (e) {}
+    const after = engines.get(tabId);
+    if (after) {
+      applySettings(after, settings);
+      return true;
+    }
     return false;
   }
-  if (CTX.state === "suspended") { try { await CTX.resume(); } catch (e) {} }
-  const engine = buildEngine(stream, settings);
-  engines.set(tabId, engine);
-  stream.getAudioTracks().forEach((track) => {
-    track.addEventListener("ended", () => {
-      teardown(tabId);
-      chrome.runtime.sendMessage({ type: "vb-ended", tabId });
+  const p = (async () => {
+    const grab = () =>
+      navigator.mediaDevices.getUserMedia({
+        audio: { mandatory: { chromeMediaSource: "tab", chromeMediaSourceId: streamId } },
+        video: false,
+      });
+    let stream;
+    try {
+      stream = await grab();
+    } catch (e) {
+      await new Promise((r) => setTimeout(r, 320));
+      try {
+        stream = await grab();
+      } catch (e2) {
+        chrome.runtime.sendMessage({ type: "vb-ended", tabId });
+        return false;
+      }
+    }
+    if (CTX.state === "suspended") { try { await CTX.resume(); } catch (e) {} }
+    const engine = buildEngine(stream, settings);
+    engines.set(tabId, engine);
+    stream.getAudioTracks().forEach((track) => {
+      track.addEventListener("ended", () => {
+        teardown(tabId);
+        chrome.runtime.sendMessage({ type: "vb-ended", tabId });
+      });
     });
-  });
-  return true;
+    return true;
+  })();
+  starting.set(tabId, p);
+  try {
+    return await p;
+  } finally {
+    starting.delete(tabId);
+  }
 }
 
 function activeTabIds() {
   return Array.from(engines.keys());
 }
 
-// W dokumencie offscreen getManifest nie istnieje - stopka zostaje pusta.
 const verEl = document.getElementById("ver");
 if (verEl && chrome.runtime && typeof chrome.runtime.getManifest === "function") {
   verEl.textContent = "v" + chrome.runtime.getManifest().version;
