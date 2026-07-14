@@ -1,7 +1,6 @@
 <!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-     Strona pozegnalna otwierana przez Chrome po odinstalowaniu wtyczki
-     (chrome.runtime.setUninstallURL w background.js). Zero analityki. -->
+     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -21,6 +20,7 @@
     --dim:rgba(245,245,247,.32);
     --red:#ff453a;
     --red2:#ff2d55;
+    --ok:#45e0a0;
     --grad:linear-gradient(120deg,#ff6b52,#ff2d55);
   }
   body{
@@ -37,7 +37,6 @@
   a{color:inherit;text-decoration:none}
   ::selection{background:rgba(255,69,58,.35)}
 
-  /* Przygaszona, oddychajaca kula dzwieku jak na landing page. */
   .orb{
     position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);
     width:min(60vmin,520px);height:min(60vmin,520px);border-radius:50%;
@@ -70,8 +69,6 @@
   .card h2{font-size:16px;letter-spacing:-.01em;margin-bottom:4px}
   .card .hint{font-size:13px;color:var(--muted);margin-bottom:16px}
 
-  /* Powody: kazdy przycisk otwiera zglosznie na GitHubie z wpisanym
-     powodem. Bez serwera i analityki nie ma innego kanalu zwrotnego. */
   .reasons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media (max-width:560px){.reasons{grid-template-columns:1fr}}
   .reason{
@@ -82,11 +79,36 @@
     color:var(--text);
     font-family:inherit;font-size:13.5px;font-weight:600;
     padding:13px 14px;text-align:left;cursor:pointer;
-    transition:border-color .15s ease,background .15s ease,transform .15s ease;
+    transition:border-color .15s ease,background .15s ease,transform .15s ease,opacity .15s ease;
   }
   .reason:hover{border-color:var(--red);background:rgba(255,69,58,.08);transform:translateY(-1px)}
-  .gh-note{font-size:12px;color:var(--dim);margin-top:14px}
-  .gh-note a{color:var(--muted);text-decoration:underline}
+  .reason.sel{border-color:var(--ok);background:rgba(69,224,160,.10)}
+  .reason:disabled{cursor:default;opacity:.45;transform:none}
+  .reason.sel:disabled{opacity:1}
+
+  .extra{margin-top:16px}
+  .thanks{font-size:13.5px;color:var(--ok);font-weight:600;margin-bottom:10px}
+  .extra textarea{
+    width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--text);
+    font-family:inherit;font-size:13.5px;
+    padding:11px 12px;
+    resize:vertical;min-height:74px;
+  }
+  .extra textarea:focus{outline:none;border-color:var(--red)}
+  .sendrow{display:flex;align-items:center;gap:12px;margin-top:10px}
+  .send{
+    background:var(--grad);color:#fff;font-weight:600;
+    border:none;border-radius:999px;padding:10px 22px;font-size:13.5px;
+    font-family:inherit;cursor:pointer;
+    transition:transform .18s ease,filter .18s ease;
+  }
+  .send:hover{transform:translateY(-1px);filter:brightness(1.08)}
+  .send:disabled{opacity:.5;cursor:default;transform:none}
+  .sent{font-size:13px;color:var(--ok);font-weight:600}
 
   .back{margin-top:34px}
   .back .t{font-size:14px;color:var(--muted);margin-bottom:14px}
@@ -114,9 +136,16 @@
 
     <div class="card">
       <h2 id="t-why">Mind telling us why?</h2>
-      <p class="hint" id="t-hint">One click below opens a short report on GitHub. It really helps make the extension better.</p>
+      <p class="hint" id="t-hint">One click is enough. It sends anonymously - no account, no sign-in, nothing else to do.</p>
       <div class="reasons" id="reasons"></div>
-      <p class="gh-note" id="t-note">Requires a free GitHub account. No account? Just close this tab, no hard feelings.</p>
+      <div class="extra" id="extra" hidden>
+        <p class="thanks" id="t-thanks">Thanks, sent!</p>
+        <textarea id="details" maxlength="2000"></textarea>
+        <div class="sendrow">
+          <button class="send" id="sendBtn" type="button">Send details</button>
+          <span class="sent" id="t-sent" hidden>Sent, thank you!</span>
+        </div>
+      </div>
     </div>
 
     <div class="back">
@@ -132,68 +161,111 @@
   </div>
 
 <script>
-// Teksty EN/PL: strona jest publiczna i statyczna, wiec jezyk wybieramy
-// po jezyku przegladarki. Zadnej analityki, zadnych requestow.
 (function () {
+  var FORM = "https://docs.google.com/forms/d/e/1FAIpQLScyvm-FU6kLwyjPL0qpIXS-48m-jQ-F63kFdvA3Z7JjRaT0dg";
+  var ENTRY_REASON = "entry.225153063";
+  var ENTRY_DETAILS = "entry.688777186";
+
+  var REASONS = [
+    { v: "It was too loud or the audio was distorted", en: "Too loud or the sound was distorted", pl: "Za głośno albo dźwięk był zniekształcony" },
+    { v: "It didn't work on the website I use", en: "Did not work on a site I use", pl: "Nie działało na stronie, której używam" },
+    { v: "It was too complicated to use", en: "Too complicated to use", pl: "Zbyt skomplikowana obsługa" },
+    { v: "I found a better extension", en: "I found a better extension", pl: "Znalazłem lepszą wtyczkę" },
+    { v: "I was just testing it", en: "I was just testing it", pl: "Tylko testowałem" },
+    { v: "Other reason", en: "Other reason", pl: "Inny powód" }
+  ];
+
   var PL = (navigator.language || "").toLowerCase().indexOf("pl") === 0;
   var T = PL ? {
     h1: "Szkoda, że odchodzisz",
     sub: "Wtyczka została całkowicie usunięta. Niczego nie zbierała, więc nic po niej nie zostało: zero danych, zero kont, zero śladów.",
     why: "Powiesz nam dlaczego?",
-    hint: "Jedno kliknięcie poniżej otwiera krótkie zgłoszenie na GitHubie. To naprawdę pomaga ulepszać wtyczkę.",
-    note: "Wymaga darmowego konta GitHub. Nie masz konta? Po prostu zamknij kartę, nic się nie dzieje.",
+    hint: "Wystarczy jedno kliknięcie. Wysyła się anonimowo - bez konta, bez logowania, bez niczego.",
+    thanks: "Dzięki, wysłane!",
+    ph: "Chcesz dodać coś więcej? (opcjonalnie)",
+    send: "Wyślij szczegóły",
+    sent: "Wysłane, dziękujemy!",
     back: "Zmiana zdania albo usunięcie przez przypadek?",
-    btn: "Zainstaluj ponownie z Chrome Web Store",
-    reasons: [
-      "Za głośno albo dźwięk był zniekształcony",
-      "Nie działało na stronie, której używam",
-      "Zbyt skomplikowana obsługa",
-      "Znalazłem lepszą wtyczkę",
-      "Tylko testowałem",
-      "Inny powód"
-    ]
+    btn: "Zainstaluj ponownie z Chrome Web Store"
   } : {
     h1: "Sorry to see you go",
     sub: "The extension is fully removed. It never collected anything, so there is nothing left behind: no data, no accounts, no traces.",
     why: "Mind telling us why?",
-    hint: "One click below opens a short report on GitHub. It really helps make the extension better.",
-    note: "Requires a free GitHub account. No account? Just close this tab, no hard feelings.",
+    hint: "One click is enough. It sends anonymously - no account, no sign-in, nothing else to do.",
+    thanks: "Thanks, sent!",
+    ph: "Anything else you want to add? (optional)",
+    send: "Send details",
+    sent: "Sent, thank you!",
     back: "Changed your mind or removed it by accident?",
-    btn: "Reinstall from the Chrome Web Store",
-    reasons: [
-      "Too loud or the sound was distorted",
-      "Did not work on a site I use",
-      "Too complicated to use",
-      "I found a better extension",
-      "I was just testing it",
-      "Other reason"
-    ]
+    btn: "Reinstall from the Chrome Web Store"
   };
 
   document.getElementById("t-h1").textContent = T.h1;
   document.getElementById("t-sub").textContent = T.sub;
   document.getElementById("t-why").textContent = T.why;
   document.getElementById("t-hint").textContent = T.hint;
-  document.getElementById("t-note").textContent = T.note;
+  document.getElementById("t-thanks").textContent = T.thanks;
   document.getElementById("t-back").textContent = T.back;
   document.getElementById("t-btn").textContent = T.btn;
+  document.getElementById("t-sent").textContent = T.sent;
+  var detailsEl = document.getElementById("details");
+  detailsEl.placeholder = T.ph;
+  var sendBtn = document.getElementById("sendBtn");
+  sendBtn.textContent = T.send;
   if (PL) document.documentElement.lang = "pl";
 
-  var REPO = "https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer";
+  function post(params) {
+    var body = Object.keys(params)
+      .map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); })
+      .join("&");
+    return fetch(FORM + "/formResponse", {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body
+    });
+  }
+
+  var chosen = null;
   var box = document.getElementById("reasons");
-  T.reasons.forEach(function (r) {
+  var buttons = [];
+
+  REASONS.forEach(function (r) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "reason";
-    b.textContent = r;
+    b.textContent = PL ? r.pl : r.en;
     b.addEventListener("click", function () {
-      var title = "Uninstall feedback: " + r;
-      var body = (PL
-        ? "Powód odinstalowania: " + r + "\n\nChcesz dodać szczegóły? Każde zdanie pomaga:\n"
-        : "Uninstall reason: " + r + "\n\nWant to add details? Every sentence helps:\n");
-      window.location.href = REPO + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+      if (chosen) return;
+      chosen = r.v;
+      buttons.forEach(function (x) { x.disabled = true; });
+      b.classList.add("sel");
+      var p = {};
+      p[ENTRY_REASON] = r.v;
+      try {
+        post(p);
+      } catch (e) {
+        window.open(FORM + "/viewform?usp=pp_url&" + ENTRY_REASON + "=" + encodeURIComponent(r.v), "_blank");
+      }
+      document.getElementById("extra").hidden = false;
+      detailsEl.focus();
     });
     box.appendChild(b);
+    buttons.push(b);
+  });
+
+  sendBtn.addEventListener("click", function () {
+    var txt = detailsEl.value.trim();
+    if (!txt || !chosen) return;
+    sendBtn.disabled = true;
+    detailsEl.disabled = true;
+    var p = {};
+    p[ENTRY_REASON] = chosen;
+    p[ENTRY_DETAILS] = txt;
+    try {
+      post(p);
+    } catch (e) {}
+    document.getElementById("t-sent").hidden = false;
   });
 })();
 </script>
