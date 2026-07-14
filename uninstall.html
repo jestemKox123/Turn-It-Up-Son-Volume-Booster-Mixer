@@ -1,0 +1,201 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     Strona pozegnalna otwierana przez Chrome po odinstalowaniu wtyczki
+     (chrome.runtime.setUninstallURL w background.js). Zero analityki. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Turn It Up, Son! - goodbye</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff453a'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    color-scheme:dark;
+    --bg:#050505;
+    --panel:#0e0e10;
+    --line:rgba(255,255,255,.09);
+    --text:#f5f5f7;
+    --muted:rgba(245,245,247,.55);
+    --dim:rgba(245,245,247,.32);
+    --red:#ff453a;
+    --red2:#ff2d55;
+    --grad:linear-gradient(120deg,#ff6b52,#ff2d55);
+  }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+    min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:60px 24px 40px;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  ::selection{background:rgba(255,69,58,.35)}
+
+  /* Przygaszona, oddychajaca kula dzwieku jak na landing page. */
+  .orb{
+    position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);
+    width:min(60vmin,520px);height:min(60vmin,520px);border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,rgba(255,69,58,.18),rgba(255,45,85,.06) 45%,transparent 70%);
+    filter:blur(38px);
+    animation:breathe 8s ease-in-out infinite;
+    pointer-events:none;z-index:-1;
+  }
+  @keyframes breathe{
+    0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8}
+    50%{transform:translate(-50%,-50%) scale(1.15);opacity:1}
+  }
+  @media (prefers-reduced-motion: reduce){.orb{animation:none}}
+
+  .wrap{max-width:640px;width:100%}
+  .eyebrow{
+    font-size:12.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--red);margin-bottom:18px;
+  }
+  h1{font-size:clamp(34px,7vw,54px);letter-spacing:-.03em;line-height:1.08;margin-bottom:14px}
+  .sub{color:var(--muted);font-size:16px;max-width:480px;margin:0 auto 38px}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:26px 26px 22px;
+    text-align:left;
+  }
+  .card h2{font-size:16px;letter-spacing:-.01em;margin-bottom:4px}
+  .card .hint{font-size:13px;color:var(--muted);margin-bottom:16px}
+
+  /* Powody: kazdy przycisk otwiera zglosznie na GitHubie z wpisanym
+     powodem. Bez serwera i analityki nie ma innego kanalu zwrotnego. */
+  .reasons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:560px){.reasons{grid-template-columns:1fr}}
+  .reason{
+    display:block;width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--text);
+    font-family:inherit;font-size:13.5px;font-weight:600;
+    padding:13px 14px;text-align:left;cursor:pointer;
+    transition:border-color .15s ease,background .15s ease,transform .15s ease;
+  }
+  .reason:hover{border-color:var(--red);background:rgba(255,69,58,.08);transform:translateY(-1px)}
+  .gh-note{font-size:12px;color:var(--dim);margin-top:14px}
+  .gh-note a{color:var(--muted);text-decoration:underline}
+
+  .back{margin-top:34px}
+  .back .t{font-size:14px;color:var(--muted);margin-bottom:14px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--grad);color:#fff;font-weight:600;
+    border-radius:999px;padding:13px 28px;font-size:15px;
+    transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+    box-shadow:0 4px 22px rgba(255,45,85,.35);
+    white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 30px rgba(255,45,85,.45)}
+
+  footer{margin-top:52px;font-size:12px;color:var(--dim)}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="orb" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <p class="eyebrow">Turn It Up, Son!</p>
+    <h1 id="t-h1">Sorry to see you go</h1>
+    <p class="sub" id="t-sub">The extension is fully removed. It never collected anything, so there is nothing left behind: no data, no accounts, no traces.</p>
+
+    <div class="card">
+      <h2 id="t-why">Mind telling us why?</h2>
+      <p class="hint" id="t-hint">One click below opens a short report on GitHub. It really helps make the extension better.</p>
+      <div class="reasons" id="reasons"></div>
+      <p class="gh-note" id="t-note">Requires a free GitHub account. No account? Just close this tab, no hard feelings.</p>
+    </div>
+
+    <div class="back">
+      <p class="t" id="t-back">Changed your mind or removed it by accident?</p>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" id="t-btn">Reinstall from the Chrome Web Store</a>
+    </div>
+
+    <footer>
+      Turn It Up, Son! &middot; &copy; 2026 romanzbudowy &middot;
+      <a href="https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/">Home</a> &middot;
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
+    </footer>
+  </div>
+
+<script>
+// Teksty EN/PL: strona jest publiczna i statyczna, wiec jezyk wybieramy
+// po jezyku przegladarki. Zadnej analityki, zadnych requestow.
+(function () {
+  var PL = (navigator.language || "").toLowerCase().indexOf("pl") === 0;
+  var T = PL ? {
+    h1: "Szkoda, że odchodzisz",
+    sub: "Wtyczka została całkowicie usunięta. Niczego nie zbierała, więc nic po niej nie zostało: zero danych, zero kont, zero śladów.",
+    why: "Powiesz nam dlaczego?",
+    hint: "Jedno kliknięcie poniżej otwiera krótkie zgłoszenie na GitHubie. To naprawdę pomaga ulepszać wtyczkę.",
+    note: "Wymaga darmowego konta GitHub. Nie masz konta? Po prostu zamknij kartę, nic się nie dzieje.",
+    back: "Zmiana zdania albo usunięcie przez przypadek?",
+    btn: "Zainstaluj ponownie z Chrome Web Store",
+    reasons: [
+      "Za głośno albo dźwięk był zniekształcony",
+      "Nie działało na stronie, której używam",
+      "Zbyt skomplikowana obsługa",
+      "Znalazłem lepszą wtyczkę",
+      "Tylko testowałem",
+      "Inny powód"
+    ]
+  } : {
+    h1: "Sorry to see you go",
+    sub: "The extension is fully removed. It never collected anything, so there is nothing left behind: no data, no accounts, no traces.",
+    why: "Mind telling us why?",
+    hint: "One click below opens a short report on GitHub. It really helps make the extension better.",
+    note: "Requires a free GitHub account. No account? Just close this tab, no hard feelings.",
+    back: "Changed your mind or removed it by accident?",
+    btn: "Reinstall from the Chrome Web Store",
+    reasons: [
+      "Too loud or the sound was distorted",
+      "Did not work on a site I use",
+      "Too complicated to use",
+      "I found a better extension",
+      "I was just testing it",
+      "Other reason"
+    ]
+  };
+
+  document.getElementById("t-h1").textContent = T.h1;
+  document.getElementById("t-sub").textContent = T.sub;
+  document.getElementById("t-why").textContent = T.why;
+  document.getElementById("t-hint").textContent = T.hint;
+  document.getElementById("t-note").textContent = T.note;
+  document.getElementById("t-back").textContent = T.back;
+  document.getElementById("t-btn").textContent = T.btn;
+  if (PL) document.documentElement.lang = "pl";
+
+  var REPO = "https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer";
+  var box = document.getElementById("reasons");
+  T.reasons.forEach(function (r) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "reason";
+    b.textContent = r;
+    b.addEventListener("click", function () {
+      var title = "Uninstall feedback: " + r;
+      var body = (PL
+        ? "Powód odinstalowania: " + r + "\n\nChcesz dodać szczegóły? Każde zdanie pomaga:\n"
+        : "Uninstall reason: " + r + "\n\nWant to add details? Every sentence helps:\n");
+      window.location.href = REPO + "/issues/new?title=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(body);
+    });
+    box.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
