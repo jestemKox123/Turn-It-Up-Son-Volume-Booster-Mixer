@@ -1,4 +1,4 @@
-﻿Turn It Up, Son! Volume Booster & Mixer
+Turn It Up, Son! Volume Booster & Mixer
 Copyright (c) 2026 romanzbudowy. All rights reserved.
 
 This software and its source code are proprietary. Permission is granted to
@@ -15,3 +15,32 @@ implied. In no event shall the author be liable for any claim, damages or
 other liability arising from the use of this software.
 
 Author: romanzbudowy
+
+----------------------------------------------------------------------
+
+WERSJA POLSKA
+
+Turn It Up, Son! Volume Booster & Mixer
+Copyright (c) 2026 romanzbudowy. Wszelkie prawa zastrzezone.
+
+To oprogramowanie i jego kod zrodlowy sa wlasnoscia autora. Zezwala sie na
+instalacje i uzywanie tego rozszerzenia w przegladarce internetowej wylacznie
+do celow osobistych.
+
+Bez wczesniejszej pisemnej zgody wlasciciela praw autorskich NIE wolno:
+ - kopiowac, modyfikowac ani tworzyc dziel pochodnych tego oprogramowania,
+ - rozpowszechniac, publikowac ponownie ani odsprzedawac tego oprogramowania
+   ani zadnej jego czesci,
+ - publikowac tego oprogramowania ani jego zmodyfikowanej wersji w zadnym
+   sklepie z rozszerzeniami ani repozytorium oprogramowania pod zadna nazwa.
+
+Oprogramowanie jest dostarczane w stanie "tak jak jest", bez jakiejkolwiek
+gwarancji, wyraznej lub dorozumianej. Autor w zadnym wypadku nie ponosi
+odpowiedzialnosci za roszczenia, szkody ani inne zobowiazania wynikajace
+z uzywania tego oprogramowania.
+
+Autor: romanzbudowy
+
+W razie rozbieznosci miedzy wersjami jezykowymi wiazaca jest wersja angielska.
+In case of any discrepancy between language versions, the English version
+prevails.

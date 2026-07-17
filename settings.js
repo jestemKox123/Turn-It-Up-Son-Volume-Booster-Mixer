@@ -1,5 +1,5 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-// Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
+// All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 const optToggle = document.getElementById("optToggle");
 const optTab = document.getElementById("optTab");
@@ -322,6 +322,30 @@ if (bugText && bugSend) {
   });
 }
 
+const wipeBtn = document.getElementById("wipeBtn");
+if (wipeBtn && HAS_STORAGE) {
+  let wipeArmed = false;
+  let wipeTimer = null;
+  wipeBtn.addEventListener("click", () => {
+    if (!wipeArmed) {
+      wipeArmed = true;
+      wipeBtn.textContent = VBI18N.t("wipe_confirm");
+      if (wipeTimer) clearTimeout(wipeTimer);
+      wipeTimer = setTimeout(() => {
+        wipeArmed = false;
+        wipeBtn.textContent = VBI18N.t("wipe_btn");
+      }, 4000);
+      return;
+    }
+    if (wipeTimer) clearTimeout(wipeTimer);
+    wipeBtn.disabled = true;
+    chrome.runtime.sendMessage({ type: "vb-wipe" }, () => {
+      void chrome.runtime.lastError;
+      window.location.reload();
+    });
+  });
+}
+
 const tabButtons = document.querySelectorAll(".tab");
 const tabPanes = document.querySelectorAll(".tabpane");
 function showPane(name) {
@@ -341,4 +365,277 @@ if (bugPill && bugCard) {
       if (bugText) bugText.focus();
     }
   });
+}
+
+const SKIP_ACCESS = {
+  permissions: ["scripting"],
+  origins: ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"],
+};
+const skipToggle = document.getElementById("skipToggle");
+const skipInput = document.getElementById("skipInput");
+const skipAddBtn = document.getElementById("skipAdd");
+const skipListEl = document.getElementById("skipList");
+const skipSaved = document.getElementById("skipSaved");
+
+const skipNorm = (s) =>
+  (s || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+const skipClean = (s) => s.replace(/\s*-\s*topic$/, "").replace(/\s*vevo$/, "").trim();
+
+let skipMsgTimer = null;
+function flashSkipMsg(key) {
+  if (!skipSaved) return;
+  skipSaved.textContent = VBI18N.t(key);
+  if (skipMsgTimer) clearTimeout(skipMsgTimer);
+  skipMsgTimer = setTimeout(() => (skipSaved.textContent = ""), 1800);
+}
+
+function flashSkipSaved() {
+  flashSkipMsg("saved");
+}
+
+function getSkipState(cb) {
+  chrome.storage.local.get(["skipEnabled", "skipArtists", "skipSongs"], (d) => {
+    cb(
+      !!(d && d.skipEnabled),
+      d && Array.isArray(d.skipArtists) ? d.skipArtists : [],
+      d && Array.isArray(d.skipSongs) ? d.skipSongs : []
+    );
+  });
+}
+
+function makeChip(label, prefix, onRemove) {
+  const chip = document.createElement("span");
+  chip.className = "skip-chip";
+  const lab = document.createElement("span");
+  lab.textContent = prefix + label;
+  const x = document.createElement("button");
+  x.type = "button";
+  x.textContent = "×";
+  x.setAttribute("aria-label", VBI18N.t("skip_remove") + " " + label);
+  x.addEventListener("click", onRemove);
+  chip.appendChild(lab);
+  chip.appendChild(x);
+  return chip;
+}
+
+function renderSkipList(arr, songArr) {
+  if (!skipListEl) return;
+  skipListEl.innerHTML = "";
+  if (!arr.length && !songArr.length) {
+    const p = document.createElement("div");
+    p.className = "skip-empty";
+    p.textContent = VBI18N.t("skip_empty");
+    skipListEl.appendChild(p);
+    return;
+  }
+  arr.forEach((name) => {
+    skipListEl.appendChild(
+      makeChip(name, "", () => {
+        getSkipState((en, cur, songs) => {
+          const next = cur.filter((a) => skipNorm(a) !== skipNorm(name));
+          chrome.storage.local.set({ skipArtists: next }, () => {
+            renderSkipList(next, songs);
+            flashSkipSaved();
+          });
+        });
+      })
+    );
+  });
+  songArr.forEach((s) => {
+    const label = s && s.t ? s.t : (s && s.id) || "?";
+    skipListEl.appendChild(
+      makeChip(label, "♪ ", () => {
+        getSkipState((en, cur, songs) => {
+          const next = songs.filter((x) => !x || x.id !== s.id);
+          chrome.storage.local.set({ skipSongs: next }, () => {
+            renderSkipList(cur, next);
+            flashSkipSaved();
+          });
+        });
+      })
+    );
+  });
+}
+
+function parseSongLink(raw) {
+  if (!/^(https?:\/\/|www\.)/i.test(raw) && !/(youtube\.com|youtu\.be|spotify\.com|soundcloud\.com)\//i.test(raw)) return null;
+  let u;
+  try {
+    u = new URL(/^https?:\/\//i.test(raw) ? raw : "https://" + raw);
+  } catch (e) {
+    return null;
+  }
+  const h = u.hostname.replace(/^(www|m|music)\./, "");
+  if (h === "youtube.com" || h === "youtu.be") {
+    let id = "";
+    if (h === "youtu.be") id = u.pathname.split("/")[1] || "";
+    else if (u.pathname.indexOf("/shorts/") === 0) id = u.pathname.split("/")[2] || "";
+    else id = u.searchParams.get("v") || "";
+    if (!/^[\w-]{8,}$/.test(id)) return null;
+    return { u: u.href, id, kind: "yt" };
+  }
+  if (h === "open.spotify.com" || h === "spotify.com") {
+    const m = u.pathname.match(/\/track\/([A-Za-z0-9]+)/);
+    if (!m) return null;
+    return { u: u.href, id: m[1], kind: "sp" };
+  }
+  if (h === "soundcloud.com") {
+    const parts = u.pathname.split("/").filter(Boolean);
+    if (parts.length < 2 || parts[1] === "sets") return null;
+    return { u: u.href, id: parts[0] + "/" + parts[1], kind: "sc" };
+  }
+  return null;
+}
+
+async function resolveSong(link) {
+  const enc = encodeURIComponent(link.u);
+  const ep =
+    link.kind === "yt"
+      ? "https://www.youtube.com/oembed?format=json&url=" + enc
+      : link.kind === "sp"
+        ? "https://open.spotify.com/oembed?url=" + enc
+        : "https://soundcloud.com/oembed?format=json&url=" + enc;
+  try {
+    const ctl = new AbortController();
+    const tm = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(ep, { signal: ctl.signal });
+    clearTimeout(tm);
+    if (!r.ok) return {};
+    const j = await r.json();
+    return { t: String(j.title || "").slice(0, 120), a: String(j.author_name || "").slice(0, 80) };
+  } catch (e) {
+    return {};
+  }
+}
+
+function addSongLink(link) {
+  getSkipState(async (en, cur, songs) => {
+    if (songs.some((s) => s && s.id === link.id)) {
+      skipInput.value = "";
+      flashSkipMsg("skip_dup");
+      return;
+    }
+    if (cur.length + songs.length >= 100) return;
+    const meta = await resolveSong(link);
+    const next = songs.concat({ u: link.u, id: link.id, t: meta.t || "", a: meta.a || "" });
+    chrome.storage.local.set({ skipSongs: next }, () => {
+      skipInput.value = "";
+      renderSkipList(cur, next);
+      flashSkipSaved();
+    });
+  });
+}
+
+function addSkipArtist() {
+  if (!skipInput) return;
+  const raw = skipInput.value.trim();
+  const link = parseSongLink(raw);
+  if (link) {
+    addSongLink(link);
+    return;
+  }
+  if (/^(https?:\/\/|www\.)/i.test(raw)) {
+    flashSkipMsg("skip_link_bad");
+    return;
+  }
+  const v = raw.replace(/\s+/g, " ").slice(0, 60);
+  const key = skipClean(skipNorm(v));
+  if (!v || !key) {
+    if (skipInput.value) flashSkipMsg("skip_bad");
+    skipInput.value = "";
+    return;
+  }
+  getSkipState((en, cur, songs) => {
+    if (cur.length + songs.length >= 100) return;
+    if (cur.some((a) => skipClean(skipNorm(a)) === key)) {
+      skipInput.value = "";
+      flashSkipMsg("skip_dup");
+      return;
+    }
+    const next = cur.concat(v);
+    chrome.storage.local.set({ skipArtists: next }, () => {
+      skipInput.value = "";
+      renderSkipList(next, songs);
+      flashSkipSaved();
+    });
+  });
+}
+
+if (skipToggle && HAS_STORAGE) {
+  VBI18N.ready(() => {
+    getSkipState((en, arr, songs) => {
+      skipToggle.checked = en;
+      renderSkipList(arr, songs);
+    });
+  });
+
+  skipToggle.addEventListener("change", async () => {
+    if (skipToggle.checked) {
+      let granted = false;
+      try {
+        granted = await chrome.permissions.request(SKIP_ACCESS);
+      } catch (e) {}
+      if (!granted) {
+        skipToggle.checked = false;
+        return;
+      }
+      chrome.runtime.sendMessage({ type: "vb-set-skip", enabled: true }, () => {
+        void chrome.runtime.lastError;
+        flashSkipSaved();
+      });
+    } else {
+      chrome.runtime.sendMessage({ type: "vb-set-skip", enabled: false }, () => {
+        void chrome.runtime.lastError;
+        flashSkipSaved();
+        chrome.runtime.sendMessage({ type: "vb-yt-release" }, () => void chrome.runtime.lastError);
+      });
+    }
+  });
+
+  const skipAllEl = document.getElementById("skipEverywhere");
+  if (skipAllEl) {
+    chrome.storage.local.get("skipEverywhere", (d) => {
+      skipAllEl.checked = !!(d && d.skipEverywhere);
+    });
+    skipAllEl.addEventListener("change", () => {
+      chrome.storage.local.set({ skipEverywhere: skipAllEl.checked }, flashSkipSaved);
+    });
+  }
+
+  if (skipAddBtn) skipAddBtn.addEventListener("click", addSkipArtist);
+  if (skipInput) {
+    skipInput.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        addSkipArtist();
+      }
+    });
+  }
+
+  chrome.storage.onChanged.addListener((ch, area) => {
+    if (area !== "local") return;
+    if (ch.skipEnabled) skipToggle.checked = !!ch.skipEnabled.newValue;
+    if (ch.skipArtists || ch.skipSongs) {
+      getSkipState((en, arr, songs) => renderSkipList(arr, songs));
+    }
+  });
+
+  if (window.location.hash === "#autoskip") {
+    VBI18N.ready(() => {
+      showPane("general");
+      const card = document.getElementById("skipCard");
+      if (card) {
+        card.classList.add("hl");
+        card.scrollIntoView({ block: "center" });
+      }
+      if (skipInput) skipInput.focus();
+    });
+  }
 }

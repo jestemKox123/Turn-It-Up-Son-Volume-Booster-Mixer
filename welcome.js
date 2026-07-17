@@ -1,5 +1,5 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-// Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
+// All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 const ver = document.getElementById("ver");
 if (ver) ver.textContent = "v" + chrome.runtime.getManifest().version;

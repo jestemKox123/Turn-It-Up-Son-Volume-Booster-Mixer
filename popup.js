@@ -1,8 +1,12 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-// Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
+// All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 const DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_PERMS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*"] };
+const SKIP_PERMS = {
+  permissions: ["scripting"],
+  origins: ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"],
+};
 
 let currentTabId = null;
 let currentTabUrl = "";
@@ -20,6 +24,7 @@ const volumeLabelEl = document.getElementById("volumeLabel");
 const monoFixEl = document.getElementById("monoFix");
 const bassBoostEl = document.getElementById("bassBoost");
 const ytAutoContinueEl = document.getElementById("ytAutoContinue");
+const skipToggleEl = document.getElementById("skipToggle");
 const resetBtn = document.getElementById("reset");
 const statusEl = document.getElementById("status");
 const statusTextEl = document.getElementById("statusText");
@@ -276,22 +281,149 @@ bassBoostEl.addEventListener("change", () => {
 
 ytAutoContinueEl.addEventListener("change", async () => {
   if (ytAutoContinueEl.checked) {
+    chrome.storage.session.set({ vb_pending_yt: { ts: Date.now() } });
     let granted = false;
     try {
       granted = await chrome.permissions.request(YT_PERMS);
     } catch (e) {}
+    chrome.storage.session.remove("vb_pending_yt");
     if (!granted) {
       ytAutoContinueEl.checked = false;
       return;
     }
     chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: true }, () => void chrome.runtime.lastError);
   } else {
-    chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: false }, () => void chrome.runtime.lastError);
-    try {
-      await chrome.permissions.remove(YT_PERMS);
-    } catch (e) {}
+    chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: false }, () => {
+      void chrome.runtime.lastError;
+      chrome.runtime.sendMessage({ type: "vb-yt-release" }, () => void chrome.runtime.lastError);
+    });
   }
 });
+
+let skipArtistCount = 0;
+let skipSongCount = 0;
+chrome.storage.local.get(["skipArtists", "skipSongs"], (d) => {
+  if (chrome.runtime.lastError || !d) return;
+  if (Array.isArray(d.skipArtists)) skipArtistCount = d.skipArtists.length;
+  if (Array.isArray(d.skipSongs)) skipSongCount = d.skipSongs.length;
+});
+chrome.storage.onChanged.addListener((ch, area) => {
+  if (area !== "local") return;
+  if (ch.skipArtists) skipArtistCount = Array.isArray(ch.skipArtists.newValue) ? ch.skipArtists.newValue.length : 0;
+  if (ch.skipSongs) skipSongCount = Array.isArray(ch.skipSongs.newValue) ? ch.skipSongs.newValue.length : 0;
+  if (ch.skipEnabled) skipToggleEl.checked = !!ch.skipEnabled.newValue;
+});
+
+skipToggleEl.addEventListener("change", async () => {
+  if (skipToggleEl.checked) {
+    if (!skipArtistCount && !skipSongCount) {
+      skipToggleEl.checked = false;
+      chrome.tabs.create({ url: chrome.runtime.getURL("settings.html#autoskip") });
+      return;
+    }
+    chrome.storage.session.set({ vb_pending_skip: { ts: Date.now() } });
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request(SKIP_PERMS);
+    } catch (e) {}
+    chrome.storage.session.remove("vb_pending_skip");
+    if (!granted) {
+      skipToggleEl.checked = false;
+      return;
+    }
+    chrome.runtime.sendMessage({ type: "vb-set-skip", enabled: true }, () => {
+      void chrome.runtime.lastError;
+      refreshBanRow();
+    });
+  } else {
+    chrome.runtime.sendMessage({ type: "vb-set-skip", enabled: false }, () => {
+      void chrome.runtime.lastError;
+      chrome.runtime.sendMessage({ type: "vb-yt-release" }, () => void chrome.runtime.lastError);
+    });
+    refreshBanRow();
+  }
+});
+
+const banRowEl = document.getElementById("banRow");
+const banArtistEl = document.getElementById("banArtist");
+const banBtnEl = document.getElementById("banBtn");
+const SKIP_SITE_RX = /youtube\.com|open\.spotify\.com|soundcloud\.com/;
+let banCurrent = null;
+
+const banNorm = (s) =>
+  (s || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ł/g, "l")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+function tabVideoId(url) {
+  const s = String(url || "");
+  const m = s.match(/[?&]v=([\w-]{8,})/) || s.match(/youtu\.be\/([\w-]{8,})/) || s.match(/\/shorts\/([\w-]{8,})/);
+  return m ? m[1] : "";
+}
+
+function hideBanRow() {
+  banRowEl.hidden = true;
+  document.body.classList.remove("hasban");
+}
+
+function sameSong(s, cur) {
+  if (!s) return false;
+  if (s.id && s.id === cur.id) return true;
+  return !!(s.t && banNorm(s.t) === banNorm(cur.t) && banNorm(s.a || "") === banNorm(cur.a || ""));
+}
+
+function refreshBanRow() {
+  if (!banRowEl || currentTabId == null) return;
+  if (!skipToggleEl.checked || !SKIP_SITE_RX.test(currentTabUrl)) {
+    hideBanRow();
+    return;
+  }
+  chrome.tabs.sendMessage(currentTabId, { type: "vb-skip-now" }, (r) => {
+    if (chrome.runtime.lastError || !r || (!r.title && !r.artist)) {
+      hideBanRow();
+      return;
+    }
+    const artist = String(r.artist || "").replace(/\s+/g, " ").replace(/\s*-\s*Topic$/i, "").trim().slice(0, 80);
+    const title = String(r.title || "").replace(/\s+/g, " ").trim().slice(0, 120);
+    if (!title) {
+      hideBanRow();
+      return;
+    }
+    const id = tabVideoId(currentTabUrl) || ("t:" + banNorm(title) + "|" + banNorm(artist)).slice(0, 80);
+    banCurrent = { u: currentTabUrl, id, t: title, a: artist };
+    banArtistEl.textContent = "♪ " + title;
+    chrome.storage.local.get("skipSongs", (d) => {
+      const arr = Array.isArray(d && d.skipSongs) ? d.skipSongs : [];
+      const on = arr.some((s) => sameSong(s, banCurrent));
+      banBtnEl.disabled = on;
+      banBtnEl.textContent = VBI18N.t(on ? "skip_ban_done" : "skip_ban");
+      banRowEl.hidden = false;
+      document.body.classList.add("hasban");
+    });
+  });
+}
+
+if (banBtnEl) {
+  banBtnEl.addEventListener("click", () => {
+    if (!banCurrent) return;
+    const cur = banCurrent;
+    chrome.storage.local.get("skipSongs", (d) => {
+      const arr = Array.isArray(d && d.skipSongs) ? d.skipSongs : [];
+      if (arr.length >= 100) return;
+      if (!arr.some((s) => sameSong(s, cur))) arr.push({ u: cur.u, id: cur.id, t: cur.t, a: cur.a });
+      chrome.storage.local.set({ skipSongs: arr }, () => {
+        banBtnEl.disabled = true;
+        banBtnEl.textContent = VBI18N.t("skip_ban_done");
+      });
+    });
+  });
+}
+
+setInterval(refreshBanRow, 2000);
 
 function originPattern(url) {
   try {
@@ -447,11 +579,14 @@ function renderMix() {
 function openMix() {
   mainViewEl.hidden = true;
   mixViewEl.hidden = false;
+  document.body.classList.add("mixing");
   startMixPoll();
 }
 function closeMix() {
   mixViewEl.hidden = true;
   mainViewEl.hidden = false;
+  document.body.classList.remove("mixing");
+  window.scrollTo(0, 0);
   stopMixPoll();
 }
 
@@ -918,12 +1053,16 @@ resetBtn.addEventListener("click", async () => {
     renderStatus();
   }
   if (mixRate !== 1) setMixRate(1);
-  if (ytAutoContinueEl.checked) {
+  if (ytAutoContinueEl.checked || skipToggleEl.checked) {
     ytAutoContinueEl.checked = false;
-    chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: false }, () => void chrome.runtime.lastError);
-    try {
-      await chrome.permissions.remove(YT_PERMS);
-    } catch (e) {}
+    skipToggleEl.checked = false;
+    chrome.runtime.sendMessage({ type: "vb-set-yt", enabled: false }, () => {
+      void chrome.runtime.lastError;
+      chrome.runtime.sendMessage({ type: "vb-set-skip", enabled: false }, () => {
+        void chrome.runtime.lastError;
+        chrome.runtime.sendMessage({ type: "vb-yt-release" }, () => void chrome.runtime.lastError);
+      });
+    });
   }
 });
 
@@ -1049,6 +1188,8 @@ async function init() {
 
   chrome.runtime.sendMessage({ type: "vb-get", tabId: currentTabId }, (resp) => {
     ytAutoContinueEl.checked = !!(resp && resp.ytAutoContinue);
+    skipToggleEl.checked = !!(resp && resp.skipEnabled);
+    refreshBanRow();
     if (resp) applyCurrentState(resp);
     if (resp && !resp.active && resp.settings) {
       const s = resp.settings;

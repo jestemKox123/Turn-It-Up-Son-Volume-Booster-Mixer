@@ -1,5 +1,5 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-// Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
+// All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 const CTX = new AudioContext({ latencyHint: "playback" });
 const engines = new Map();
@@ -65,6 +65,9 @@ function buildEngine(stream, settings) {
   bass2.frequency.value = 250;
   bass2.gain.value = 0;
 
+  const bassTrim = CTX.createGain();
+  bassTrim.gain.value = 1;
+
   const subLP = CTX.createBiquadFilter();
   subLP.type = "lowpass";
   subLP.frequency.value = 130;
@@ -90,6 +93,12 @@ function buildEngine(stream, settings) {
   vocal.frequency.value = 2400;
   vocal.Q.value = 1.1;
   vocal.gain.value = 0;
+
+  const vocal2 = CTX.createBiquadFilter();
+  vocal2.type = "peaking";
+  vocal2.frequency.value = 280;
+  vocal2.Q.value = 0.9;
+  vocal2.gain.value = 0;
 
   const comp = CTX.createDynamicsCompressor();
   comp.threshold.value = 0;
@@ -130,14 +139,16 @@ function buildEngine(stream, settings) {
   gRR.connect(merger, 0, 1);
   merger.connect(bass);
   bass.connect(bass2);
-  bass2.connect(treble);
+  bass2.connect(bassTrim);
+  bassTrim.connect(treble);
   merger.connect(subLP);
   subLP.connect(shaper);
   shaper.connect(harmGain);
   harmGain.connect(treble);
   treble.connect(muffle);
   muffle.connect(vocal);
-  vocal.connect(comp);
+  vocal.connect(vocal2);
+  vocal2.connect(comp);
   comp.connect(makeup);
   makeup.connect(pan);
   pan.connect(boost);
@@ -146,7 +157,7 @@ function buildEngine(stream, settings) {
 
   const engine = {
     stream, source, gLL, gLR, gRL, gRR,
-    bass, bass2, subLP, shaper, harmGain, treble, muffle, vocal, comp, makeup, pan, lfo, lfoDepth,
+    bass, bass2, bassTrim, subLP, shaper, harmGain, treble, muffle, vocal, vocal2, comp, makeup, pan, lfo, lfoDepth,
     boost, dry, wet, conv,
     convOn: false,
     convOffTimer: null,
@@ -180,34 +191,40 @@ function applyMono(engine, monoOn) {
 
 const BASS_MODES = {
   classic: {
-    f1: { type: "lowshelf", freq: 200, q: 0.9, max: 15 },
-    f2: { type: "peaking", freq: 250, q: 1.0, max: 0 },
-    harm: 0.35,
+    f1: { type: "lowshelf", freq: 190, q: 0.85, max: 15 },
+    f2: { type: "peaking", freq: 60, q: 1.0, max: 5 },
+    harm: 0.4,
+    mk: 1,
   },
   sub: {
     f1: { type: "lowshelf", freq: 70, q: 0.8, max: 18 },
     f2: { type: "peaking", freq: 45, q: 1.0, max: 7 },
     harm: 0.12,
+    mk: 1,
   },
   punch: {
-    f1: { type: "peaking", freq: 100, q: 1.4, max: 14 },
-    f2: { type: "peaking", freq: 260, q: 1.4, max: -4 },
-    harm: 0.55,
+    f1: { type: "peaking", freq: 95, q: 1.6, max: 15 },
+    f2: { type: "peaking", freq: 280, q: 1.2, max: -6 },
+    harm: 0.7,
+    mk: 1.06,
   },
   rumble: {
-    f1: { type: "lowshelf", freq: 45, q: 0.9, max: 24 },
-    f2: { type: "peaking", freq: 170, q: 1.1, max: -5 },
-    harm: 0.15,
+    f1: { type: "lowshelf", freq: 42, q: 0.9, max: 24 },
+    f2: { type: "peaking", freq: 180, q: 1.0, max: -7 },
+    harm: 0.45,
+    mk: 1.05,
   },
   "808": {
     f1: { type: "peaking", freq: 55, q: 1.1, max: 17 },
     f2: { type: "lowshelf", freq: 130, q: 0.8, max: 5 },
     harm: 0.8,
+    mk: 1,
   },
   warm: {
-    f1: { type: "lowshelf", freq: 300, q: 0.7, max: 9 },
-    f2: { type: "peaking", freq: 50, q: 1.0, max: -4 },
-    harm: 0.15,
+    f1: { type: "lowshelf", freq: 280, q: 0.55, max: 8 },
+    f2: { type: "peaking", freq: 100, q: 0.9, max: 4 },
+    harm: 0.08,
+    mk: 1,
   },
 };
 
@@ -237,6 +254,7 @@ function applyBass(engine, on, mode) {
   setFilter(engine.bass, m.f1, v, t);
   setFilter(engine.bass2, m.f2, v, t);
   engine.harmGain.gain.setTargetAtTime(m.harm * v, t, 0.05);
+  engine.bassTrim.gain.setTargetAtTime(1 + ((m.mk || 1) - 1) * v, t, 0.05);
 }
 
 function applyTreble(engine, v) {
@@ -250,7 +268,10 @@ function applyMuffle(engine, v) {
 }
 
 function applyVocal(engine, v) {
-  engine.vocal.gain.setTargetAtTime(8 * clamp01(v), CTX.currentTime, 0.05);
+  const a = clamp01(v);
+  const t = CTX.currentTime;
+  engine.vocal.gain.setTargetAtTime(9 * a, t, 0.05);
+  engine.vocal2.gain.setTargetAtTime(-4.5 * a, t, 0.05);
 }
 
 function applyPower(engine, v) {

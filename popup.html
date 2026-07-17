@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="pl">
   <head>
     <meta charset="utf-8" />
@@ -56,6 +56,14 @@
           <span data-i18n="eff_yt">Auto-kontynuuj na YouTube</span>
           <input type="checkbox" id="ytAutoContinue" class="switch" />
         </label>
+        <label class="switch-row">
+          <span data-i18n="eff_skip">Auto-pomijanie artystów</span>
+          <input type="checkbox" id="skipToggle" class="switch" />
+        </label>
+        <div id="banRow" class="ban-row" hidden>
+          <span id="banArtist" class="ban-artist"></span>
+          <button id="banBtn" class="ban-btn" type="button" data-i18n="skip_ban">Pomijaj ten utwór</button>
+        </div>
       </section>
 
       <button id="mixOpen" class="mix-open">

@@ -1,5 +1,5 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-// Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt).
+// All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 const PER_TAB_DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_SCRIPT_ID = "yt-continue";
@@ -289,6 +289,110 @@ async function syncYt() {
   else await unregisterYt();
 }
 
+const SKIP_MAIN_ID = "vb-skip-main";
+const SKIP_ID = "vb-skip";
+const SKIP_ORIGINS = ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"];
+const SKIP_HOST_RX = /youtube\.com|open\.spotify\.com|soundcloud\.com/;
+
+async function unregisterSkip() {
+  if (!chrome.scripting) return;
+  for (const id of [SKIP_MAIN_ID, SKIP_ID]) {
+    try {
+      await chrome.scripting.unregisterContentScripts({ ids: [id] });
+    } catch (e) {}
+  }
+}
+
+async function registerSkip(matches) {
+  if (!chrome.scripting) return;
+  await unregisterSkip();
+  try {
+    await chrome.scripting.registerContentScripts([
+      {
+        id: SKIP_ID,
+        matches,
+        js: ["skip.js"],
+        runAt: "document_idle",
+        allFrames: true,
+      },
+    ]);
+  } catch (e) {}
+  try {
+    await chrome.scripting.registerContentScripts([
+      {
+        id: SKIP_MAIN_ID,
+        matches,
+        js: ["skip-main.js"],
+        runAt: "document_idle",
+        allFrames: true,
+        world: "MAIN",
+      },
+    ]);
+  } catch (e) {}
+  try {
+    const tabs = await chrome.tabs.query({ url: matches });
+    for (const t of tabs) {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: t.id, allFrames: true },
+          files: ["skip.js"],
+        });
+      } catch (e) {}
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: t.id, allFrames: true },
+          files: ["skip-main.js"],
+          world: "MAIN",
+        });
+      } catch (e) {}
+    }
+  } catch (e) {}
+}
+
+async function syncSkip() {
+  const { skipEnabled } = await chrome.storage.local.get("skipEnabled");
+  if (!skipEnabled || !chrome.scripting) {
+    await unregisterSkip();
+    return;
+  }
+  const hasScripting = await chrome.permissions.contains({ permissions: ["scripting"] });
+  if (!hasScripting) {
+    await unregisterSkip();
+    return;
+  }
+  const granted = [];
+  for (const o of SKIP_ORIGINS) {
+    try {
+      if (await chrome.permissions.contains({ origins: [o] })) granted.push(o);
+    } catch (e) {}
+  }
+  if (granted.length) await registerSkip(granted);
+  else await unregisterSkip();
+}
+
+async function releaseUnusedAccess() {
+  const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
+  const mixTabs = await activeMixTabs();
+  const mixOrigins = new Set(mixTabs.map((t) => t.origin).filter(Boolean));
+  const drop = [];
+  for (const o of SKIP_ORIGINS) {
+    if (skipEnabled) continue;
+    if (mixOrigins.has(o)) continue;
+    if (ytAutoContinue && /youtube\.com/.test(o)) continue;
+    drop.push(o);
+  }
+  if (drop.length) {
+    try {
+      await chrome.permissions.remove({ origins: drop });
+    } catch (e) {}
+  }
+  if (!ytAutoContinue && !skipEnabled && !mixTabs.length) {
+    try {
+      await chrome.permissions.remove({ permissions: ["scripting"] });
+    } catch (e) {}
+  }
+}
+
 const MIX_SCRIPT_ID = "vb-mix";
 
 function mixKey(tabId) {
@@ -344,8 +448,9 @@ async function maybeRevokeOrigin(origin) {
   if (!origin) return;
   const tabs = await activeMixTabs();
   if (tabs.some((t) => t.origin === origin)) return;
-  const { ytAutoContinue } = await chrome.storage.local.get("ytAutoContinue");
+  const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
   if (ytAutoContinue && /youtube\.com/.test(origin)) return;
+  if (skipEnabled && SKIP_HOST_RX.test(origin)) return;
   try {
     await chrome.permissions.remove({ origins: [origin] });
   } catch (e) {}
@@ -412,7 +517,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const [data, activeIds, local, mix] = await Promise.all([
         chrome.storage.session.get(keyFor(msg.tabId)),
         getActiveTabIds(),
-        chrome.storage.local.get(["ytAutoContinue", "disableMode"]),
+        chrome.storage.local.get(["ytAutoContinue", "disableMode", "skipEnabled"]),
         getMixState(msg.tabId),
       ]);
       const backup = await getBackup();
@@ -420,6 +525,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         active: activeIds.includes(msg.tabId),
         settings: data[keyFor(msg.tabId)] || PER_TAB_DEFAULTS,
         ytAutoContinue: !!local.ytAutoContinue,
+        skipEnabled: !!local.skipEnabled,
         disableMode: local.disableMode === "closeTab" ? "closeTab" : "toggle",
         backup: backup[msg.tabId] || null,
         mix: mix && mix.rate ? mix.rate : 1,
@@ -500,9 +606,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           await chrome.permissions.remove({ origins });
         } catch (e) {}
       }
-      await chrome.storage.local.set({ ytAutoContinue: false });
+      await chrome.storage.local.set({ ytAutoContinue: false, skipEnabled: false });
       await syncMixScript();
       await syncYt();
+      await syncSkip();
       sendResponse({ ok: true, removed: origins.length });
     })();
     return true;
@@ -512,6 +619,58 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
       await chrome.storage.local.set({ ytAutoContinue: !!msg.enabled });
       await syncYt();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  if (msg.type === "vb-set-skip") {
+    (async () => {
+      await chrome.storage.local.set({ skipEnabled: !!msg.enabled });
+      await syncSkip();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
+  if (msg.type === "vb-yt-release") {
+    releaseUnusedAccess().then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
+  if (msg.type === "vb-skip-allowed") {
+    (async () => {
+      const tabId = sender && sender.tab && sender.tab.id;
+      const ids = await getActiveTabIds();
+      sendResponse({ ok: tabId != null && ids.includes(tabId) });
+    })();
+    return true;
+  }
+
+  if (msg.type === "vb-wipe") {
+    (async () => {
+      await serialize(stopEverything);
+      try {
+        await chrome.storage.local.clear();
+      } catch (e) {}
+      try {
+        await chrome.storage.session.clear();
+      } catch (e) {}
+      await unregisterYt();
+      await unregisterSkip();
+      if (chrome.scripting) {
+        try {
+          await chrome.scripting.unregisterContentScripts({ ids: [MIX_SCRIPT_ID] });
+        } catch (e) {}
+      }
+      try {
+        const all = await chrome.permissions.getAll();
+        const origins = (all && all.origins) || [];
+        const perms = ((all && all.permissions) || []).filter((p) => p === "scripting");
+        if (origins.length || perms.length) {
+          await chrome.permissions.remove({ origins, permissions: perms });
+        }
+      } catch (e) {}
       sendResponse({ ok: true });
     })();
     return true;
@@ -598,14 +757,41 @@ if (chrome.permissions.onRemoved) {
   chrome.permissions.onRemoved.addListener(() => {
     syncMixScript();
     syncYt();
+    syncSkip();
   });
 }
 if (chrome.permissions.onAdded) {
   chrome.permissions.onAdded.addListener(() => {
-    syncMixScript();
-    syncYt();
-    finishPendingMix();
+    (async () => {
+      await finishPendingGrants();
+      syncMixScript();
+      syncYt();
+      syncSkip();
+      finishPendingMix();
+    })();
   });
+}
+
+async function finishPendingGrants() {
+  const d = await chrome.storage.session.get(["vb_pending_skip", "vb_pending_yt"]);
+  const fresh = (p) => p && Date.now() - (p.ts || 0) < 60000;
+  if (d.vb_pending_skip) {
+    await chrome.storage.session.remove("vb_pending_skip");
+    if (fresh(d.vb_pending_skip)) {
+      const ok = await chrome.permissions.contains({ permissions: ["scripting"], origins: SKIP_ORIGINS });
+      if (ok) await chrome.storage.local.set({ skipEnabled: true });
+    }
+  }
+  if (d.vb_pending_yt) {
+    await chrome.storage.session.remove("vb_pending_yt");
+    if (fresh(d.vb_pending_yt)) {
+      const ok = await chrome.permissions.contains({
+        permissions: ["scripting"],
+        origins: ["*://*.youtube.com/*"],
+      });
+      if (ok) await chrome.storage.local.set({ ytAutoContinue: true });
+    }
+  }
 }
 
 async function finishPendingMix() {
@@ -629,11 +815,13 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
   }
   syncYt();
+  syncSkip();
 });
 
 chrome.runtime.setUninstallURL("https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/uninstall.html");
 
 syncYt();
+syncSkip();
 (async () => {
   const ids = await getActiveTabIds();
   ids.forEach((id) => setBadge(id, true));

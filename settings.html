@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
-     Wszelkie prawa zastrzezone. Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="pl">
   <head>
     <meta charset="utf-8" />
@@ -298,6 +298,54 @@
       }
       .bugbox:focus { outline: none; border-color: var(--accent); }
 
+      .skip-add-row { display: flex; gap: 8px; margin-top: 14px; }
+      .skip-add-row input {
+        flex: 1;
+        min-width: 0;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        color: var(--text);
+        font-size: 13px;
+        font-family: inherit;
+        padding: 9px 12px;
+        outline: none;
+      }
+      .skip-add-row input:focus { border-color: var(--accent); }
+      .skip-add-row input::placeholder { color: var(--xdim); }
+      .skip-add-row .btn { margin-top: 0; flex-shrink: 0; }
+      .skip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .skip-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px 6px 13px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 13px;
+        max-width: 100%;
+      }
+      .skip-chip > span:first-child {
+        max-width: 320px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .skip-chip button {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 1;
+        padding: 2px 5px;
+      }
+      .skip-chip button:hover { color: var(--danger); }
+      .skip-empty { font-size: 12.5px; color: var(--xdim); margin-top: 12px; }
+      .card.hl { border-color: var(--accent); animation: bugin 0.25s ease; }
+      .clcard .featl .d { white-space: pre-line; }
+
       .access-list-title {
         font-size: 11px;
         font-weight: 700;
@@ -421,10 +469,10 @@
         margin-top: 12px;
         margin-left: 8px;
         padding: 10px 18px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 999px;
         background: var(--panel-2);
-        color: var(--muted);
+        color: rgba(255, 255, 255, 0.85);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
@@ -440,10 +488,10 @@
         margin-top: 12px;
         margin-left: 8px;
         padding: 10px 18px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--border-strong);
         border-radius: 999px;
         background: var(--panel-2);
-        color: var(--muted);
+        color: rgba(255, 255, 255, 0.85);
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
@@ -451,7 +499,7 @@
       }
       .rate-pill:hover { border-color: #f5b301; color: var(--text); }
       .rp-stars { display: inline-flex; gap: 1px; font-size: 13px; line-height: 1; }
-      .rp-stars i { font-style: normal; color: var(--xdim); transition: color 0.12s ease; }
+      .rp-stars i { font-style: normal; color: color-mix(in srgb, #f5b301 45%, transparent); transition: color 0.12s ease; }
       .rate-pill:hover .rp-stars i { color: #f5b301; }
       .rate-pill:hover .rp-stars i:nth-child(2) { transition-delay: 0.05s; }
       .rate-pill:hover .rp-stars i:nth-child(3) { transition-delay: 0.1s; }
@@ -529,6 +577,7 @@
         <button type="button" class="tab" data-pane="look" data-i18n="sec_look">Wygląd</button>
         <button type="button" class="tab" data-pane="privacy" data-i18n="tab_privacy">Prywatność i dostęp</button>
         <button type="button" class="tab" data-pane="about" data-i18n="sec_about">O wtyczce</button>
+        <button type="button" class="tab" data-pane="changelog" data-i18n="tab_changelog">Changelog</button>
       </nav>
 
       <div class="tabpane" data-pane="look">
@@ -611,6 +660,32 @@
         </label>
 
         <div class="saved" id="saved"></div>
+      </div>
+
+      <div class="sec-h" data-i18n="skip_sec">Auto-pomijanie</div>
+
+      <div class="card" id="skipCard">
+        <div class="row">
+          <div>
+            <h2 style="margin:0" data-i18n="skip_h">Auto-pomijanie artystów</h2>
+            <p class="mini-d" data-i18n="skip_d">Działa na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać utwór artysty z twojej listy, wtyczka sama przeskakuje do następnego. Wymaga zgody na te strony i oddaje ją przy wyłączeniu.</p>
+          </div>
+          <input type="checkbox" class="switch" id="skipToggle" />
+        </div>
+        <div class="skip-add-row">
+          <input type="text" id="skipInput" maxlength="200" data-i18n-ph="skip_ph" placeholder="Artysta, kanał albo link do utworu..." />
+          <button class="btn" id="skipAdd" type="button" data-i18n="skip_add">Dodaj</button>
+        </div>
+        <div id="skipList" class="skip-list"></div>
+        <div class="row sep">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="skip_all_h">Pomijaj wszędzie, nawet bez podgłośnienia</h2>
+            <p class="mini-d" data-i18n="skip_all_d">Domyślnie auto-pomijanie działa tylko na kartach, na których wtyczka gra (włączone podgłośnienie). Włącz, żeby pomijało na całej stronie, nawet gdy nic nie podgłaśniasz.</p>
+          </div>
+          <input type="checkbox" class="switch" id="skipEverywhere" />
+        </div>
+        <p class="access-note" data-i18n="skip_hint">Wtyczka porównuje nazwę artysty, nazwę kanału i tytuł utworu. Wielkość liter i polskie znaki nie mają znaczenia. Możesz też wkleić link do konkretnego utworu z YouTube, Spotify lub SoundCloud, żeby pomijać tylko ten jeden utwór.</p>
+        <div class="saved" id="skipSaved"></div>
       </div>
 
       </div>
@@ -708,18 +783,27 @@
           <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
           <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
         </div>
+        <div class="featl">
+          <div class="t" data-i18n="featl_skip_t">Auto-pomijanie artystów</div>
+          <div class="d" data-i18n="featl_skip_d">Twoja lista artystów do pomijania na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać ktoś z listy, wtyczka od razu przeskakuje do następnego utworu.</div>
+        </div>
       </details>
+
+      </div>
+
+      <div class="tabpane" data-pane="changelog">
 
       <div class="sec-h" data-i18n="changelog_h">Historia zmian</div>
 
-      <div class="card">
+      <div class="card clcard">
         <div class="featl">
-          <div class="t">4.2.1</div>
-          <div class="d" data-i18n="cl_421">Strona powitalna po instalacji (szybki start, wybór języka), domyślny język angielski, ciemny wygląd rozwijanych list i strona z pytaniem o powód po odinstalowaniu.</div>
-        </div>
-        <div class="featl">
-          <div class="t">4.2.0</div>
-          <div class="d" data-i18n="cl_420">Własne mixy (zakładka Twoje mixy), wybór koloru wtyczki i własne nazwy presetów w ustawieniach, 3 nowe charaktery basu (Grzmot, 808, Ciepły), głośniejsze wysokie poziomy i pewniejsze Przywróć poprzednie (łapie też Mix).</div>
+          <div class="t">4.3.0</div>
+          <div class="d" data-i18n="cl_430">- Dodano: auto-pomijanie artystów na YouTube, YouTube Music, Spotify i SoundCloud
+- Dodano: pomijanie konkretnych utworów (jednym kliknięciem w okienku albo po wklejeniu linka)
+- Dodano: 2 nowe kolory wtyczki (Ogień, Magenta)
+- Dodano: czyszczenie wszystkich danych wtyczki jednym przyciskiem
+- Zmieniono: odświeżony, szklany wygląd okienka
+- Zmieniono: wyraźniejsze charaktery basu i mocniejszy suwak Wokal</div>
         </div>
       </div>
 
@@ -740,6 +824,12 @@
         <div class="note" data-i18n="privacy_note">
           Pasek Chrome "ta karta jest udostępniana" to wymóg przeglądarki przy braniu dźwięku karty. Dzięki temu działa też Spotify. Nie da się go schować w żadnej wtyczce tego typu.
         </div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="wipe_h">Dane wtyczki</h2>
+        <p class="mini-d" style="max-width:none" data-i18n="wipe_d">Wtyczka nie trzyma żadnych cache, historii ani danych stron - tylko twoje ustawienia: głośności, motyw, język, listy auto-pomijania i własne mixy, wszystko lokalnie na tym komputerze. Ten przycisk czyści to do zera i wtyczka wraca do stanu jak po świeżej instalacji.</p>
+        <button class="btn danger" id="wipeBtn" data-i18n="wipe_btn">Wyczyść wszystkie dane wtyczki</button>
       </div>
 
       </div>
