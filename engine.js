@@ -4,7 +4,7 @@
 const CTX = new AudioContext({ latencyHint: "playback" });
 const engines = new Map();
 
-const FADE_IN = 0.35;
+const FADE_IN = 0.15;
 const GLIDE = 0.06;
 const TREBLE_MAX_DB = 8;
 const SPIN_DEPTH = 0.85;
@@ -85,7 +85,7 @@ function buildEngine(stream, settings) {
 
   const muffle = CTX.createBiquadFilter();
   muffle.type = "lowpass";
-  muffle.frequency.value = 20000;
+  muffle.frequency.value = CTX.sampleRate / 2;
   muffle.Q.value = 0.5;
 
   const vocal = CTX.createBiquadFilter();
@@ -174,7 +174,7 @@ function buildEngine(stream, settings) {
 
   const now = CTX.currentTime;
   boost.gain.cancelScheduledValues(now);
-  boost.gain.setValueAtTime(1, now);
+  boost.gain.setValueAtTime(0.0001, now);
   boost.gain.linearRampToValueAtTime(Math.max(0.0001, settings.volume), now + FADE_IN);
   return engine;
 }
@@ -191,32 +191,32 @@ function applyMono(engine, monoOn) {
 
 const BASS_MODES = {
   classic: {
-    f1: { type: "lowshelf", freq: 190, q: 0.85, max: 15 },
-    f2: { type: "peaking", freq: 60, q: 1.0, max: 5 },
-    harm: 0.4,
+    f1: { type: "lowshelf", freq: 190, q: 0.85, max: 10 },
+    f2: { type: "peaking", freq: 60, q: 1.0, max: 3.5 },
+    harm: 0.5,
     mk: 1,
   },
   sub: {
-    f1: { type: "lowshelf", freq: 70, q: 0.8, max: 18 },
-    f2: { type: "peaking", freq: 45, q: 1.0, max: 7 },
-    harm: 0.12,
+    f1: { type: "lowshelf", freq: 70, q: 0.8, max: 12 },
+    f2: { type: "peaking", freq: 45, q: 1.0, max: 4 },
+    harm: 0.18,
     mk: 1,
   },
   punch: {
-    f1: { type: "peaking", freq: 95, q: 1.6, max: 15 },
+    f1: { type: "peaking", freq: 95, q: 1.6, max: 11 },
     f2: { type: "peaking", freq: 280, q: 1.2, max: -6 },
     harm: 0.7,
     mk: 1.06,
   },
   rumble: {
-    f1: { type: "lowshelf", freq: 42, q: 0.9, max: 24 },
+    f1: { type: "lowshelf", freq: 42, q: 0.9, max: 15 },
     f2: { type: "peaking", freq: 180, q: 1.0, max: -7 },
-    harm: 0.45,
+    harm: 0.5,
     mk: 1.05,
   },
   "808": {
-    f1: { type: "peaking", freq: 55, q: 1.1, max: 17 },
-    f2: { type: "lowshelf", freq: 130, q: 0.8, max: 5 },
+    f1: { type: "peaking", freq: 55, q: 1.1, max: 11.5 },
+    f2: { type: "lowshelf", freq: 130, q: 0.8, max: 3.5 },
     harm: 0.8,
     mk: 1,
   },
@@ -263,7 +263,7 @@ function applyTreble(engine, v) {
 
 function applyMuffle(engine, v) {
   const a = clamp01(v);
-  const f = 18000 * Math.pow(0.022, a);
+  const f = a === 0 ? CTX.sampleRate / 2 : 18000 * Math.pow(0.022, a);
   engine.muffle.frequency.setTargetAtTime(f, CTX.currentTime, 0.06);
 }
 
@@ -344,7 +344,7 @@ function teardown(tabId) {
   try {
     engine.boost.gain.cancelScheduledValues(now);
     engine.boost.gain.setValueAtTime(engine.boost.gain.value, now);
-    engine.boost.gain.linearRampToValueAtTime(0.0001, now + 0.2);
+    engine.boost.gain.linearRampToValueAtTime(0.0001, now + 0.08);
   } catch (e) {}
   clearTimeout(engine.convOffTimer);
   setTimeout(() => {
@@ -359,7 +359,7 @@ function teardown(tabId) {
       engine.conv.disconnect();
       engine.wet.disconnect();
     } catch (e) {}
-  }, 260);
+  }, 140);
 }
 
 const starting = new Map();

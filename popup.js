@@ -1,7 +1,7 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-const DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
+const DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", userBass: 0, reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_PERMS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*"] };
 const SKIP_PERMS = {
   permissions: ["scripting"],
@@ -207,7 +207,10 @@ function activate() {
     .catch((e) => ({ active: false, error: String(e) }));
 }
 
+let lastLocalEdit = 0;
+
 function update() {
+  lastLocalEdit = Date.now();
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
       { type: "vb-update", tabId: currentTabId, settings },
@@ -217,6 +220,7 @@ function update() {
 }
 
 async function ensureActiveAndApply() {
+  lastLocalEdit = Date.now();
   const resp = isActive ? await update() : await activate();
   isActive = !!resp.active;
   if (!resp.active) {
@@ -275,7 +279,11 @@ monoFixEl.addEventListener("change", () => {
   ensureActiveAndApply();
 });
 bassBoostEl.addEventListener("change", () => {
-  settings.bassBoost = bassBoostEl.checked;
+  settings.bassBoost = bassBoostEl.checked ? 0.75 : 0;
+  settings.userBass = settings.bassBoost;
+  if (bassBoostEl.checked) settings.userBassMode = settings.bassMode;
+  else settings.bassMode = DEFAULTS.bassMode;
+  renderMix();
   ensureActiveAndApply();
 });
 
@@ -470,7 +478,7 @@ function presetOf(btn) {
     power: Number(btn.dataset.power) || 0,
     spin: btn.dataset.spin === "1",
     spinSpeed: btn.dataset.spinspeed != null ? Number(btn.dataset.spinspeed) : null,
-    bass: Number(btn.dataset.bass) || 0,
+    bass: btn.dataset.bass != null ? Number(btn.dataset.bass) || 0 : null,
     bassMode: btn.dataset.bassmode || "classic",
     ctl: (btn.dataset.ctl || "speed").split(","),
   };
@@ -537,8 +545,7 @@ function renderMix() {
       Math.abs(p.muffle - muf) < 0.011 &&
       Math.abs(p.vocal - voc) < 0.011 &&
       Math.abs(p.power - pow) < 0.011 &&
-      Math.abs(p.bass - bas) < 0.011 &&
-      (p.bass === 0 || p.bassMode === bassMode) &&
+      (p.bass == null || (Math.abs(p.bass - bas) < 0.011 && (!p.bass || p.bassMode === bassMode))) &&
       p.spin === !!settings.spin &&
       (!p.spin || p.spinSpeed == null || Math.abs(p.spinSpeed - spd) < 0.011);
     b.classList.toggle("on", on);
@@ -547,7 +554,9 @@ function renderMix() {
   if (fullMix) {
     showCtls(["speed", "reverb", "treble", "muffle", "bass", "vocal", "power", "spin"]);
   } else if (matched) {
-    showCtls(matched.ctl);
+    const shown = matched.ctl.slice();
+    if (bas > 0 && !shown.includes("bass")) shown.push("bass");
+    showCtls(shown);
   } else {
     const all = ["speed", "reverb", "treble", "muffle", "bass", "vocal", "power"];
     if (settings.spin) all.push("spin");
@@ -684,9 +693,14 @@ function renderMixSupport() {
 }
 
 let mixBusy = false;
+let mixPendingRate = null;
 async function setMixRate(rate) {
-  if (mixBusy) return;
+  if (mixBusy) {
+    mixPendingRate = rate;
+    return;
+  }
   if (!mixSupported && rate !== 1) return;
+  lastLocalEdit = Date.now();
   mixBusy = true;
   try {
     if (rate !== 1) {
@@ -725,6 +739,11 @@ async function setMixRate(rate) {
     refreshMixStatus();
   } finally {
     mixBusy = false;
+    if (mixPendingRate != null) {
+      const next = mixPendingRate;
+      mixPendingRate = null;
+      if (Math.abs(next - mixRate) > 0.001) setMixRate(next);
+    }
   }
 }
 
@@ -890,16 +909,22 @@ async function applyMixPreset(p) {
   }
   mixPresetBusy = true;
   try {
-    const needEngine = p.reverb > 0 || p.treble > 0 || p.muffle > 0 || p.vocal > 0 || p.power > 0 || p.spin || p.bass > 0;
     settings.reverb = p.reverb;
     settings.treble = p.treble;
     settings.muffle = p.muffle;
     settings.vocal = p.vocal;
     settings.power = p.power;
     settings.spin = p.spin;
-    settings.bassBoost = p.bass;
-    if (p.bass > 0) settings.bassMode = p.bassMode;
+    if (p.bass != null) {
+      settings.bassBoost = p.bass;
+      if (p.bass > 0) settings.bassMode = p.bassMode;
+    } else {
+      const ub = Number(settings.userBass) || 0;
+      settings.bassBoost = ub;
+      settings.bassMode = ub > 0 ? settings.userBassMode || DEFAULTS.bassMode : DEFAULTS.bassMode;
+    }
     settings.spinSpeed = p.spinSpeed != null ? p.spinSpeed : DEFAULTS.spinSpeed;
+    const needEngine = fxBass() > 0 || mixFxOn();
     if (needEngine) {
       await ensureActiveAndApply();
     } else if (isActive) {
@@ -930,15 +955,21 @@ function fxLive() {
     update();
   }, 60);
 }
+function claimBass() {
+  settings.userBass = Number(settings.bassBoost) || 0;
+  settings.userBassMode = settings.bassMode;
+}
 function wireFxSlider(el, valEl, key) {
   if (!el) return;
   el.addEventListener("input", () => {
     valEl.textContent = el.value + "%";
     settings[key] = Number(el.value) / 100;
+    if (key === "bassBoost") claimBass();
     fxLive();
   });
   el.addEventListener("change", async () => {
     settings[key] = Number(el.value) / 100;
+    if (key === "bassBoost") claimBass();
     if (!isActive && settings.volume === 1 && !settings.monoFix && !fxBass() && !mixFxOn()) {
       renderUI();
       renderMix();
@@ -983,6 +1014,7 @@ document.querySelectorAll("#bassModeSeg button").forEach((b) => {
   b.addEventListener("click", async () => {
     settings.bassMode = b.dataset.bm || "classic";
     if (fxBass() === 0) settings.bassBoost = 0.6;
+    claimBass();
     await ensureActiveAndApply();
     renderUI();
     renderMix();
@@ -1046,6 +1078,7 @@ powerEl.addEventListener("click", async () => {
 
 resetBtn.addEventListener("click", async () => {
   settings = { ...DEFAULTS };
+  invalidateBackup();
   renderUI();
   renderMix();
   if (isActive) {
@@ -1118,6 +1151,7 @@ async function toggleTab(t, btn) {
   try {
     if (t.boosted) {
       await sendMsg({ type: "vb-stop", tabId: t.tabId });
+      await sendMsg({ type: "vb-mix-set", tabId: t.tabId, rate: 1 });
     } else {
       let streamId = null;
       try {
@@ -1125,7 +1159,19 @@ async function toggleTab(t, btn) {
       } catch (e) {}
       if (streamId) {
         const s = t.backup ? { ...DEFAULTS, ...t.backup } : { ...DEFAULTS };
+        const rate = Number(s.mixRate) || 1;
+        delete s.mixRate;
         await sendMsg({ type: "vb-start", tabId: t.tabId, streamId, settings: s });
+        if (rate !== 1) {
+          const o = originPattern(t.url || "");
+          let ok = false;
+          if (o) {
+            try {
+              ok = await chrome.permissions.contains({ origins: [o] });
+            } catch (e) {}
+          }
+          if (ok) await sendMsg({ type: "vb-mix-set", tabId: t.tabId, rate, origin: o });
+        }
         if (t.backup) await sendMsg({ type: "vb-clear-backup", tabId: t.tabId });
       }
     }
@@ -1203,13 +1249,19 @@ async function init() {
   tabsTimer = setInterval(refreshTabs, 2500);
 }
 
+let mixReasserted = false;
 function applyCurrentState(resp) {
-  if (resp.settings) settings = { ...DEFAULTS, ...resp.settings };
-  if (!fxBass()) settings.bassMode = DEFAULTS.bassMode;
+  const fresh = Date.now() - lastLocalEdit > 3000;
+  if (fresh && resp.settings) settings = { ...DEFAULTS, ...resp.settings };
+  if (fresh && !fxBass()) settings.bassMode = DEFAULTS.bassMode;
   isActive = !!resp.active;
   backupSettings = resp.backup || null;
-  if (resp.mix != null) {
+  if (resp.mix != null && fresh) {
     mixRate = resp.mix || 1;
+    if (mixRate !== 1 && !mixReasserted) {
+      mixReasserted = true;
+      sendMsg({ type: "vb-mix-set", tabId: currentTabId, rate: mixRate });
+    }
     renderMix();
   }
   renderUI();

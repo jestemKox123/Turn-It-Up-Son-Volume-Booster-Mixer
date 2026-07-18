@@ -6,6 +6,7 @@ const YT_SCRIPT_ID = "yt-continue";
 
 let engineTabId = null;
 let cachedActiveIds = [];
+const endedRestartAt = new Map();
 
 let opChain = Promise.resolve();
 function serialize(fn) {
@@ -178,7 +179,11 @@ async function getActiveTabIds() {
 }
 
 async function closeEngineIfEmpty() {
-  const ids = await getActiveTabIds();
+  if (!(await enginePresent())) return;
+  const resp = await sendToEngine({ type: "vb-list" });
+  if (!resp) return;
+  const ids = resp.tabIds || [];
+  cachedActiveIds = ids;
   if (ids.length > 0) return;
   if (await hasOffscreen()) {
     try {
@@ -432,7 +437,7 @@ async function syncMixScript() {
   if (!allowed.length) return;
   try {
     await chrome.scripting.registerContentScripts([
-      { id: MIX_SCRIPT_ID, matches: allowed, js: ["mix.js"], runAt: "document_idle", allFrames: true },
+      { id: MIX_SCRIPT_ID, matches: allowed, js: ["mix.js"], runAt: "document_start", allFrames: true },
     ]);
   } catch (e) {}
 }
@@ -460,9 +465,16 @@ async function setMix(tabId, rate, origin) {
   if (!rate || rate === 1) {
     const prev = await getMixState(tabId);
     await chrome.storage.session.remove(mixKey(tabId));
-    try {
-      chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", off: true }, () => void chrome.runtime.lastError);
-    } catch (e) {}
+    await new Promise((resolve) => {
+      try {
+        chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", off: true }, () => {
+          void chrome.runtime.lastError;
+          resolve();
+        });
+      } catch (e) {
+        resolve();
+      }
+    });
     await syncMixScript();
     if (prev && prev.origin) await maybeRevokeOrigin(prev.origin);
     return { rate: 1 };
@@ -499,11 +511,21 @@ async function clearAllMix() {
   }
   if (!tabs.length) return;
   await chrome.storage.session.remove(tabs.map((t) => mixKey(t.tabId)));
-  for (const t of tabs) {
-    try {
-      chrome.tabs.sendMessage(t.tabId, { type: "vb-mix-apply", off: true }, () => void chrome.runtime.lastError);
-    } catch (e) {}
-  }
+  await Promise.all(
+    tabs.map(
+      (t) =>
+        new Promise((resolve) => {
+          try {
+            chrome.tabs.sendMessage(t.tabId, { type: "vb-mix-apply", off: true }, () => {
+              void chrome.runtime.lastError;
+              resolve();
+            });
+          } catch (e) {
+            resolve();
+          }
+        })
+    )
+  );
   await syncMixScript();
   const origins = [...new Set(tabs.map((t) => t.origin).filter(Boolean))];
   for (const o of origins) await maybeRevokeOrigin(o);
@@ -560,6 +582,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         .map((t) => ({
           tabId: t.id,
           title: t.title || t.url || "Karta " + t.id,
+          url: t.url || "",
           boosted: activeIds.includes(t.id),
           backup: backup[t.id] || null,
         }));
@@ -571,6 +594,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           list.push({
             tabId: id,
             title: t.title || t.url || "Karta " + id,
+            url: t.url || "",
             boosted: true,
             backup: backup[id] || null,
           });
@@ -699,7 +723,40 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if (msg.type === "vb-ended") {
     setBadge(msg.tabId, false);
-    closeEngineIfEmpty();
+    (async () => {
+      const tabId = msg.tabId;
+      const d = await chrome.storage.session.get(keyFor(tabId));
+      const s = d[keyFor(tabId)];
+      if (s) {
+        let alive = true;
+        let asleep = false;
+        try {
+          const t = await chrome.tabs.get(tabId);
+          asleep = !!(t && (t.discarded || t.frozen));
+        } catch (e) {
+          alive = false;
+        }
+        if (asleep) {
+          closeEngineIfEmpty();
+          return;
+        }
+        const last = endedRestartAt.get(tabId) || 0;
+        if (alive && Date.now() - last > 10000) {
+          endedRestartAt.set(tabId, Date.now());
+          const r = await serialize(async () => {
+            try {
+              const streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
+              return await startCapture(tabId, streamId, s);
+            } catch (e) {
+              return { active: false };
+            }
+          });
+          if (r && r.active) return;
+        }
+        chrome.storage.session.remove(keyFor(tabId));
+      }
+      closeEngineIfEmpty();
+    })();
     return false;
   }
 

@@ -376,6 +376,7 @@ const skipInput = document.getElementById("skipInput");
 const skipAddBtn = document.getElementById("skipAdd");
 const skipListEl = document.getElementById("skipList");
 const skipSaved = document.getElementById("skipSaved");
+const skipClearBtn = document.getElementById("skipClearAll");
 
 const skipNorm = (s) =>
   (s || "")
@@ -428,6 +429,7 @@ function makeChip(label, prefix, onRemove) {
 function renderSkipList(arr, songArr) {
   if (!skipListEl) return;
   skipListEl.innerHTML = "";
+  if (skipClearBtn) skipClearBtn.hidden = !arr.length && !songArr.length;
   if (!arr.length && !songArr.length) {
     const p = document.createElement("div");
     p.className = "skip-empty";
@@ -606,6 +608,30 @@ if (skipToggle && HAS_STORAGE) {
     });
     skipAllEl.addEventListener("change", () => {
       chrome.storage.local.set({ skipEverywhere: skipAllEl.checked }, flashSkipSaved);
+    });
+  }
+
+  if (skipClearBtn) {
+    let clearArmed = false;
+    let clearTimer = null;
+    const disarmClear = () => {
+      clearArmed = false;
+      skipClearBtn.textContent = VBI18N.t("skip_clear");
+    };
+    skipClearBtn.addEventListener("click", () => {
+      if (!clearArmed) {
+        clearArmed = true;
+        skipClearBtn.textContent = VBI18N.t("skip_clear_confirm");
+        if (clearTimer) clearTimeout(clearTimer);
+        clearTimer = setTimeout(disarmClear, 4000);
+        return;
+      }
+      if (clearTimer) clearTimeout(clearTimer);
+      disarmClear();
+      chrome.storage.local.set({ skipArtists: [], skipSongs: [] }, () => {
+        renderSkipList([], []);
+        flashSkipSaved();
+      });
     });
   }
 
