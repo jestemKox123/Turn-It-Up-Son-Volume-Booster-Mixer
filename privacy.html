@@ -1,0 +1,236 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turn It Up, Son! - Privacy Policy</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff453a'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    color-scheme:dark;
+    --bg:#050505;
+    --panel:#0e0e10;
+    --line:rgba(255,255,255,.09);
+    --text:#f5f5f7;
+    --muted:rgba(245,245,247,.55);
+    --dim:rgba(245,245,247,.32);
+    --red:#ff453a;
+    --ok:#45e0a0;
+    --grad:linear-gradient(120deg,#ff6b52,#ff2d55);
+  }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+    min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;
+    padding:72px 24px 40px;
+    overflow-x:hidden;
+  }
+  a{color:inherit}
+  ::selection{background:rgba(255,69,58,.35)}
+
+  .orb{
+    position:fixed;left:50%;top:12%;transform:translate(-50%,-50%);
+    width:min(60vmin,520px);height:min(60vmin,520px);border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,rgba(255,69,58,.14),rgba(255,45,85,.05) 45%,transparent 70%);
+    filter:blur(38px);
+    pointer-events:none;z-index:-1;
+  }
+
+  .wrap{max-width:720px;width:100%}
+  .eyebrow{
+    font-size:12.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--red);margin-bottom:16px;text-align:center;
+  }
+  h1{font-size:clamp(30px,6vw,44px);letter-spacing:-.03em;line-height:1.1;margin-bottom:10px;text-align:center}
+  .sub{color:var(--muted);font-size:14.5px;text-align:center;margin-bottom:40px}
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:24px 26px;
+    margin-bottom:14px;
+  }
+  .card h2{font-size:16.5px;letter-spacing:-.01em;margin-bottom:10px}
+  .card p{font-size:14px;color:var(--muted);margin-bottom:10px}
+  .card p:last-child{margin-bottom:0}
+  .card ul{margin:0 0 10px 18px}
+  .card li{font-size:14px;color:var(--muted);margin-bottom:6px}
+  .card strong{color:var(--text);font-weight:600}
+  .ok{color:var(--ok);font-weight:600}
+
+  footer{margin-top:44px;font-size:12px;color:var(--dim);text-align:center}
+  footer a{color:var(--muted);text-decoration:none}
+
+  .langs{
+    position:fixed;top:16px;right:18px;z-index:5;
+    display:flex;gap:6px;align-items:center;
+    font-size:12.5px;color:var(--dim);
+  }
+  .langs button{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--muted);
+    font-family:inherit;font-size:12.5px;font-weight:700;
+    padding:6px 13px;cursor:pointer;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  .langs button:hover{border-color:var(--red);color:var(--text)}
+  .langs button.on{border-color:var(--red);color:var(--text);background:rgba(255,69,58,.10)}
+</style>
+</head>
+<body>
+  <div class="orb" aria-hidden="true"></div>
+
+  <div class="langs" aria-label="Language">
+    <span aria-hidden="true">&#127760;</span>
+    <button type="button" id="langEn" class="on">EN</button>
+    <button type="button" id="langPl">PL</button>
+  </div>
+
+  <div class="wrap">
+    <p class="eyebrow">Turn It Up, Son!</p>
+    <h1 id="t-h1">Privacy Policy</h1>
+    <p class="sub" id="t-sub">Volume Booster &amp; Mixer - Turn It Up, Son! browser extension &middot; Last updated: 2026-07-18</p>
+
+    <div id="c-en">
+      <div class="card">
+        <h2>The short version</h2>
+        <p><span class="ok">The extension does not collect, store or send any personal data.</span> No accounts, no analytics, no tracking, no ads, no telemetry. Your audio is processed in real time on your computer and is never recorded, saved or transmitted anywhere.</p>
+      </div>
+
+      <div class="card">
+        <h2>What stays on your device</h2>
+        <p>All of your settings live in the browser's local extension storage on your computer: volume levels, theme, language, bass and effect settings, saved mixes, auto-skip lists and per-tab state. None of it ever leaves your device.</p>
+        <p>Uninstalling the extension removes all of it. You can also wipe everything at any time with the <strong>Clear all extension data</strong> button in the extension settings.</p>
+      </div>
+
+      <div class="card">
+        <h2>Sound processing</h2>
+        <p>To boost volume and apply effects, the extension processes the audio of a tab in real time using the browser's built-in audio tools. This happens entirely on your computer. The audio is <strong>never recorded, stored or sent</strong> - it only passes through, gets louder or gets effects, and plays.</p>
+      </div>
+
+      <div class="card">
+        <h2>Site access and permissions</h2>
+        <p>The extension asks for access to a website only when you turn on a feature that needs it (playback speed, auto-skip, auto-continue), and gives that access back when you turn the feature off. When nothing is enabled, the extension keeps no code on any page.</p>
+        <ul>
+          <li><strong>storage</strong> - saving your settings locally</li>
+          <li><strong>tabCapture</strong> - processing tab audio in real time</li>
+          <li><strong>tabs</strong> - showing which tabs are playing audio</li>
+          <li><strong>offscreen</strong> - running the audio engine in the background</li>
+          <li><strong>scripting</strong> (optional) - playback speed and auto-skip on sites you enable them for</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Network requests - the complete list</h2>
+        <p>The extension makes no network requests during normal use. There are exactly two optional situations where a request happens:</p>
+        <ul>
+          <li><strong>Track link lookup.</strong> When you paste a song link into the auto-skip list, the extension asks the public track-info endpoint of YouTube, Spotify or SoundCloud for the title and artist of that one link. Only the link is sent, with no identifiers attached.</li>
+          <li><strong>Voluntary, anonymous feedback.</strong> The uninstall page and the bug-report box send only the option you picked and the text you typed to a Google Form. No account, no e-mail, no identifiers. If you do not use them, nothing is sent.</li>
+        </ul>
+        <p>That is the whole list. There is no telemetry and no usage reporting of any kind.</p>
+      </div>
+
+      <div class="card">
+        <h2>Third parties</h2>
+        <p>Your data is never sold or shared - there is no data to sell. The only third-party services involved are the ones listed above (public track-info endpoints and Google Forms). Like any web request, those services technically see standard connection metadata (such as an IP address) under their own privacy policies. The extension adds nothing to that.</p>
+      </div>
+
+      <div class="card">
+        <h2>Changes and contact</h2>
+        <p>If this policy ever changes, the new version will appear on this page with an updated date.</p>
+        <p>Questions: <a href="mailto:romanzbudowy@o2.pl">romanzbudowy@o2.pl</a></p>
+      </div>
+    </div>
+
+    <div id="c-pl" hidden>
+      <div class="card">
+        <h2>W skrócie</h2>
+        <p><span class="ok">Wtyczka nie zbiera, nie przechowuje i nie wysyła żadnych danych osobowych.</span> Zero kont, zero analityki, zero śledzenia, zero reklam, zero telemetrii. Dźwięk jest przetwarzany na żywo na twoim komputerze i nigdy nie jest nagrywany, zapisywany ani nigdzie przesyłany.</p>
+      </div>
+
+      <div class="card">
+        <h2>Co zostaje na twoim urządzeniu</h2>
+        <p>Wszystkie ustawienia żyją w lokalnej pamięci wtyczki w przeglądarce, na twoim komputerze: głośności, motyw, język, ustawienia basu i efektów, zapisane mixy, listy auto-pomijania i stan kart. Nic z tego nigdy nie opuszcza twojego urządzenia.</p>
+        <p>Odinstalowanie wtyczki usuwa wszystko. Możesz też w każdej chwili wyczyścić dane przyciskiem <strong>Wyczyść wszystkie dane wtyczki</strong> w ustawieniach.</p>
+      </div>
+
+      <div class="card">
+        <h2>Przetwarzanie dźwięku</h2>
+        <p>Żeby wzmacniać głośność i nakładać efekty, wtyczka przetwarza dźwięk karty na żywo, wbudowanymi narzędziami przeglądarki. Dzieje się to w całości na twoim komputerze. Dźwięk <strong>nigdy nie jest nagrywany, zapisywany ani wysyłany</strong> - po prostu przepływa, robi się głośniejszy albo dostaje efekty, i gra.</p>
+      </div>
+
+      <div class="card">
+        <h2>Dostęp do stron i uprawnienia</h2>
+        <p>Wtyczka prosi o dostęp do strony tylko wtedy, gdy włączasz funkcję, która go potrzebuje (tempo odtwarzania, auto-pomijanie, auto-kontynuacja), i oddaje ten dostęp, gdy funkcję wyłączysz. Gdy nic nie jest włączone, wtyczka nie trzyma żadnego kodu na żadnej stronie.</p>
+        <ul>
+          <li><strong>storage</strong> - lokalny zapis twoich ustawień</li>
+          <li><strong>tabCapture</strong> - przetwarzanie dźwięku karty na żywo</li>
+          <li><strong>tabs</strong> - pokazywanie, które karty grają dźwięk</li>
+          <li><strong>offscreen</strong> - silnik dźwięku działający w tle</li>
+          <li><strong>scripting</strong> (opcjonalne) - tempo odtwarzania i auto-pomijanie na stronach, na których je włączysz</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Zapytania sieciowe - pełna lista</h2>
+        <p>Podczas normalnego używania wtyczka nie wysyła żadnych zapytań sieciowych. Są dokładnie dwie opcjonalne sytuacje, w których zapytanie się pojawia:</p>
+        <ul>
+          <li><strong>Sprawdzenie linka do utworu.</strong> Gdy wklejasz link do piosenki na listę auto-pomijania, wtyczka pyta publiczny punkt informacji o utworach YouTube, Spotify albo SoundCloud o tytuł i artystę tego jednego linka. Wysyłany jest tylko link, bez żadnych identyfikatorów.</li>
+          <li><strong>Dobrowolna, anonimowa opinia.</strong> Strona pożegnalna po odinstalowaniu i okno zgłaszania błędów wysyłają tylko wybraną opcję i wpisany tekst do formularza Google. Bez konta, bez e-maila, bez identyfikatorów. Jeśli z nich nie korzystasz, nic nie jest wysyłane.</li>
+        </ul>
+        <p>To cała lista. Nie ma żadnej telemetrii ani raportowania użycia.</p>
+      </div>
+
+      <div class="card">
+        <h2>Strony trzecie</h2>
+        <p>Twoje dane nigdy nie są sprzedawane ani udostępniane - nie ma danych, które można by sprzedać. Jedyne zaangażowane usługi zewnętrzne to te wymienione wyżej (publiczne punkty informacji o utworach i formularz Google). Jak przy każdym zapytaniu w internecie, te usługi widzą standardowe metadane połączenia (np. adres IP) na zasadach własnych polityk prywatności. Wtyczka niczego do tego nie dokłada.</p>
+      </div>
+
+      <div class="card">
+        <h2>Zmiany i kontakt</h2>
+        <p>Jeśli ta polityka kiedykolwiek się zmieni, nowa wersja pojawi się na tej stronie z nową datą.</p>
+        <p>Pytania: <a href="mailto:romanzbudowy@o2.pl">romanzbudowy@o2.pl</a></p>
+      </div>
+    </div>
+
+    <footer>
+      Turn It Up, Son! &middot; &copy; 2026 romanzbudowy &middot;
+      <a href="https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/">Home</a> &middot;
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
+    </footer>
+  </div>
+
+<script>
+(function () {
+  var DICT = {
+    en: { h1: "Privacy Policy", sub: "Volume Booster & Mixer - Turn It Up, Son! browser extension · Last updated: 2026-07-18" },
+    pl: { h1: "Polityka prywatności", sub: "Wtyczka Volume Booster & Mixer - Turn It Up, Son! · Ostatnia aktualizacja: 2026-07-18" }
+  };
+  var langEn = document.getElementById("langEn");
+  var langPl = document.getElementById("langPl");
+  function applyLang(l) {
+    var T = DICT[l] || DICT.en;
+    document.getElementById("t-h1").textContent = T.h1;
+    document.getElementById("t-sub").textContent = T.sub;
+    document.getElementById("c-en").hidden = l !== "en";
+    document.getElementById("c-pl").hidden = l !== "pl";
+    document.documentElement.lang = l;
+    langEn.classList.toggle("on", l === "en");
+    langPl.classList.toggle("on", l === "pl");
+  }
+  langEn.addEventListener("click", function () { applyLang("en"); });
+  langPl.addEventListener("click", function () { applyLang("pl"); });
+})();
+</script>
+</body>
+</html>
