@@ -1,0 +1,147 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turn It Up, Son! - Changelog</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff5447'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    color-scheme:dark;
+    --bg:#050505;
+    --panel:#0e0e10;
+    --line:rgba(255,255,255,.09);
+    --text:#fbdbd7;
+    --muted:#e5bdb8;
+    --dim:rgba(229,189,184,.5);
+    --red:#ff5447;
+    --ok:#45e0a0;
+    --blue:#64d6e5;
+    --fdisp:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+    --fbody:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--fbody);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+    min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;
+    padding:72px 24px 40px;
+    overflow-x:hidden;
+  }
+  a{color:inherit}
+  ::selection{background:rgba(255,69,58,.35)}
+
+  .orb{
+    position:fixed;left:50%;top:12%;transform:translate(-50%,-50%);
+    width:min(60vmin,520px);height:min(60vmin,520px);border-radius:50%;
+    background:radial-gradient(circle at 50% 50%,rgba(255,69,58,.14),rgba(255,45,85,.05) 45%,transparent 70%);
+    filter:blur(38px);
+    pointer-events:none;z-index:-1;
+  }
+
+  .wrap{max-width:720px;width:100%}
+  .eyebrow{
+    font-family:var(--fdisp);
+    font-size:12.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
+    color:#ffb4aa;margin-bottom:16px;text-align:center;
+  }
+  h1{font-family:var(--fdisp);font-weight:800;font-size:clamp(30px,6vw,44px);letter-spacing:-.035em;line-height:1.1;margin-bottom:10px;text-align:center}
+  .sub{color:var(--muted);font-size:14.5px;text-align:center;margin-bottom:40px}
+
+  .rel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px 26px;
+    margin-bottom:14px;
+  }
+  .rel-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .rel-v{font-family:var(--fdisp);font-weight:800;font-size:21px;letter-spacing:-.02em}
+  .rel-badge{
+    font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ok);border:1px solid rgba(69,224,160,.35);
+    background:rgba(69,224,160,.08);
+    border-radius:999px;padding:3px 10px;
+  }
+  ul{list-style:none}
+  li{display:flex;gap:10px;font-size:14px;color:var(--muted);margin-bottom:9px;align-items:baseline}
+  li:last-child{margin-bottom:0}
+  .tag{
+    flex:0 0 auto;
+    font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    border-radius:999px;padding:2px 9px;min-width:74px;text-align:center;
+  }
+  .t-add{color:var(--ok);background:rgba(69,224,160,.10);border:1px solid rgba(69,224,160,.28)}
+  .t-fix{color:#ffb4aa;background:rgba(255,84,71,.10);border:1px solid rgba(255,84,71,.28)}
+  .t-chg{color:var(--blue);background:rgba(100,214,229,.10);border:1px solid rgba(100,214,229,.28)}
+
+  .back{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-top:26px;
+    font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);border-radius:999px;padding:9px 16px;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  .back:hover{border-color:var(--red);color:var(--text)}
+
+  footer{margin-top:44px;font-size:12px;color:var(--dim);text-align:center}
+  footer a{color:var(--muted);text-decoration:none}
+</style>
+</head>
+<body>
+  <div class="orb" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <p class="eyebrow">Turn It Up, Son!</p>
+    <h1>Changelog</h1>
+    <p class="sub">Full version history of the Volume Booster &amp; Mixer extension.</p>
+
+    <div class="rel">
+      <div class="rel-head">
+        <span class="rel-v">4.3.1</span>
+        <span class="rel-badge">Latest</span>
+      </div>
+      <ul>
+        <li><span class="tag t-fix">Fixed</span><span>Tempo (Sped Up etc.) no longer gets lost when the song changes.</span></li>
+        <li><span class="tag t-fix">Fixed</span><span>Tempo repairs itself when YouTube plays at normal speed despite an active mix.</span></li>
+        <li><span class="tag t-fix">Fixed</span><span>Presets no longer wipe your bass boost, and Reset clears everything to zero.</span></li>
+        <li><span class="tag t-fix">Fixed</span><span>Turning a tab off in the list also stops the tempo, turning it back on restores it.</span></li>
+        <li><span class="tag t-chg">Changed</span><span>Gentler bass boost, music no longer goes quiet on bass hits.</span></li>
+        <li><span class="tag t-chg">Changed</span><span>Smooth engine on and off, no popping sound.</span></li>
+        <li><span class="tag t-add">Added</span><span>A button to clear the whole auto-skip list.</span></li>
+      </ul>
+    </div>
+
+    <div class="rel">
+      <div class="rel-head">
+        <span class="rel-v">4.3.0</span>
+      </div>
+      <ul>
+        <li><span class="tag t-add">Added</span><span>Auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud.</span></li>
+        <li><span class="tag t-add">Added</span><span>Skip specific tracks (one click in the popup or by pasting a link).</span></li>
+        <li><span class="tag t-add">Added</span><span>2 new extension colors (Fire, Magenta).</span></li>
+        <li><span class="tag t-add">Added</span><span>Clear all extension data with one button.</span></li>
+        <li><span class="tag t-chg">Changed</span><span>Refreshed glass look for the popup.</span></li>
+        <li><span class="tag t-chg">Changed</span><span>More distinct bass flavors and a stronger Vocal slider.</span></li>
+      </ul>
+    </div>
+
+    <a class="back" href="./">&larr; Back to the extension page</a>
+
+    <footer>
+      Turn It Up, Son! &copy; 2026 romanzbudowy &middot;
+      <a href="privacy.html">Privacy Policy</a> &middot;
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
+    </footer>
+  </div>
+</body>
+</html>
