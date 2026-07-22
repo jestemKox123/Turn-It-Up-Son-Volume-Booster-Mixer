@@ -100,11 +100,11 @@ if (!window.__vbSkip) {
     return false;
   }
 
-  const visible = (el) => {
-    if (!el) return false;
-    if (el.checkVisibility && !el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
-    const r = el.getBoundingClientRect();
-    return r.width > 0 && r.height > 0;
+  const clickable = (el) => {
+    if (!el || !el.isConnected) return false;
+    if (el.disabled) return false;
+    if (el.getAttribute && el.getAttribute("aria-disabled") === "true") return false;
+    return true;
   };
 
   function findMedia() {
@@ -129,16 +129,18 @@ if (!window.__vbSkip) {
   function doSkip() {
     for (const sel of NEXT_SELECTORS) {
       const el = document.querySelector(sel);
-      if (visible(el)) {
-        const inner = el.tagName === "BUTTON" ? el : el.querySelector("button");
-        (inner || el).click();
+      if (!el) continue;
+      const btn = el.tagName === "BUTTON" ? el : el.querySelector("button") || el;
+      if (!clickable(btn)) continue;
+      try {
+        btn.click();
         return true;
-      }
+      } catch (e) {}
     }
     const m = findMedia();
-    if (m) {
+    if (m && isFinite(m.duration) && m.duration > 0) {
       try {
-        m.currentTime = Math.max(0, m.duration - 0.1);
+        m.currentTime = Math.max(0, m.duration - 0.05);
         return true;
       } catch (e) {}
     }

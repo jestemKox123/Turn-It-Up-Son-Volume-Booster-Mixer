@@ -4,7 +4,6 @@
 const PER_TAB_DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_SCRIPT_ID = "yt-continue";
 
-let engineTabId = null;
 let cachedActiveIds = [];
 const endedRestartAt = new Map();
 
@@ -52,24 +51,22 @@ async function snapshotTab(tabId) {
   await backupTab(tabId, out);
 }
 
-async function boostedTabIds() {
-  const all = await chrome.storage.session.get(null);
-  const out = [];
-  for (const k in all) {
-    if (k.indexOf("vb_tab_") === 0) out.push(Number(k.slice(7)));
-  }
-  return out;
-}
-
 function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-function setBadge(tabId, on) {
+function setBadge(tabId, on, settings) {
   const swallow = () => void chrome.runtime.lastError;
   if (on) {
-    chrome.action.setBadgeText({ tabId, text: "ON" }).catch(swallow);
-    chrome.action.setBadgeBackgroundColor({ tabId, color: "#16a34a" }).catch(swallow);
+    let text = "ON";
+    let color = "#16a34a";
+    if (settings && typeof settings.volume === "number") {
+      const pct = Math.round(settings.volume * 100);
+      text = String(pct);
+      if (pct > 300) color = "#f59e0b";
+    }
+    chrome.action.setBadgeText({ tabId, text }).catch(swallow);
+    chrome.action.setBadgeBackgroundColor({ tabId, color }).catch(swallow);
   } else {
     chrome.action.setBadgeText({ tabId, text: "" }).catch(swallow);
   }
@@ -80,47 +77,9 @@ function clearAllBadges() {
   cachedActiveIds = [];
 }
 
-async function getMode() {
-  const { disableMode } = await chrome.storage.local.get("disableMode");
-  return disableMode === "closeTab" ? "closeTab" : "toggle";
-}
-
 async function hasOffscreen() {
   const c = await chrome.runtime.getContexts({ contextTypes: ["OFFSCREEN_DOCUMENT"] });
   return c.length > 0;
-}
-
-async function getEngineTabId() {
-  if (engineTabId != null) return engineTabId;
-  const { vb_engine_tab } = await chrome.storage.session.get("vb_engine_tab");
-  if (vb_engine_tab != null) {
-    try {
-      await chrome.tabs.get(vb_engine_tab);
-      engineTabId = vb_engine_tab;
-      return engineTabId;
-    } catch (e) {
-      await chrome.storage.session.remove("vb_engine_tab");
-    }
-  }
-  return null;
-}
-
-async function setEngineTabId(id) {
-  engineTabId = id;
-  if (id == null) await chrome.storage.session.remove("vb_engine_tab");
-  else await chrome.storage.session.set({ vb_engine_tab: id });
-}
-
-async function engineTabExists() {
-  const id = await getEngineTabId();
-  if (id == null) return false;
-  try {
-    await chrome.tabs.get(id);
-    return true;
-  } catch (e) {
-    await setEngineTabId(null);
-    return false;
-  }
 }
 
 async function engineReady() {
@@ -133,26 +92,14 @@ async function engineReady() {
 }
 
 async function ensureEngine() {
-  const mode = await getMode();
-  if (mode === "closeTab") {
-    if (!(await engineTabExists())) {
-      const tab = await chrome.tabs.create({
-        url: chrome.runtime.getURL("engine.html"),
-        active: false,
-        pinned: true,
+  if (!(await hasOffscreen())) {
+    try {
+      await chrome.offscreen.createDocument({
+        url: "engine.html",
+        reasons: ["USER_MEDIA"],
+        justification: "Obrobka i wzmacnianie dzwieku przechwyconej karty.",
       });
-      await setEngineTabId(tab.id);
-    }
-  } else {
-    if (!(await hasOffscreen())) {
-      try {
-        await chrome.offscreen.createDocument({
-          url: "engine.html",
-          reasons: ["USER_MEDIA"],
-          justification: "Obrobka i wzmacnianie dzwieku przechwyconej karty.",
-        });
-      } catch (e) {}
-    }
+    } catch (e) {}
   }
   await engineReady();
 }
@@ -167,7 +114,7 @@ function sendToEngine(message) {
 }
 
 async function enginePresent() {
-  return (await hasOffscreen()) || (await engineTabExists());
+  return await hasOffscreen();
 }
 
 async function getActiveTabIds() {
@@ -190,13 +137,6 @@ async function closeEngineIfEmpty() {
       await chrome.offscreen.closeDocument();
     } catch (e) {}
   }
-  const id = await getEngineTabId();
-  if (id != null) {
-    try {
-      await chrome.tabs.remove(id);
-    } catch (e) {}
-    await setEngineTabId(null);
-  }
 }
 
 async function stopEverything() {
@@ -204,13 +144,6 @@ async function stopEverything() {
     try {
       await chrome.offscreen.closeDocument();
     } catch (e) {}
-  }
-  const id = await getEngineTabId();
-  if (id != null) {
-    try {
-      await chrome.tabs.remove(id);
-    } catch (e) {}
-    await setEngineTabId(null);
   }
   clearAllBadges();
 }
@@ -228,13 +161,14 @@ async function startCapture(tabId, streamId, settings) {
     return { active: false, error: (resp && resp.error) || "start-failed" };
   }
   cachedActiveIds = resp.tabIds || cachedActiveIds;
-  setBadge(tabId, true);
+  setBadge(tabId, true, settings);
   return { active: true };
 }
 
 async function updateCapture(tabId, settings) {
   chrome.storage.session.set({ [keyFor(tabId)]: settings });
   const resp = await sendToEngine({ type: "vb-update", tabId, settings });
+  if (resp && resp.ok) setBadge(tabId, true, settings);
   return { active: !!(resp && resp.ok) };
 }
 
@@ -539,7 +473,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const [data, activeIds, local, mix] = await Promise.all([
         chrome.storage.session.get(keyFor(msg.tabId)),
         getActiveTabIds(),
-        chrome.storage.local.get(["ytAutoContinue", "disableMode", "skipEnabled"]),
+        chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]),
         getMixState(msg.tabId),
       ]);
       const backup = await getBackup();
@@ -548,7 +482,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         settings: data[keyFor(msg.tabId)] || PER_TAB_DEFAULTS,
         ytAutoContinue: !!local.ytAutoContinue,
         skipEnabled: !!local.skipEnabled,
-        disableMode: local.disableMode === "closeTab" ? "closeTab" : "toggle",
         backup: backup[msg.tabId] || null,
         mix: mix && mix.rate ? mix.rate : 1,
       });
@@ -571,14 +504,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
   if (msg.type === "vb-audible") {
     (async () => {
-      const [tabs, activeIds, engId] = await Promise.all([
+      const [tabs, activeIds] = await Promise.all([
         chrome.tabs.query({ audible: true }),
         getActiveTabIds(),
-        getEngineTabId(),
       ]);
       const backup = await getBackup();
       const list = tabs
-        .filter((t) => t.id !== engId)
         .map((t) => ({
           tabId: t.id,
           title: t.title || t.url || "Karta " + t.id,
@@ -588,7 +519,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }));
       const listed = new Set(list.map((t) => t.tabId));
       for (const id of activeIds) {
-        if (listed.has(id) || id === engId) continue;
+        if (listed.has(id)) continue;
         try {
           const t = await chrome.tabs.get(id);
           list.push({
@@ -710,17 +641,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
-  if (msg.type === "vb-set-mode") {
-    (async () => {
-      const next = msg.mode === "closeTab" ? "closeTab" : "toggle";
-      const prev = await getMode();
-      await chrome.storage.local.set({ disableMode: next });
-      if (next !== prev) await serialize(stopEverything);
-      sendResponse({ ok: true });
-    })();
-    return true;
-  }
-
   if (msg.type === "vb-ended") {
     setBadge(msg.tabId, false);
     (async () => {
@@ -771,23 +691,6 @@ chrome.tabs.onRemoved.addListener((tabId) => {
       await chrome.storage.session.remove(mixKey(tabId));
       await syncMixScript();
       if (mix.origin) await maybeRevokeOrigin(mix.origin);
-    }
-    const engId = await getEngineTabId();
-    if (tabId === engId) {
-      await setEngineTabId(null);
-      const ids = await boostedTabIds();
-      for (const id of ids) {
-        await snapshotTab(id);
-        chrome.storage.session.remove(keyFor(id));
-        setBadge(id, false);
-      }
-      const done = new Set(ids);
-      for (const t of await activeMixTabs()) {
-        if (!done.has(t.tabId)) await snapshotTab(t.tabId);
-      }
-      clearAllBadges();
-      await clearAllMix();
-      return;
     }
     if (cachedActiveIds.includes(tabId)) stopCapture(tabId);
   })();
@@ -881,5 +784,12 @@ syncYt();
 syncSkip();
 (async () => {
   const ids = await getActiveTabIds();
-  ids.forEach((id) => setBadge(id, true));
+  for (const id of ids) {
+    try {
+      const d = await chrome.storage.session.get(keyFor(id));
+      setBadge(id, true, d[keyFor(id)]);
+    } catch (e) {
+      setBadge(id, true);
+    }
+  }
 })();

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="icons/icon48.png" />
-    <title>Turn It Up, Son! - ustawienia</title>
+    <title>Turn It Up, Son! - Settings</title>
     <style>
       :root {
 
@@ -19,8 +19,8 @@
         --text: #ffffff;
         --muted: rgba(255, 255, 255, 0.62);
         --xdim: rgba(255, 255, 255, 0.40);
-        --accent: #6e56ff;
-        --accent-2: #3ddcff;
+        --accent: #3d8bff;
+        --accent-2: #7fb2ff;
         --ok: #45e0a0;
         --danger: #ff4d5e;
       }
@@ -55,31 +55,37 @@
         overflow: hidden;
         pointer-events: none;
         z-index: -1;
-        white-space: nowrap;
       }
       .bg-mq .tr {
-        display: inline-block;
+        display: flex;
+        width: max-content;
+        animation: mq 80s linear infinite;
+        will-change: transform;
+      }
+      .bg-mq .tr > span {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding-right: 0.35em;
         font-size: 120px;
         font-weight: 800;
         letter-spacing: 0.02em;
         line-height: 1;
         color: transparent;
         -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 28%, transparent);
-        animation: mq 80s linear infinite;
       }
       .bg-mq.a { top: 40px; }
       .bg-mq.b { bottom: 36px; }
-      .bg-mq.b .tr {
+      .bg-mq.b .tr { animation: mqr 110s linear infinite; }
+      .bg-mq.b .tr > span {
         -webkit-text-stroke-color: color-mix(in srgb, var(--accent-2) 20%, transparent);
-        animation: mqr 110s linear infinite;
       }
       @keyframes mq {
-        from { transform: translateX(0); }
-        to { transform: translateX(-50%); }
+        from { transform: translate3d(0, 0, 0); }
+        to { transform: translate3d(-50%, 0, 0); }
       }
       @keyframes mqr {
-        from { transform: translateX(-50%); }
-        to { transform: translateX(0); }
+        from { transform: translate3d(-50%, 0, 0); }
+        to { transform: translate3d(0, 0, 0); }
       }
 
       .mark3d-wrap {
@@ -110,6 +116,7 @@
         animation: markglow 4.5s ease-in-out infinite;
         will-change: transform;
       }
+      #mark3d.mk-smooth { transition: transform 0.45s ease-out; }
       @keyframes markglow {
         0%, 100% { opacity: 0.9; }
         50% { opacity: 1; }
@@ -118,6 +125,7 @@
       @media (prefers-reduced-motion: reduce) {
         .bg-mq .tr { animation: none; }
         #mark3d { animation: none; }
+        #mark3d.mk-smooth { transition: none; }
       }
       .wrap { max-width: 640px; margin: 0 auto; }
 
@@ -129,7 +137,7 @@
         border-bottom: 1px solid var(--border);
         margin-bottom: 22px;
       }
-      .head img { width: 40px; height: 40px; border-radius: 10px; }
+      .head img { width: 40px; height: 40px; }
       .head .txt { flex: 1; min-width: 0; }
       h1 { font-size: 19px; margin: 0; letter-spacing: -0.2px; }
       .head .sub { font-size: 13px; color: var(--muted); margin: 1px 0 0; }
@@ -242,6 +250,7 @@
         cursor: pointer;
       }
       .btn:hover { border-color: var(--accent); color: var(--accent); }
+      #clFull { font-size: 14.5px; padding: 12px 20px; border-radius: 11px; }
       .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
       select.btn { cursor: pointer; }
       select.btn option { background: #0c0d10; color: var(--text); }
@@ -408,6 +417,31 @@
       }
 
       .themes { display: flex; gap: 16px; flex-wrap: wrap; }
+      .glow-range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 150px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--border-strong);
+        outline: none;
+        flex-shrink: 0;
+      }
+      .glow-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent);
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+      #glowStrengthRow.off, #glowColorRow.off { opacity: 0.4; pointer-events: none; }
+      .glow-val { font-size: 12.5px; color: var(--muted); min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+      .glow-col { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .glow-col .th-dot { width: 34px; height: 34px; }
+      .glow-col .themes { gap: 13px; }
       .th-btn {
         display: flex;
         flex-direction: column;
@@ -506,37 +540,16 @@
       .rate-pill:hover .rp-stars i:nth-child(4) { transition-delay: 0.15s; }
       .rate-pill:hover .rp-stars i:nth-child(5) { transition-delay: 0.2s; }
 
-      .bmc-float {
-        position: fixed;
-        right: 18px;
-        bottom: 18px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        border: none;
-        background: #5F7FFF;
-        color: #fff;
-        font-size: 26px;
-        line-height: 1;
-        cursor: pointer;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-        z-index: 10;
-      }
-      .bmc-float:hover {
-        transform: scale(1.08);
-        box-shadow: 0 6px 20px rgba(95, 127, 255, 0.45);
-      }
     </style>
   </head>
   <body>
     <div class="bg-topline" aria-hidden="true"></div>
-    <div class="bg-mq a" aria-hidden="true"><span class="tr">TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦ TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦ </span></div>
-    <div class="bg-mq b" aria-hidden="true"><span class="tr">BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦ BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦ </span></div>
+    <div class="bg-mq a" aria-hidden="true"><span class="tr"><span>TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦</span><span>TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦</span></span></div>
+    <div class="bg-mq b" aria-hidden="true"><span class="tr"><span>BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦</span><span>BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦</span></span></div>
     <div class="mark3d-wrap" aria-hidden="true"><span id="mark3d">Turn it up, son!</span></div>
     <div class="wrap">
       <div class="head">
-        <img src="icons/icon48.png" alt="" />
+        <img src="icons/icon128.png" alt="" />
         <div class="txt">
           <h1>Turn It Up, Son!</h1>
           <p class="sub" data-i18n="app_tagline">Podgłaśniacz dźwięku dla każdej karty. YouTube, Spotify i cała reszta.</p>
@@ -556,16 +569,16 @@
           </button>
           <button id="bugPill" class="gh-pill">
             <span aria-hidden="true">&#128027;</span>
-            <span data-i18n="bug_sec">Zgłoś błąd</span>
+            <span data-i18n="bug_sec">Zgłoś błąd lub pomysł</span>
           </button>
         </div>
         <span class="ver" id="ver"></span>
       </div>
 
       <div class="card bugcard" id="bugCard" hidden>
-        <h2 data-i18n="bug_h">Znalazłeś błąd?</h2>
-        <p class="mini-d" style="max-width:none;margin:0 0 12px" data-i18n="bug_d">Napisz, co nie działa i na jakiej stronie. Wiadomość wysyła się anonimowo, bez konta i logowania.</p>
-        <textarea id="bugText" class="bugbox" rows="3" maxlength="2000" data-i18n-ph="bug_ph" placeholder="Opisz problem..."></textarea>
+        <h2 data-i18n="bug_h">Masz błąd albo pomysł?</h2>
+        <p class="mini-d" style="max-width:none;margin:0 0 12px" data-i18n="bug_d">Napisz, co nie działa i na jakiej stronie, albo podziel się pomysłem na nową funkcję. Wiadomość wysyła się anonimowo, bez konta i logowania.</p>
+        <textarea id="bugText" class="bugbox" rows="3" maxlength="2000" data-i18n-ph="bug_ph" placeholder="Opisz błąd albo pomysł..."></textarea>
         <div style="display:flex;align-items:center;gap:12px">
           <button id="bugSend" class="btn" type="button" data-i18n="bug_send">Wyślij</button>
           <span id="bugSent" class="saved" style="height:auto;margin:12px 0 0" hidden data-i18n="bug_sent">Wysłane, dzięki!</span>
@@ -576,7 +589,7 @@
         <button type="button" class="tab on" data-pane="general" data-i18n="tab_general">Ogólne</button>
         <button type="button" class="tab" data-pane="look" data-i18n="sec_look">Wygląd</button>
         <button type="button" class="tab" data-pane="privacy" data-i18n="tab_privacy">Prywatność i dostęp</button>
-        <button type="button" class="tab" data-pane="about" data-i18n="sec_about">O wtyczce</button>
+        <button type="button" class="tab" data-pane="about" data-i18n="sec_about">Funkcje</button>
         <button type="button" class="tab" data-pane="changelog" data-i18n="tab_changelog">Changelog</button>
       </nav>
 
@@ -587,6 +600,31 @@
         <p class="note" style="border:none;padding:0;margin:0 0 14px" data-i18n="theme_d">Wybierz akcent kolorystyczny całej wtyczki: okienka, panelu Miks i tej strony. Zmiana działa od razu.</p>
         <div id="themeRow" class="themes"></div>
         <div class="saved" id="themeSaved"></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <h2 style="margin:0" data-i18n="glow_h">Poświata tła</h2>
+            <p class="mini-d" data-i18n="glow_d">Miękka poświata w tle okienka. Wyłącz, żeby mieć czystą czerń, albo ustaw jej siłę suwakiem.</p>
+          </div>
+          <input type="checkbox" class="switch" id="glowToggle" />
+        </div>
+        <div class="row sep" id="glowStrengthRow">
+          <h2 style="margin:0;font-size:13.5px" data-i18n="glow_strength_h">Siła poświaty</h2>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="glowVal" class="glow-val">13</span>
+            <input type="range" class="glow-range" id="glowStrength" min="4" max="26" step="1" />
+          </div>
+        </div>
+        <div class="glow-col" id="glowColorRow">
+          <h2 style="margin:0;font-size:13.5px" data-i18n="glow_color_h">Kolor poświaty</h2>
+          <p class="mini-d" style="margin:2px 0 14px" data-i18n="glow_color_d">Kolor blasku w tle okienka, niezależny od koloru wtyczki. Motyw idzie za akcentem.</p>
+          <div id="glowSwatches" class="themes"></div>
+        </div>
+        <div class="saved" id="glowSaved"></div>
+        <button class="btn" id="lookReset" type="button" data-i18n="look_reset" style="margin-top:12px">Przywróć domyślny wygląd</button>
+        <div class="saved" id="lookResetSaved"></div>
       </div>
 
       <details class="card">
@@ -636,29 +674,6 @@
             <option value="warm" data-i18n="bm_warm">Ciepły</option>
           </select>
         </div>
-      </div>
-
-      <div class="sec-h" data-i18n="sec_behavior">Działanie</div>
-
-      <div class="card">
-        <h2 data-i18n="disable_q">Jak chcesz wyłączać wtyczkę?</h2>
-
-        <label class="opt" id="optToggle">
-          <input type="radio" name="mode" value="toggle" />
-          <span>
-            <div class="t" data-i18n="opt_toggle_t">Przełącznikiem on/off (nic się nie otwiera)</div>
-            <div class="d" data-i18n="opt_toggle_d">Włączasz i wyłączasz suwakiem w okienku wtyczki. Nic dodatkowego nie wyskakuje. Polecane, jak nie chcesz mieć extra karty.</div>
-          </span>
-        </label>
-
-        <label class="opt" id="optTab">
-          <input type="radio" name="mode" value="closeTab" />
-          <span>
-            <div class="t" data-i18n="opt_tab_t">Zamknięciem karty silnika</div>
-            <div class="d" data-i18n="opt_tab_d">Przy pierwszym podgłośnieniu otwiera się mała, przypięta karta po lewej (sam favicon). Trzyma cały dźwięk. Zamykasz ją i wtyczka od razu przestaje działać na wszystkich kartach.</div>
-          </span>
-        </label>
-
         <div class="saved" id="saved"></div>
       </div>
 
@@ -704,7 +719,7 @@
           <li class="muted" data-i18n="access_none">Żadna strona nie ma teraz dostępu.</li>
         </ul>
         <div class="access-btns">
-          <button class="btn" id="grantYt" data-i18n="access_grant_yt">Nadaj dostęp do YouTube</button>
+          <button class="btn" id="grantYt" data-i18n="access_grant_yt">Nadaj dostęp do serwisów muzycznych</button>
           <button class="btn danger" id="revokeAll" data-i18n="access_revoke">Zabierz dostęp wszystkim stronom</button>
         </div>
         <p class="access-note" data-i18n="access_grant_yt_d"></p>
@@ -716,7 +731,7 @@
 
       <div class="tabpane" data-pane="about">
 
-      <div class="sec-h" data-i18n="sec_about">O wtyczce</div>
+      <div class="sec-h" data-i18n="sec_about">Funkcje</div>
 
       <details class="card">
         <summary class="dsum"><span data-i18n="feats_h">Wszystkie funkcje</span><span class="chev">›</span></summary>
@@ -796,30 +811,10 @@
 
       <div class="sec-h" data-i18n="changelog_h">Historia zmian</div>
 
-      <div class="card clcard">
-        <div class="featl">
-          <div class="t">4.3.1</div>
-          <div class="d" data-i18n="cl_431">- Naprawiono: tempo (Sped Up itp.) nie gubi sie juz przy zmianie piosenki
-- Naprawiono: tempo naprawia sie samo, kiedy YouTube gra normalnie mimo wlaczonego mixu
-- Naprawiono: presety nie kasuja twojego bass boosta, a Reset czysci wszystko do zera
-- Naprawiono: wylaczenie karty na liscie wylacza tez tempo, a wlaczenie je przywraca
-- Zmieniono: lagodniejszy bass boost, muzyka nie cichnie przy uderzeniach basu
-- Zmieniono: plynne wlaczanie i wylaczanie wzmocnienia, bez trzasku
-- Dodano: przycisk czyszczenia calej listy auto-pomijania</div>
-        </div>
-      </div>
+      <div id="clList"></div>
 
-      <div class="card clcard">
-        <div class="featl">
-          <div class="t">4.3.0</div>
-          <div class="d" data-i18n="cl_430">- Dodano: auto-pomijanie artystów na YouTube, YouTube Music, Spotify i SoundCloud
-- Dodano: pomijanie konkretnych utworów (jednym kliknięciem w okienku albo po wklejeniu linka)
-- Dodano: 2 nowe kolory wtyczki (Ogień, Magenta)
-- Dodano: czyszczenie wszystkich danych wtyczki jednym przyciskiem
-- Zmieniono: odświeżony, szklany wygląd okienka
-- Zmieniono: wyraźniejsze charaktery basu i mocniejszy suwak Wokal</div>
-        </div>
-      </div>
+      <p class="note" id="clMoreNote" style="border:none;padding:0;margin:2px 0 12px" data-i18n="cl_more_d">Tutaj są tylko trzy ostatnie wydania. Pełna historia zmian jest na stronie wtyczki.</p>
+      <button class="btn" id="clFull" type="button" data-i18n="cl_full">Zobacz pełną historię zmian</button>
 
       </div>
 
@@ -852,7 +847,6 @@
       <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a></p>
     </div>
 
-    <button id="bmcFloat" class="bmc-float" title="Buy me a coffee" aria-label="Buy me a coffee">☕</button>
 
     <script src="i18n.js"></script>
     <script src="settings.js"></script>

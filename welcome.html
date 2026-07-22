@@ -19,8 +19,8 @@
         --text: #ffffff;
         --muted: rgba(255, 255, 255, 0.62);
         --xdim: rgba(255, 255, 255, 0.40);
-        --accent: #6e56ff;
-        --accent-2: #3ddcff;
+        --accent: #3d8bff;
+        --accent-2: #7fb2ff;
         --ok: #45e0a0;
         --danger: #ff4d5e;
       }
@@ -130,6 +130,20 @@
       }
       .hero .brand .ver { color: var(--xdim); font-weight: 600; margin-left: 6px; }
       .hero .sub { color: var(--muted); font-size: 15px; margin: 12px auto 0; max-width: 440px; }
+
+      .topnote {
+        max-width: 520px;
+        margin: 0 auto 8px;
+        text-align: center;
+        font-size: 12.5px;
+        color: var(--muted);
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+        padding: 10px 16px;
+        line-height: 1.45;
+      }
+      .topnote strong { color: var(--text); font-weight: 700; margin-right: 5px; }
 
       .sec-h {
         font-size: 11px;
@@ -282,6 +296,11 @@
         <p class="brand">Turn It Up, Son!<span class="ver" id="ver"></span></p>
       </div>
 
+      <div class="topnote rise" style="animation-delay: 0.05s">
+        <strong data-i18n="wlc_bug_h">Błąd albo pomysł?</strong>
+        <span data-i18n="wlc_bug_d">Wtyczka jest młoda i często aktualizowana. Znalazłeś błąd albo masz pomysł? Napisz w Ustawieniach, w sekcji Zgłoś błąd lub pomysł. Czytamy każdą wiadomość.</span>
+      </div>
+
       <div class="rise" style="animation-delay: 0.1s">
         <div class="card">
           <div class="lang-row">
@@ -312,6 +331,12 @@
               <div>
                 <div class="t" data-i18n="wlc_step3_t">Kliknij ikonę wtyczki</div>
                 <div class="d" data-i18n="wlc_step3_d">Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.</div>
+              </div>
+            </li>
+            <li>
+              <div>
+                <div class="t" data-i18n="wlc_step4_t">Ciesz się</div>
+                <div class="d" data-i18n="wlc_step4_d">To wszystko. Podkręć, zremiksuj, pomiń czego nie lubisz i baw się dźwiękiem.</div>
               </div>
             </li>
           </ol>

@@ -3,9 +3,8 @@
 
 (function () {
   const THEMES = {
-    neon: ["#6e56ff", "#3ddcff"],
+    neon: ["#3d8bff", "#7fb2ff"],
     crimson: ["#ff453a", "#ff2d55"],
-    ocean: ["#2f7cf6", "#2fd8f6"],
     emerald: ["#22c55e", "#a3e635"],
     gold: ["#ff9f0a", "#ffd60a"],
     rose: ["#ff2d78", "#b56bff"],
@@ -18,16 +17,60 @@
     r.setProperty("--accent", t[0]);
     r.setProperty("--accent-2", t[1]);
   }
+  const GLOWS = {
+    theme: null,
+    white: "#ffffff",
+    navy: "#3730a3",
+    violet: "#6d28d9",
+    plum: "#86198f",
+    wine: "#9f1239",
+    teal: "#0f766e",
+    forest: "#047857",
+    bronze: "#b45309",
+    slate: "#475569",
+  };
+  function glowKey(v) {
+    if (!v || v === "accent") return "theme";
+    return Object.prototype.hasOwnProperty.call(GLOWS, v) ? v : "theme";
+  }
+  function applyGlow(d) {
+    d = d || {};
+    const on = d.vbGlowOn !== false;
+    const s = typeof d.vbGlowStrength === "number" ? d.vbGlowStrength : 13;
+    const key = glowKey(d.vbGlowColor);
+    let tint;
+    if (!on) tint = "transparent";
+    else if (key === "white") tint = "rgba(255, 255, 255, " + s / 100 + ")";
+    else if (key === "theme") tint = "color-mix(in srgb, var(--accent) " + s + "%, transparent)";
+    else tint = "color-mix(in srgb, " + GLOWS[key] + " " + s + "%, transparent)";
+    document.documentElement.style.setProperty("--glow-tint", tint);
+  }
   const store = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local ? chrome.storage.local : null;
   if (store) {
-    store.get("vbTheme", (d) => {
+    store.get(["vbTheme", "vbGlowOn", "vbGlowStrength", "vbGlowColor"], (d) => {
       if (d.vbTheme && d.vbTheme !== "neon") applyTheme(d.vbTheme);
+      applyGlow(d);
     });
     chrome.storage.onChanged.addListener((ch, area) => {
-      if (area === "local" && ch.vbTheme) applyTheme(ch.vbTheme.newValue);
+      if (area !== "local") return;
+      if (ch.vbTheme) {
+        applyTheme(ch.vbTheme.newValue);
+        store.get(["vbGlowOn", "vbGlowStrength", "vbGlowColor"], applyGlow);
+      }
+      if (ch.vbGlowOn || ch.vbGlowStrength || ch.vbGlowColor) {
+        store.get(["vbGlowOn", "vbGlowStrength", "vbGlowColor"], applyGlow);
+      }
     });
   }
-  window.VBTHEME = { THEMES, applyTheme };
+  window.VBTHEME = { THEMES, GLOWS, glowKey, applyTheme, applyGlow };
+
+  const CHANGELOG = ["4.4.0", "4.3.1", "4.3.0"];
+  window.VBCHANGELOG = {
+    list: CHANGELOG,
+    max: 3,
+    url: "https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/changelog.html",
+    key: (v) => "cl_" + v.replace(/\./g, ""),
+  };
 })();
 
 (function () {
@@ -35,6 +78,7 @@
     pl: {
       power_on: "Wł.",
       power_off: "Wył.",
+      power_title: "Włącz/wyłącz na tej karcie",
       status_checking: "Sprawdzam kartę...",
       status_on: "Działa: {n}%",
       status_on_fx: "Działa: {n}% + Mix",
@@ -49,8 +93,8 @@
       scale_danger: "strefa przesterów",
       eff_mono: "Napraw dźwięk na jedno ucho",
       eff_bass: "Podbicie basów",
-      eff_yt: "Auto-kontynuuj na YouTube",
-      eff_skip: "Auto-pomijanie artystów",
+      eff_yt: "Auto kontynuuj na YouTube",
+      eff_skip: "Auto pomijanie artystów",
       skip_ban: "Pomijaj ten utwór",
       skip_ban_done: "Utwór na liście ✓",
       mix_title: "Miks i efekty",
@@ -113,26 +157,35 @@
       app_tagline: "Podgłaśniacz dźwięku dla każdej karty. YouTube, Spotify i cała reszta.",
       sec_look: "Wygląd",
       sec_basics: "Podstawowe",
-      sec_behavior: "Działanie",
-      sec_about: "O wtyczce",
-      disable_q: "Jak chcesz wyłączać wtyczkę?",
-      opt_toggle_t: "Przełącznikiem on/off (nic się nie otwiera)",
-      opt_toggle_d: "Włączasz i wyłączasz suwakiem w okienku wtyczki. Nic dodatkowego nie wyskakuje. Polecane, jak nie chcesz mieć extra karty.",
-      opt_tab_t: "Zamknięciem karty silnika",
-      opt_tab_d: "Przy pierwszym podgłośnieniu otwiera się mała, przypięta karta po lewej (sam favicon). Trzyma cały dźwięk. Zamykasz ją i wtyczka od razu przestaje działać na wszystkich kartach.",
+      sec_about: "Funkcje",
       lang_h: "Język / Language",
       maxvol_h: "Maksymalna głośność",
       maxvol_d: "Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.",
       theme_h: "Kolor wtyczki",
       theme_d: "Wybierz akcent kolorystyczny całej wtyczki: okienka, panelu Miks i tej strony. Zmiana działa od razu.",
-      theme_neon: "Neon",
+      theme_neon: "Lazur",
       theme_crimson: "Czerwień",
-      theme_ocean: "Ocean",
       theme_emerald: "Zieleń",
       theme_gold: "Złoto",
       theme_rose: "Róż",
       theme_fire: "Ogień",
       theme_magenta: "Magenta",
+      glow_h: "Poświata tła",
+      glow_d: "Miękka poświata w tle okienka. Wyłącz, żeby mieć czystą czerń, albo ustaw jej siłę suwakiem.",
+      glow_strength_h: "Siła poświaty",
+      glow_color_h: "Kolor poświaty",
+      glow_color_d: "Kolor blasku w tle okienka, niezależny od koloru wtyczki. Motyw idzie za akcentem.",
+      glow_c_theme: "Motyw",
+      glow_c_white: "Biała",
+      glow_c_navy: "Granat",
+      glow_c_violet: "Fiolet",
+      glow_c_plum: "Śliwka",
+      glow_c_wine: "Bordo",
+      glow_c_teal: "Morska",
+      glow_c_forest: "Butelkowa",
+      glow_c_bronze: "Bronz",
+      glow_c_slate: "Grafit",
+      look_reset: "Przywróć domyślny wygląd",
       preset_names_h: "Własne nazwy presetów",
       preset_names_d: "Zmień nazwy wbudowanych presetów z panelu Miks na swoje. Puste pole = nazwa domyślna.",
       preset_names_reset: "Przywróć domyślne nazwy",
@@ -147,8 +200,8 @@
       privacy_note: 'Pasek Chrome "ta karta jest udostępniana" to wymóg przeglądarki przy braniu dźwięku karty. Dzięki temu działa też Spotify. Nie da się go schować w żadnej wtyczce tego typu.',
       access_h: "Dostęp do stron",
       access_d: "Wtyczka bierze dostęp do strony dopiero wtedy, gdy włączysz na niej Mix (albo auto-kontynuację YouTube), i oddaje go, gdy wyłączysz. Dzięki temu domyślnie siedzi w sekcji Nie potrzebują dostępu. Poniżej widzisz strony, które akurat mają dostęp.",
-      access_grant_yt: "Nadaj dostęp do YouTube",
-      access_grant_yt_d: "Nadaj dostęp do YouTube: wtyczka dostaje dostęp tylko do youtube.com, żeby Mix i auto-kontynuacja działały tam bez pytania za każdym razem. Do żadnej innej strony to nie sięga.",
+      access_grant_yt: "Nadaj dostęp do serwisów muzycznych",
+      access_grant_yt_d: "Nadaj dostęp do serwisów muzycznych: wtyczka dostaje dostęp tylko do YouTube, Spotify i SoundCloud, żeby Mix, auto-kontynuacja i auto-skip działały tam bez pytania za każdym razem. Do żadnej innej strony to nie sięga.",
       access_revoke_d: "Zabierz dostęp wszystkim stronom: cofa wszystkie nadane zgody naraz i wtyczka wraca do zera dostępu.",
       access_current: "Strony z dostępem",
       access_none: "Żadna strona nie ma teraz dostępu.",
@@ -222,18 +275,21 @@
       wipe_confirm: "Na pewno? Kliknij jeszcze raz, żeby wyczyścić",
       skip_all_h: "Pomijaj wszędzie, nawet bez podgłośnienia",
       skip_all_d: "Domyślnie auto-pomijanie działa tylko na kartach, na których wtyczka gra (włączone podgłośnienie). Włącz, żeby pomijało na całej stronie, nawet gdy nic nie podgłaśniasz.",
+      cl_440: "- Dodano: poświata w tle z własną paletą kolorów, niezależną od koloru wtyczki\n- Dodano: suwak siły poświaty i przycisk przywracania domyślnego wyglądu\n- Zmieniono: nowa ikona wtyczki\n- Zmieniono: odświeżony wygląd okienka, czarne tło z lazurowym akcentem\n- Zmieniono: wyraźniejsze przyciski Reset i Ustawienia na dole okienka\n- Zmieniono: usunięty powtarzający się motyw kolorów, zostało ich 7\n- Zmieniono: sekcja O wtyczce nazywa się teraz Funkcje\n- Zmieniono: usunięty pływający przycisk wsparcia w ustawieniach\n- Zmieniono: lista zmian pokazuje 3 ostatnie wersje, pełna historia jest na stronie\n- Naprawiono: tło nie rozjeżdża się już przy otwieraniu panelu Mix\n- Naprawiono: suwak siły poświaty zapisuje się za każdym razem\n- Naprawiono: ikona nie ma już obciętych rogów\n- Naprawiono: przewijany napis w ustawieniach nie ma już przerwy\n- Naprawiono: napis w tle ustawień nie przeskakuje przy zmianie zakładki",
       cl_431: "- Naprawiono: tempo (Sped Up itp.) nie gubi się już przy zmianie piosenki\n- Naprawiono: tempo naprawia się samo, kiedy YouTube gra normalnie mimo włączonego mixu\n- Naprawiono: presety nie kasują twojego bass boosta, a Reset czyści wszystko do zera\n- Naprawiono: wyłączenie karty na liście wyłącza też tempo, a włączenie je przywraca\n- Zmieniono: łagodniejszy bass boost, muzyka nie cichnie przy uderzeniach basu\n- Zmieniono: płynne włączanie i wyłączanie wzmocnienia, bez trzasku\n- Dodano: przycisk czyszczenia całej listy auto-pomijania",
       cl_430: "- Dodano: auto-pomijanie artystów na YouTube, YouTube Music, Spotify i SoundCloud\n- Dodano: pomijanie konkretnych utworów (jednym kliknięciem w okienku albo po wklejeniu linka)\n- Dodano: 2 nowe kolory wtyczki (Ogień, Magenta)\n- Dodano: czyszczenie wszystkich danych wtyczki jednym przyciskiem\n- Zmieniono: odświeżony, szklany wygląd okienka\n- Zmieniono: wyraźniejsze charaktery basu i mocniejszy suwak Wokal",
       tab_general: "Ogólne",
       tab_changelog: "Changelog",
       tab_privacy: "Prywatność i dostęp",
-      bug_sec: "Zgłoś błąd",
-      bug_h: "Znalazłeś błąd?",
-      bug_d: "Napisz, co nie działa i na jakiej stronie. Wiadomość wysyła się anonimowo, bez konta i logowania.",
-      bug_ph: "Opisz problem...",
+      bug_sec: "Zgłoś błąd lub pomysł",
+      bug_h: "Masz błąd albo pomysł?",
+      bug_d: "Napisz, co nie działa i na jakiej stronie, albo podziel się pomysłem na nową funkcję. Wiadomość wysyła się anonimowo, bez konta i logowania.",
+      bug_ph: "Opisz błąd albo pomysł...",
       bug_send: "Wyślij",
       bug_sent: "Wysłane, dzięki!",
       changelog_h: "Historia zmian",
+      cl_more_d: "Tutaj są tylko trzy ostatnie wydania. Pełna historia zmian jest na stronie wtyczki.",
+      cl_full: "Zobacz pełną historię zmian",
       wlc_hi: "Dzięki za instalację!",
       wlc_start_h: "Szybki start",
       wlc_step1_t: "Przypnij wtyczkę do paska",
@@ -242,6 +298,8 @@
       wlc_step2_d: "YouTube, Spotify, film, cokolwiek gra w karcie.",
       wlc_step3_t: "Kliknij ikonę wtyczki",
       wlc_step3_d: "Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.",
+      wlc_step4_t: "Ciesz się",
+      wlc_step4_d: "To wszystko. Podkręć, zremiksuj, pomiń czego nie lubisz i baw się dźwiękiem.",
       wlc_links_h: "Podoba się? To pomaga najbardziej",
       wlc_rate_t: "Oceń wtyczkę",
       wlc_rate_d: "Dobra ocena w Chrome Web Store pomaga innym ją znaleźć.",
@@ -249,10 +307,13 @@
       wlc_bmac_d: "Wtyczka jest w 100% darmowa. Jeśli się przyda, możesz postawić kawę.",
       wlc_priv: "Zero analityki, zero kont, zero serwerów. Cały dźwięk przetwarzany lokalnie w przeglądarce.",
       wlc_settings: "Ustawienia",
+      wlc_bug_h: "Błąd albo pomysł?",
+      wlc_bug_d: "Wtyczka jest młoda i często aktualizowana. Znalazłeś błąd albo masz pomysł? Napisz w Ustawieniach, w sekcji Zgłoś błąd lub pomysł. Czytamy każdą wiadomość.",
     },
     en: {
       power_on: "On",
       power_off: "Off",
+      power_title: "Turn on/off on this tab",
       status_checking: "Checking tab...",
       status_on: "Active: {n}%",
       status_on_fx: "Active: {n}% + Mix",
@@ -267,8 +328,8 @@
       scale_danger: "clipping zone",
       eff_mono: "Fix sound stuck in one ear",
       eff_bass: "Bass boost",
-      eff_yt: "Auto-continue on YouTube",
-      eff_skip: "Auto-skip artists",
+      eff_yt: "Auto continue on YouTube",
+      eff_skip: "Auto skip artists",
       skip_ban: "Auto-skip this track",
       skip_ban_done: "Track on the list ✓",
       mix_title: "Mix and effects",
@@ -331,26 +392,35 @@
       app_tagline: "A volume booster for any tab. YouTube, Spotify and everything else.",
       sec_look: "Appearance",
       sec_basics: "Basics",
-      sec_behavior: "Behavior",
-      sec_about: "About",
-      disable_q: "How do you want to turn the extension off?",
-      opt_toggle_t: "With the on/off switch (nothing opens)",
-      opt_toggle_d: "You turn it on and off with the slider in the popup. Nothing extra pops up. Recommended if you don't want an extra tab.",
-      opt_tab_t: "By closing the engine tab",
-      opt_tab_d: "On the first boost a small pinned tab opens on the left (just a favicon). It holds all the audio. Close it and the extension stops on every tab at once.",
+      sec_about: "Features",
       lang_h: "Language / Język",
       maxvol_h: "Maximum volume",
       maxvol_d: "The upper limit of the volume slider in the popup. Set it lower to protect your ears or speakers from an accidental 700%.",
       theme_h: "Extension color",
       theme_d: "Pick the accent color for the whole extension: the popup, the Mix panel and this page. Applies instantly.",
-      theme_neon: "Neon",
+      theme_neon: "Azure",
       theme_crimson: "Crimson",
-      theme_ocean: "Ocean",
       theme_emerald: "Emerald",
       theme_gold: "Gold",
       theme_rose: "Rose",
       theme_fire: "Fire",
       theme_magenta: "Magenta",
+      glow_h: "Background glow",
+      glow_d: "The soft glow behind the popup. Turn it off for pure black, or set its strength with the slider.",
+      glow_strength_h: "Glow strength",
+      glow_color_h: "Glow color",
+      glow_color_d: "The color of the glow behind the popup, independent of the extension color. Theme follows the accent.",
+      glow_c_theme: "Theme",
+      glow_c_white: "White",
+      glow_c_navy: "Navy",
+      glow_c_violet: "Violet",
+      glow_c_plum: "Plum",
+      glow_c_wine: "Wine",
+      glow_c_teal: "Teal",
+      glow_c_forest: "Forest",
+      glow_c_bronze: "Bronze",
+      glow_c_slate: "Slate",
+      look_reset: "Restore default look",
       preset_names_h: "Custom preset names",
       preset_names_d: "Rename the built-in presets from the Mix panel. An empty field = the default name.",
       preset_names_reset: "Restore default names",
@@ -365,8 +435,8 @@
       privacy_note: "The Chrome \"this tab is being shared\" bar is required by the browser when capturing tab audio. That is what makes Spotify work too. No extension of this kind can hide it.",
       access_h: "Site access",
       access_d: "The extension takes access to a page only when you turn on Mix there (or YouTube auto-continue), and gives it back when you turn it off. That way it stays under No access needed by default. Below are the sites that currently have access.",
-      access_grant_yt: "Grant access to YouTube",
-      access_grant_yt_d: "Grant access to YouTube: the extension gets access to youtube.com only, so Mix and auto-continue work there without asking every time. It does not reach any other site.",
+      access_grant_yt: "Grant access to music sites",
+      access_grant_yt_d: "Grant access to music sites: the extension gets access to YouTube, Spotify and SoundCloud only, so Mix, auto-continue and auto-skip work there without asking every time. It does not reach any other site.",
       access_revoke_d: "Revoke access from all sites: takes back every granted permission at once and the extension returns to zero access.",
       access_current: "Sites with access",
       access_none: "No site has access right now.",
@@ -440,18 +510,21 @@
       wipe_confirm: "Are you sure? Click again to clear",
       skip_all_h: "Skip everywhere, even without boosting",
       skip_all_d: "By default auto-skip works only on tabs where the extension is playing (boost on). Turn this on to skip on the whole site even when you are not boosting anything.",
+      cl_440: "- Added: background glow with its own color palette, separate from the extension color\n- Added: glow strength slider and a button to restore the default look\n- Changed: new extension icon\n- Changed: refreshed popup look, black background with an azure accent\n- Changed: more visible Reset and Settings buttons at the bottom of the popup\n- Changed: removed a duplicate color theme, 7 left\n- Changed: the About section is now called Features\n- Changed: removed the floating support button in settings\n- Changed: the changelog shows the 3 latest versions, full history is on the website\n- Fixed: the background no longer shifts when the Mix panel opens\n- Fixed: the glow strength slider now saves every time\n- Fixed: the icon corners are no longer clipped\n- Fixed: the scrolling text in settings no longer has a gap\n- Fixed: the background text in settings no longer jumps when you switch tabs",
       cl_431: "- Fixed: tempo (Sped Up etc.) no longer gets lost when the song changes\n- Fixed: tempo repairs itself when YouTube plays at normal speed despite an active mix\n- Fixed: presets no longer wipe your bass boost, and Reset clears everything to zero\n- Fixed: turning a tab off in the list also stops the tempo, turning it back on restores it\n- Changed: gentler bass boost, music no longer goes quiet on bass hits\n- Changed: smooth engine on and off, no popping sound\n- Added: a button to clear the whole auto-skip list",
       cl_430: "- Added: auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud\n- Added: skip specific tracks (one click in the popup or by pasting a link)\n- Added: 2 new extension colors (Fire, Magenta)\n- Added: clear all extension data with one button\n- Changed: refreshed glass look for the popup\n- Changed: more distinct bass flavors and a stronger Vocal slider",
       tab_general: "General",
       tab_changelog: "Changelog",
       tab_privacy: "Privacy & access",
-      bug_sec: "Report a bug",
-      bug_h: "Found a bug?",
-      bug_d: "Tell us what broke and on which site. The message is sent anonymously, no account or sign-in needed.",
-      bug_ph: "Describe the problem...",
+      bug_sec: "Report a bug or share an idea",
+      bug_h: "Got a bug or an idea?",
+      bug_d: "Tell us what broke and on which site, or share an idea for a new feature. The message is sent anonymously, no account or sign-in needed.",
+      bug_ph: "Describe the bug or idea...",
       bug_send: "Send",
       bug_sent: "Sent, thanks!",
       changelog_h: "Changelog",
+      cl_more_d: "Only the three latest releases are listed here. The full history is on the extension website.",
+      cl_full: "See the full changelog",
       wlc_hi: "Thanks for installing!",
       wlc_start_h: "Quick start",
       wlc_step1_t: "Pin the extension to your toolbar",
@@ -460,6 +533,8 @@
       wlc_step2_d: "YouTube, Spotify, a movie, anything playing in a tab.",
       wlc_step3_t: "Click the extension icon",
       wlc_step3_d: "Drag the volume slider up to 700% or open the Mix panel and pick a preset.",
+      wlc_step4_t: "Enjoy",
+      wlc_step4_d: "That's it. Boost it, remix it, skip what you hate and have fun with your sound.",
       wlc_links_h: "Enjoying it? This helps the most",
       wlc_rate_t: "Rate the extension",
       wlc_rate_d: "A good rating on the Chrome Web Store helps others find it.",
@@ -467,6 +542,8 @@
       wlc_bmac_d: "The extension is 100% free. If it helps you, you can buy me a coffee.",
       wlc_priv: "No analytics, no accounts, no servers. All audio is processed locally in your browser.",
       wlc_settings: "Settings",
+      wlc_bug_h: "Bug or idea?",
+      wlc_bug_d: "This extension is young and updated often. Found a bug or have an idea? Go to Settings, to the Report a bug or share an idea section. We read every message.",
     },
   };
 

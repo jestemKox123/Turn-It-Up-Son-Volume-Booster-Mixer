@@ -1,22 +1,10 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-const optToggle = document.getElementById("optToggle");
-const optTab = document.getElementById("optTab");
 const savedEl = document.getElementById("saved");
-const radios = document.querySelectorAll('input[name="mode"]');
 
 const HAS_STORAGE = typeof chrome !== "undefined" && !!(chrome.storage && chrome.storage.local);
 const HAS_PERMISSIONS = typeof chrome !== "undefined" && !!chrome.permissions;
-
-function paint(mode) {
-  if (!optToggle || !optTab) return;
-  optToggle.classList.toggle("sel", mode === "toggle");
-  optTab.classList.toggle("sel", mode === "closeTab");
-  radios.forEach((r) => {
-    r.checked = r.value === mode;
-  });
-}
 
 function flashSaved() {
   savedEl.textContent = VBI18N.t("saved");
@@ -30,12 +18,6 @@ if (langSelect && HAS_STORAGE) {
   });
   langSelect.addEventListener("change", () => {
     VBI18N.setLang(langSelect.value);
-  });
-}
-
-if (HAS_STORAGE) {
-  chrome.storage.local.get("disableMode", (data) => {
-    paint(data.disableMode === "closeTab" ? "closeTab" : "toggle");
   });
 }
 
@@ -59,18 +41,6 @@ if (defBassSelect && HAS_STORAGE) {
   });
 }
 
-radios.forEach((r) => {
-  r.addEventListener("change", () => {
-    if (!r.checked) return;
-    const mode = r.value;
-    paint(mode);
-    chrome.runtime.sendMessage({ type: "vb-set-mode", mode }, () => {
-      void chrome.runtime.lastError;
-      flashSaved();
-    });
-  });
-});
-
 const mark3d = document.getElementById("mark3d");
 if (mark3d) {
   let markRaf = null;
@@ -87,6 +57,8 @@ if (mark3d) {
   }, { passive: true });
   updateMark();
 }
+
+
 
 const themeRow = document.getElementById("themeRow");
 const themeSaved = document.getElementById("themeSaved");
@@ -118,6 +90,124 @@ if (themeRow && HAS_STORAGE && window.VBTHEME) {
         });
         themeRow.appendChild(b);
       });
+    });
+  });
+}
+
+const glowToggle = document.getElementById("glowToggle");
+const glowStrength = document.getElementById("glowStrength");
+const glowStrengthRow = document.getElementById("glowStrengthRow");
+const glowSaved = document.getElementById("glowSaved");
+const glowVal = document.getElementById("glowVal");
+const glowSwatches = document.getElementById("glowSwatches");
+const glowColorRow = document.getElementById("glowColorRow");
+
+if (glowToggle && glowStrength && HAS_STORAGE) {
+  const flashGlow = () => {
+    if (!glowSaved) return;
+    glowSaved.textContent = VBI18N.t("saved");
+    setTimeout(() => (glowSaved.textContent = ""), 1400);
+  };
+  const syncRowState = (on) => {
+    if (glowStrengthRow) glowStrengthRow.classList.toggle("off", !on);
+    if (glowColorRow) glowColorRow.classList.toggle("off", !on);
+  };
+  chrome.storage.local.get(["vbGlowOn", "vbGlowStrength", "vbGlowColor"], (d) => {
+    const on = d.vbGlowOn !== false;
+    const s = typeof d.vbGlowStrength === "number" ? d.vbGlowStrength : 13;
+    glowToggle.checked = on;
+    glowStrength.value = String(s);
+    if (glowVal) glowVal.textContent = String(s);
+    syncRowState(on);
+  });
+
+  const markGlowSel = (key) => {
+    if (!glowSwatches) return;
+    glowSwatches.querySelectorAll(".th-btn").forEach((x) => {
+      x.classList.toggle("sel", x.dataset.glow === key);
+    });
+  };
+
+  if (glowSwatches && window.VBTHEME) {
+    VBI18N.ready(() => {
+      chrome.storage.local.get("vbGlowColor", (d) => {
+        const current = VBTHEME.glowKey(d.vbGlowColor);
+        glowSwatches.innerHTML = "";
+        Object.keys(VBTHEME.GLOWS).forEach((key) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "th-btn" + (key === current ? " sel" : "");
+          b.dataset.glow = key;
+          const dot = document.createElement("span");
+          dot.className = "th-dot";
+          dot.style.background =
+            key === "theme"
+              ? "linear-gradient(135deg, var(--accent), var(--accent-2))"
+              : VBTHEME.GLOWS[key];
+          const lab = document.createElement("span");
+          lab.textContent = VBI18N.t("glow_c_" + key);
+          b.appendChild(dot);
+          b.appendChild(lab);
+          b.addEventListener("click", () => {
+            chrome.storage.local.set({ vbGlowColor: key }, () => {
+              void chrome.runtime.lastError;
+              markGlowSel(key);
+              flashGlow();
+            });
+          });
+          glowSwatches.appendChild(b);
+        });
+      });
+    });
+  }
+  glowToggle.addEventListener("change", () => {
+    chrome.storage.local.set({ vbGlowOn: glowToggle.checked }, () => {
+      syncRowState(glowToggle.checked);
+      flashGlow();
+    });
+  });
+  let glowSaveTimer = null;
+  const saveGlow = () => {
+    clearTimeout(glowSaveTimer);
+    chrome.storage.local.set({ vbGlowStrength: Number(glowStrength.value) }, () => {
+      void chrome.runtime.lastError;
+      flashGlow();
+    });
+  };
+  glowStrength.addEventListener("input", () => {
+    if (glowVal) glowVal.textContent = glowStrength.value;
+    clearTimeout(glowSaveTimer);
+    glowSaveTimer = setTimeout(saveGlow, 220);
+  });
+  glowStrength.addEventListener("change", saveGlow);
+}
+
+const lookReset = document.getElementById("lookReset");
+const lookResetSaved = document.getElementById("lookResetSaved");
+if (lookReset && HAS_STORAGE) {
+  lookReset.addEventListener("click", () => {
+    chrome.storage.local.set({ vbTheme: "neon", vbGlowOn: true, vbGlowStrength: 13, vbGlowColor: "theme" }, () => {
+      if (window.VBTHEME) {
+        VBTHEME.applyTheme("neon");
+        VBTHEME.applyGlow({ vbGlowOn: true, vbGlowStrength: 13, vbGlowColor: "theme" });
+      }
+      if (glowToggle) glowToggle.checked = true;
+      if (glowStrength) glowStrength.value = "13";
+      if (glowVal) glowVal.textContent = "13";
+      if (glowSwatches) {
+        glowSwatches.querySelectorAll(".th-btn").forEach((x) => x.classList.toggle("sel", x.dataset.glow === "theme"));
+      }
+      if (glowStrengthRow) glowStrengthRow.classList.remove("off");
+      if (glowColorRow) glowColorRow.classList.remove("off");
+      const row = document.getElementById("themeRow");
+      if (row) {
+        const btns = row.querySelectorAll(".th-btn");
+        btns.forEach((x, i) => x.classList.toggle("sel", i === 0));
+      }
+      if (lookResetSaved) {
+        lookResetSaved.textContent = VBI18N.t("saved");
+        setTimeout(() => (lookResetSaved.textContent = ""), 1400);
+      }
     });
   });
 }
@@ -174,7 +264,7 @@ if (presetNamesWrap && HAS_STORAGE) {
   });
 }
 
-const YT_ACCESS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*"] };
+const YT_ACCESS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"] };
 const accessList = document.getElementById("accessList");
 const grantYt = document.getElementById("grantYt");
 const revokeAll = document.getElementById("revokeAll");
@@ -277,11 +367,6 @@ if (supportTop) {
   supportTop.addEventListener("click", () => openUrl(DONATE_URL));
 }
 
-const bmcFloat = document.getElementById("bmcFloat");
-if (bmcFloat) {
-  bmcFloat.addEventListener("click", () => openUrl(DONATE_URL));
-}
-
 const GITHUB_URL = "https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer";
 const githubPill = document.getElementById("githubPill");
 if (githubPill) {
@@ -346,11 +431,46 @@ if (wipeBtn && HAS_STORAGE) {
   });
 }
 
+const clList = document.getElementById("clList");
+const clFull = document.getElementById("clFull");
+if (clList && window.VBCHANGELOG) {
+  VBI18N.ready(() => {
+    clList.innerHTML = "";
+    VBCHANGELOG.list.slice(0, VBCHANGELOG.max).forEach((ver) => {
+      const txt = VBI18N.t(VBCHANGELOG.key(ver));
+      if (!txt) return;
+      const card = document.createElement("div");
+      card.className = "card clcard";
+      const wrap = document.createElement("div");
+      wrap.className = "featl";
+      const t = document.createElement("div");
+      t.className = "t";
+      t.textContent = ver;
+      const d = document.createElement("div");
+      d.className = "d";
+      d.textContent = txt;
+      wrap.appendChild(t);
+      wrap.appendChild(d);
+      card.appendChild(wrap);
+      clList.appendChild(card);
+    });
+  });
+}
+if (clFull && window.VBCHANGELOG) {
+  clFull.addEventListener("click", () => openUrl(VBCHANGELOG.url));
+}
+
 const tabButtons = document.querySelectorAll(".tab");
 const tabPanes = document.querySelectorAll(".tabpane");
+let markSmoothT = null;
 function showPane(name) {
   tabButtons.forEach((b) => b.classList.toggle("on", b.dataset.pane === name));
   tabPanes.forEach((p) => p.classList.toggle("on", p.dataset.pane === name));
+  if (mark3d) {
+    mark3d.classList.add("mk-smooth");
+    clearTimeout(markSmoothT);
+    markSmoothT = setTimeout(() => mark3d.classList.remove("mk-smooth"), 600);
+  }
   window.scrollTo(0, 0);
 }
 tabButtons.forEach((b) => b.addEventListener("click", () => showPane(b.dataset.pane)));

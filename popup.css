@@ -2,14 +2,15 @@
    All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). */
 
 :root {
-  --bg: #05060b;
+  color-scheme: dark;
+  --bg: #060606;
   --card: rgba(255, 255, 255, 0.04);
   --card-2: rgba(255, 255, 255, 0.08);
   --text: #ffffff;
   --muted: rgba(255, 255, 255, 0.60);
   --border: rgba(255, 255, 255, 0.10);
-  --accent: #6e56ff;
-  --accent-2: #3ddcff;
+  --accent: #3d8bff;
+  --accent-2: #7fb2ff;
   --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
   --ok: #45e0a0;
   --ok-soft: rgba(69, 224, 160, 0.12);
@@ -26,16 +27,17 @@
   display: none !important;
 }
 
+html {
+  background: var(--bg);
+}
+
 body {
   width: 300px;
   margin: 0;
   padding: 10px 16px 12px;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(260px 150px at 88% -50px, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
-    radial-gradient(220px 130px at -10% 105%, color-mix(in srgb, var(--accent-2) 9%, transparent), transparent 70%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .head {
@@ -54,7 +56,6 @@ body {
 .brand-icon {
   width: 20px;
   height: 20px;
-  border-radius: 6px;
   display: block;
 }
 
@@ -175,7 +176,7 @@ body {
   letter-spacing: -1px;
   line-height: 1;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, #ffffff, var(--accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -973,18 +974,19 @@ input[type="range"]:disabled {
 .footer-row button {
   flex: 1;
   padding: 7px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 9px;
   background: var(--bg);
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
 }
 
 .footer-row button:hover {
-  background: var(--card);
+  background: rgba(255, 255, 255, 0.13);
   color: var(--text);
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .settings-btn:hover {
@@ -1080,10 +1082,17 @@ input[type="range"]:disabled {
 }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(340px 210px at 88% -70px, color-mix(in srgb, var(--accent) 30%, transparent), transparent 72%),
-    radial-gradient(300px 190px at -25% 112%, color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 72%),
-    linear-gradient(180deg, #0d101d 0%, #080a13 100%);
+  background: #060606;
+  position: relative;
+  z-index: 0;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(140% 130% at 50% 46%, var(--glow-tint, color-mix(in srgb, var(--accent) 13%, transparent)), transparent 95%);
 }
 .brand-name {
   background: linear-gradient(100deg, #fff 45%, color-mix(in srgb, var(--accent-2) 85%, #fff));
@@ -1097,9 +1106,9 @@ body {
 }
 .volume-block {
   border-radius: 18px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.04));
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.022));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding: 12px 14px;
 }
 .volume-readout {
@@ -1119,8 +1128,8 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .mix-open {
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 .mixp {
   border-radius: 10px;
@@ -1131,7 +1140,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .footer-row button {
   border-radius: 12px;
-  background: var(--card);
+  background: rgba(255, 255, 255, 0.07);
 }
 body {
   padding: 8px 16px 10px;
