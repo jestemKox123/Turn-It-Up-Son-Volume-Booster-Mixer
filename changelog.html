@@ -5,165 +5,229 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Turn It Up, Son! - Changelog</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff5447'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Changelog - Turn It Up, Son!</title>
+<meta name="description" content="Full version history of the Turn It Up, Son! volume booster and mixer extension for Chrome. Everything added, changed and fixed in every release.">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="type.css">
+<link rel="stylesheet" href="base.css">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    color-scheme:dark;
-    --bg:#050505;
-    --panel:#0e0e10;
-    --line:rgba(255,255,255,.09);
-    --text:#fbdbd7;
-    --muted:#e5bdb8;
-    --dim:rgba(229,189,184,.5);
-    --red:#ff5447;
-    --ok:#45e0a0;
-    --blue:#64d6e5;
-    --fdisp:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    --fbody:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  .rel{padding:30px 0 8px;position:relative}
+  .rel-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+  .rel-v{
+    font-family:var(--disp);font-weight:800;font-size:var(--head-m);
+    line-height:1;letter-spacing:-.05em;color:var(--ink);
   }
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--fbody);
-    -webkit-font-smoothing:antialiased;
-    line-height:1.6;
-    min-height:100svh;
-    display:flex;flex-direction:column;align-items:center;
-    padding:72px 24px 40px;
-    overflow-x:hidden;
-  }
-  a{color:inherit}
-  ::selection{background:rgba(255,69,58,.35)}
+  .rel-latest{font-family:var(--hand);font-size:var(--hand-m);color:var(--red);transform:rotate(-3deg)}
+  .rel-note{font-size:var(--text-m);color:var(--soft)}
+  .rel-v-swoosh{display:block;width:min(100%,240px);height:20px;overflow:visible;margin:-6px 0 18px}
+  .rel-v-swoosh path{fill:none;stroke:var(--red);stroke-width:6;stroke-linecap:round}
 
-  .orb{
-    position:fixed;left:50%;top:12%;transform:translate(-50%,-50%);
-    width:min(60vmin,520px);height:min(60vmin,520px);border-radius:50%;
-    background:radial-gradient(circle at 50% 50%,rgba(255,69,58,.14),rgba(255,45,85,.05) 45%,transparent 70%);
-    filter:blur(38px);
-    pointer-events:none;z-index:-1;
+  .log{list-style:none;max-width:840px}
+  .log li{display:flex;gap:14px;align-items:flex-start;padding:7px 0;font-size:var(--text-m);color:var(--ink3)}
+  .log .tag{
+    flex:0 0 74px;font-family:var(--disp);font-weight:800;font-size:var(--text-s);
+    letter-spacing:.09em;text-transform:uppercase;padding-top:4px;
+  }
+  .log .t-add{color:var(--green)}
+  .log .t-chg{color:var(--blue)}
+  .log .t-fix{color:var(--red)}
+  .log .tag span{position:relative}
+  .log .tag span::after{
+    content:"";position:absolute;left:0;right:0;bottom:-3px;height:2.4px;
+    background:currentColor;opacity:.42;border-radius:2px;
   }
 
-  .wrap{max-width:720px;width:100%}
-  .eyebrow{
-    font-family:var(--fdisp);
-    font-size:12.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;
-    color:#ffb4aa;margin-bottom:16px;text-align:center;
-  }
-  h1{font-family:var(--fdisp);font-weight:800;font-size:clamp(30px,6vw,44px);letter-spacing:-.035em;line-height:1.1;margin-bottom:10px;text-align:center}
-  .sub{color:var(--muted);font-size:14.5px;text-align:center;margin-bottom:40px}
-
-  .rel{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:18px;
-    padding:22px 26px;
-    margin-bottom:14px;
-  }
-  .rel-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-  .rel-v{font-family:var(--fdisp);font-weight:800;font-size:21px;letter-spacing:-.02em}
-  .rel-badge{
-    font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--ok);border:1px solid rgba(69,224,160,.35);
-    background:rgba(69,224,160,.08);
-    border-radius:999px;padding:3px 10px;
-  }
-  ul{list-style:none}
-  li{display:flex;gap:10px;font-size:14px;color:var(--muted);margin-bottom:9px;align-items:baseline}
-  li:last-child{margin-bottom:0}
-  .tag{
-    flex:0 0 auto;
-    font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-    border-radius:999px;padding:2px 9px;min-width:74px;text-align:center;
-  }
-  .t-add{color:var(--ok);background:rgba(69,224,160,.10);border:1px solid rgba(69,224,160,.28)}
-  .t-fix{color:#ffb4aa;background:rgba(255,84,71,.10);border:1px solid rgba(255,84,71,.28)}
-  .t-chg{color:var(--blue);background:rgba(100,214,229,.10);border:1px solid rgba(100,214,229,.28)}
-
-  .back{
-    display:inline-flex;align-items:center;gap:8px;
-    margin-top:26px;
-    font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;
-    border:1px solid var(--line);border-radius:999px;padding:9px 16px;
-    transition:border-color .15s ease,color .15s ease;
-  }
-  .back:hover{border-color:var(--red);color:var(--text)}
-
-  footer{margin-top:44px;font-size:12px;color:var(--dim);text-align:center}
-  footer a{color:var(--muted);text-decoration:none}
+  .legend{display:flex;gap:24px;flex-wrap:wrap;margin-top:26px;font-size:var(--text-s);color:var(--soft)}
+  .legend b{font-family:var(--disp);font-weight:800;font-size:var(--text-s);letter-spacing:.09em;text-transform:uppercase}
+  .legend .t-add{color:var(--green)}
+  .legend .t-chg{color:var(--blue)}
+  .legend .t-fix{color:var(--red)}
 </style>
 </head>
 <body>
-  <div class="orb" aria-hidden="true"></div>
 
-  <div class="wrap">
-    <p class="eyebrow">Turn It Up, Son!</p>
-    <h1>Changelog</h1>
-    <p class="sub">Full version history of the Volume Booster &amp; Mixer extension.</p>
+<svg class="defs" aria-hidden="true">
+  <filter id="b0" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b1" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b2" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
 
-    <div class="rel">
-      <div class="rel-head">
-        <span class="rel-v">4.4.0</span>
-        <span class="rel-badge">Latest</span>
-      </div>
-      <ul>
-        <li><span class="tag t-add">Added</span><span>Background glow with its own color palette, separate from the extension color.</span></li>
-        <li><span class="tag t-add">Added</span><span>Glow strength slider and a button to restore the default look.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>New extension icon.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Refreshed popup look, black background with an azure accent.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>More visible Reset and Settings buttons at the bottom of the popup.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Removed a duplicate color theme, 7 left.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>The About section is now called Features.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Removed the floating support button in settings.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>The changelog shows the 3 latest versions, full history is on this page.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>The background no longer shifts when the Mix panel opens.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>The glow strength slider now saves every time.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>The icon corners are no longer clipped.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>The scrolling text in settings no longer has a gap.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>The background text in settings no longer jumps when you switch tabs.</span></li>
-      </ul>
+<div class="paper" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="index.html"><img src="img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
+    <div class="nav-links">
+      <a class="hide-m" href="index.html">Home</a>
+      <a class="hide-m" href="blog/index.html">Blog</a>
+      <a class="hide-m" href="privacy.html">Privacy</a>
     </div>
-
-    <div class="rel">
-      <div class="rel-head">
-        <span class="rel-v">4.3.1</span>
-      </div>
-      <ul>
-        <li><span class="tag t-fix">Fixed</span><span>Tempo (Sped Up etc.) no longer gets lost when the song changes.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>Tempo repairs itself when YouTube plays at normal speed despite an active mix.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>Presets no longer wipe your bass boost, and Reset clears everything to zero.</span></li>
-        <li><span class="tag t-fix">Fixed</span><span>Turning a tab off in the list also stops the tempo, turning it back on restores it.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Gentler bass boost, music no longer goes quiet on bass hits.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Smooth engine on and off, no popping sound.</span></li>
-        <li><span class="tag t-add">Added</span><span>A button to clear the whole auto-skip list.</span></li>
-      </ul>
+    <div class="nav-right">
+      <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
     </div>
-
-    <div class="rel">
-      <div class="rel-head">
-        <span class="rel-v">4.3.0</span>
-      </div>
-      <ul>
-        <li><span class="tag t-add">Added</span><span>Auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud.</span></li>
-        <li><span class="tag t-add">Added</span><span>Skip specific tracks (one click in the popup or by pasting a link).</span></li>
-        <li><span class="tag t-add">Added</span><span>2 new extension colors (Fire, Magenta).</span></li>
-        <li><span class="tag t-add">Added</span><span>Clear all extension data with one button.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>Refreshed glass look for the popup.</span></li>
-        <li><span class="tag t-chg">Changed</span><span>More distinct bass flavors and a stronger Vocal slider.</span></li>
-      </ul>
-    </div>
-
-    <a class="back" href="./">&larr; Back to the extension page</a>
-
-    <footer>
-      Turn It Up, Son! &copy; 2026 romanzbudowy &middot;
-      <a href="privacy.html">Privacy Policy</a> &middot;
-      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer">GitHub</a>
-    </footer>
   </div>
+</nav>
+
+<div class="wrap page-head">
+  <div class="head-art" aria-hidden="true">
+    <svg viewBox="0 0 190 150"><g class="boil">
+      <path class="fill-p" d="M40 22 L142 22 L142 132 L40 132 Z"/>
+      <path class="ln" d="M56 50 L126 50 M56 70 L126 70 M56 90 L108 90 M56 110 L118 110"/>
+      <path class="ln" d="M70 12 L70 32 M112 12 L112 32"/>
+      <path class="ln" d="M158 62 L158 82 M148 72 L168 72 M151 65 L165 79 M165 65 L151 79"/>
+      <path class="ln" d="M16 104 C 16 92, 32 88, 37 97 C 43 86, 54 89, 54 100"/>
+    </g></svg>
+  </div>
+
+  <div class="eyebrow" data-en="what changed and when" data-pl="co się zmieniło i kiedy">what changed and when</div>
+  <h1 data-en="Changelog" data-pl="Lista zmian">Changelog</h1>
+  <p class="page-sub" data-en="Full version history of the Volume Booster &amp; Mixer extension. Every release, everything added, changed and fixed." data-pl="Pełna historia wersji wtyczki Volume Booster &amp; Mixer. Każde wydanie, wszystko co dodane, zmienione i naprawione.">Full version history of the <b>Volume Booster &amp; Mixer</b> extension. Every release, everything added, changed and fixed.</p>
+  <div class="legend">
+    <span><b class="t-add" data-en="Added" data-pl="Dodano">Added</b> <span data-en="something new" data-pl="coś nowego">something new</span></span>
+    <span><b class="t-chg" data-en="Changed" data-pl="Zmieniono">Changed</b> <span data-en="something works differently" data-pl="coś działa inaczej">something works differently</span></span>
+    <span><b class="t-fix" data-en="Fixed" data-pl="Naprawiono">Fixed</b> <span data-en="something was broken" data-pl="coś było zepsute">something was broken</span></span>
+  </div>
+  <div class="langs">
+    <button type="button" class="lang on" id="langEn">English</button>
+    <button type="button" class="lang" id="langPl">Polski</button>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-v">4.5.0</span>
+      <span class="rel-latest" data-en="latest" data-pl="najnowsza">latest</span>
+    </div>
+    <svg class="rel-v-swoosh boil" viewBox="0 0 240 20"><path d="M5 13 C 62 4, 126 19, 235 7"/></svg>
+    <ul class="log">
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a limiter that keeps the sound from distorting on heavy boost" data-pl="limiter, który pilnuje, żeby dźwięk nie przesterował przy mocnym podbiciu">a limiter that keeps the sound from distorting on heavy boost</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="its own limiter card in settings: volume ceiling, bass ceiling and maximum reduction" data-pl="własna karta limitera w ustawieniach: sufit głośności, sufit basu i maksymalne dociskanie">its own limiter card in settings: volume ceiling, bass ceiling and maximum reduction</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a live reduction meter showing how hard the limiter is working right now" data-pl="miernik redukcji na żywo, widać ile limiter dociska w tej chwili">a live reduction meter showing how hard the limiter is working right now</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a button to restore the default limiter settings" data-pl="przycisk przywracania domyślnych ustawień limitera">a button to restore the default limiter settings</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="limiter character buttons, Clean, Mid and Loud, one click sets how much the limiter may take" data-pl="przyciski charakteru limitera, Czysto, Średnio i Głośno, jednym kliknięciem ustawiasz, ile limiter ma prawo zabrać">limiter character buttons, Clean, Mid and Loud, one click sets how much the limiter may take</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a voice lift switch in settings, the same phase trick radio stations use on speech" data-pl="przełącznik podbicia głosu w ustawieniach, ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie">a voice lift switch in settings, the same phase trick radio stations use on speech</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a new version notice in the popup, clicking it opens the changelog" data-pl="powiadomienie o nowej wersji w okienku, kliknięcie otwiera listę zmian">a new version notice in the popup, clicking it opens the changelog</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="fullscreen now works while the boost is on, the extension switches the browser window itself and puts it back on exit" data-pl="pełny ekran działa przy włączonym podgłośnieniu, wtyczka sama przełącza okno przeglądarki i przywraca je po wyjściu">fullscreen now works while the boost is on, the extension switches the browser window itself and puts it back on exit</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="at 100% with effects off the sound is now exactly the same as without the extension, the highs used to be slightly dulled" data-pl="przy 100% i wyłączonych efektach dźwięk jest dokładnie taki sam jak bez wtyczki, wcześniej lekko przygasały wysokie tony">at 100% with effects off the sound is now exactly the same as without the extension, the highs used to be slightly dulled</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="fewer clicks in the headphones when the boost is switched on and off" data-pl="mniej trzasków w słuchawkach przy włączaniu i wyłączaniu podgłośnienia">fewer clicks in the headphones when the boost is switched on and off</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="switching the bass flavor while the sound is playing no longer clicks" data-pl="zmiana charakteru basu w trakcie grania nie strzela już trzaskiem">switching the bass flavor while the sound is playing no longer clicks</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="new extension icon" data-pl="nowa ikona wtyczki">new extension icon</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="cleaner sound at high boost, less grit on the peaks" data-pl="czystszy dźwięk przy wysokim podbiciu, mniej brudu na szczytach">cleaner sound at high boost, less grit on the peaks</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="rebuilt 8D, the sound circles more naturally and no longer dips mid rotation" data-pl="przebudowane 8D, dźwięk krąży naturalniej i nie przygasa w połowie obrotu">rebuilt 8D, the sound circles more naturally and no longer dips mid rotation</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="stronger and cleaner bass" data-pl="mocniejszy i czystszy bas">stronger and cleaner bass</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="the store name and summary now come in 44 languages instead of 19" data-pl="nazwa i opis w sklepie w 44 językach zamiast 19">the store name and summary now come in 44 languages instead of 19</span></li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-v">4.4.0</span>
+    </div>
+    <svg class="rel-v-swoosh boil" viewBox="0 0 240 20"><path d="M5 13 C 62 4, 126 19, 235 7"/></svg>
+    <ul class="log">
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="background glow with its own color palette, separate from the extension color" data-pl="poświata w tle z własną paletą kolorów, niezależną od koloru wtyczki">background glow with its own color palette, separate from the extension color</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="glow strength slider and a button to restore the default look" data-pl="suwak siły poświaty i przycisk przywracania domyślnego wyglądu">glow strength slider and a button to restore the default look</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="new extension icon" data-pl="nowa ikona wtyczki">new extension icon</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="refreshed popup look, black background with an azure accent" data-pl="odświeżony wygląd okienka, czarne tło z lazurowym akcentem">refreshed popup look, black background with an azure accent</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="more visible Reset and Settings buttons at the bottom of the popup" data-pl="wyraźniejsze przyciski Reset i Ustawienia na dole okienka">more visible Reset and Settings buttons at the bottom of the popup</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="removed a duplicate color theme, 7 left" data-pl="usunięty powtarzający się motyw kolorów, zostało ich 7">removed a duplicate color theme, 7 left</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="the About section is now called Features" data-pl="sekcja O wtyczce nazywa się teraz Funkcje">the About section is now called Features</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="removed the floating support button in settings" data-pl="usunięty pływający przycisk wsparcia w ustawieniach">removed the floating support button in settings</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="the changelog shows the 3 latest versions, full history is on the website" data-pl="lista zmian pokazuje 3 ostatnie wersje, pełna historia jest na stronie">the changelog shows the 3 latest versions, full history is on the website</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="the background no longer shifts when the Mix panel opens" data-pl="tło nie rozjeżdża się już przy otwieraniu panelu Mix">the background no longer shifts when the Mix panel opens</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="the glow strength slider now saves every time" data-pl="suwak siły poświaty zapisuje się za każdym razem">the glow strength slider now saves every time</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="the icon corners are no longer clipped" data-pl="ikona nie ma już obciętych rogów">the icon corners are no longer clipped</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="the scrolling text in settings no longer has a gap" data-pl="przewijany napis w ustawieniach nie ma już przerwy">the scrolling text in settings no longer has a gap</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="the background text in settings no longer jumps when you switch tabs" data-pl="napis w tle ustawień nie przeskakuje przy zmianie zakładki">the background text in settings no longer jumps when you switch tabs</span></li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-v">4.3.1</span>
+    </div>
+    <svg class="rel-v-swoosh boil" viewBox="0 0 240 20"><path d="M5 13 C 62 4, 126 19, 235 7"/></svg>
+    <ul class="log">
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="tempo (Sped Up etc.) no longer gets lost when the song changes" data-pl="tempo (Sped Up itp.) nie gubi się już przy zmianie piosenki">tempo (Sped Up etc.) no longer gets lost when the song changes</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="tempo repairs itself when YouTube plays at normal speed despite an active mix" data-pl="tempo naprawia się samo, kiedy YouTube gra normalnie mimo włączonego mixu">tempo repairs itself when YouTube plays at normal speed despite an active mix</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="presets no longer wipe your bass boost, and Reset clears everything to zero" data-pl="presety nie kasują twojego bass boosta, a Reset czyści wszystko do zera">presets no longer wipe your bass boost, and Reset clears everything to zero</span></li>
+      <li><span class="tag t-fix"><span data-en="Fixed" data-pl="Naprawiono">Fixed</span></span><span data-en="turning a tab off in the list also stops the tempo, turning it back on restores it" data-pl="wyłączenie karty na liście wyłącza też tempo, a włączenie je przywraca">turning a tab off in the list also stops the tempo, turning it back on restores it</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="gentler bass boost, music no longer goes quiet on bass hits" data-pl="łagodniejszy bass boost, muzyka nie cichnie przy uderzeniach basu">gentler bass boost, music no longer goes quiet on bass hits</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="smooth engine on and off, no popping sound" data-pl="płynne włączanie i wyłączanie wzmocnienia, bez trzasku">smooth engine on and off, no popping sound</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="a button to clear the whole auto-skip list" data-pl="przycisk czyszczenia całej listy auto-pomijania">a button to clear the whole auto-skip list</span></li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-v">4.3.0</span>
+    </div>
+    <svg class="rel-v-swoosh boil" viewBox="0 0 240 20"><path d="M5 13 C 62 4, 126 19, 235 7"/></svg>
+    <ul class="log">
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud" data-pl="auto-pomijanie artystów na YouTube, YouTube Music, Spotify i SoundCloud">auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="skip specific tracks (one click in the popup or by pasting a link)" data-pl="pomijanie konkretnych utworów (jednym kliknięciem w okienku albo po wklejeniu linka)">skip specific tracks (one click in the popup or by pasting a link)</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="2 new extension colors (Fire, Magenta)" data-pl="2 nowe kolory wtyczki (Ogień, Magenta)">2 new extension colors (Fire, Magenta)</span></li>
+      <li><span class="tag t-add"><span data-en="Added" data-pl="Dodano">Added</span></span><span data-en="clear all extension data with one button" data-pl="czyszczenie wszystkich danych wtyczki jednym przyciskiem">clear all extension data with one button</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="refreshed glass look for the popup" data-pl="odświeżony, szklany wygląd okienka">refreshed glass look for the popup</span></li>
+      <li><span class="tag t-chg"><span data-en="Changed" data-pl="Zmieniono">Changed</span></span><span data-en="more distinct bass flavors and a stronger Vocal slider" data-pl="wyraźniejsze charaktery basu i mocniejszy suwak Wokal">more distinct bass flavors and a stronger Vocal slider</span></li>
+    </ul>
+  </div>
+
+</main>
+
+<div class="closing" aria-hidden="true">
+  <svg viewBox="0 0 1400 190" preserveAspectRatio="xMidYMax meet"><g class="boil">
+    <path class="ln" d="M-420 148 C -180 140, 20 154, 240 146 C 460 138, 640 154, 860 145 C 1060 137, 1240 152, 1440 144 C 1620 139, 1740 148, 1860 143"/>
+    <path class="ln" d="M-380 168 C -140 162, 80 176, 320 166 C 580 156, 820 174, 1080 164 C 1300 156, 1520 168, 1860 160" style="opacity:.5"/>
+    <g class="ln">
+      <path d="M320 148 L320 118"/>
+      <path d="M320 120 C 292 118, 290 94, 308 91 C 310 74, 338 74, 341 90 C 359 93, 355 118, 320 120"/>
+    </g>
+    <g class="ln" style="opacity:.6">
+      <path d="M760 148 L760 124"/>
+      <path d="M760 126 C 738 124, 736 104, 751 101 C 753 87, 776 87, 779 100 C 794 103, 791 124, 760 126"/>
+    </g>
+    <g class="ln">
+      <path d="M1080 148 L1080 118"/>
+      <path d="M1080 120 C 1052 118, 1050 94, 1068 91 C 1070 74, 1098 74, 1101 90 C 1119 93, 1115 118, 1080 120"/>
+    </g>
+    <g class="ln" style="opacity:.5">
+      <path d="M540 148 L536 134 M546 148 L548 132 M552 148 L556 135"/>
+      <path d="M960 146 L956 132 M966 146 L968 130 M972 146 L976 133"/>
+    </g>
+  </g></svg>
+</div>
+
+<footer>
+  <div class="foot-in">
+    <span>© 2026 romanzbudowy · Turn It Up, Son!</span>
+    <div class="foot-links">
+      <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Chrome Web Store</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      <a href="blog/index.html">Blog</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="index.html">Home</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const langEn = document.getElementById("langEn");
+  const langPl = document.getElementById("langPl");
+  function applyLang(l) {
+    document.querySelectorAll("[data-en]").forEach((el) => {
+      const v = el.getAttribute(l === "pl" ? "data-pl" : "data-en");
+      if (v) el.textContent = v;
+    });
+    document.documentElement.lang = l;
+    langEn.classList.toggle("on", l === "en");
+    langPl.classList.toggle("on", l === "pl");
+  }
+  langEn.addEventListener("click", () => applyLang("en"));
+  langPl.addEventListener("click", () => applyLang("pl"));
+</script>
 </body>
 </html>

@@ -2,17 +2,37 @@ Turn It Up, Son! Volume Booster & Mixer
 Copyright (c) 2026 romanzbudowy. All rights reserved.
 
 This software and its source code are proprietary. Permission is granted to
-install and use this extension in a web browser for personal purposes only.
+install and use this extension in a web browser for your own use, whether
+private or at work.
+
+Access to the source code, where it is made publicly available, does not
+grant any right to copy, modify, redistribute or otherwise use it beyond
+the rights expressly granted by this license.
 
 Without prior written permission from the copyright holder, you may NOT:
  - copy, modify, or create derivative works of this software,
- - redistribute, republish, or resell this software or any part of it,
+ - redistribute, republish, resell or otherwise distribute this software or
+   any part of it, whether free of charge or for a fee,
  - publish this software or a modified version of it in any extension store
-   or software repository under any name.
+   or software repository under any name,
+ - bundle this software with any product or service, or charge any fee for
+   providing access to it,
+ - reverse engineer, decompile, disassemble or otherwise attempt to derive
+   the source code of this software, except to the extent that such a
+   restriction is prohibited by applicable law.
 
 This software is provided "as is", without warranty of any kind, express or
-implied. In no event shall the author be liable for any claim, damages or
-other liability arising from the use of this software.
+implied, including but not limited to the implied warranties of
+merchantability, fitness for a particular purpose and non-infringement. To
+the maximum extent permitted by applicable law, in no event shall the author
+be liable for any direct, indirect, incidental, special, exemplary or
+consequential damages, or for any claim or other liability, arising from or
+in connection with the use of or inability to use this software.
+
+If any provision of this license is held to be invalid or unenforceable
+under applicable law, that provision shall apply to the greatest extent
+permitted by that law, and all remaining provisions shall stay in full
+force and effect.
 
 Author: romanzbudowy
 
@@ -21,26 +41,48 @@ Author: romanzbudowy
 WERSJA POLSKA
 
 Turn It Up, Son! Volume Booster & Mixer
-Copyright (c) 2026 romanzbudowy. Wszelkie prawa zastrzezone.
+Copyright (c) 2026 romanzbudowy. Wszelkie prawa zastrzeżone.
 
-To oprogramowanie i jego kod zrodlowy sa wlasnoscia autora. Zezwala sie na
-instalacje i uzywanie tego rozszerzenia w przegladarce internetowej wylacznie
-do celow osobistych.
+To oprogramowanie i jego kod źródłowy są własnością autora. Zezwala się na
+instalację i używanie tego rozszerzenia w przeglądarce internetowej na
+własny użytek, prywatny lub w pracy.
 
-Bez wczesniejszej pisemnej zgody wlasciciela praw autorskich NIE wolno:
- - kopiowac, modyfikowac ani tworzyc dziel pochodnych tego oprogramowania,
- - rozpowszechniac, publikowac ponownie ani odsprzedawac tego oprogramowania
-   ani zadnej jego czesci,
- - publikowac tego oprogramowania ani jego zmodyfikowanej wersji w zadnym
-   sklepie z rozszerzeniami ani repozytorium oprogramowania pod zadna nazwa.
+Udostępnienie kodu źródłowego do wglądu, tam gdzie jest on publicznie
+dostępny, nie oznacza udzielenia zgody na jego kopiowanie, modyfikowanie,
+rozpowszechnianie ani jakiekolwiek inne wykorzystanie wykraczające poza
+prawa wyraźnie przyznane w niniejszej licencji.
+
+Bez wcześniejszej pisemnej zgody właściciela praw autorskich NIE wolno:
+ - kopiować, modyfikować ani tworzyć dzieł pochodnych tego oprogramowania,
+ - rozpowszechniać, publikować ponownie, odsprzedawać ani w inny sposób
+   udostępniać tego oprogramowania ani żadnej jego części, odpłatnie lub
+   nieodpłatnie,
+ - publikować tego oprogramowania ani jego zmodyfikowanej wersji w żadnym
+   sklepie z rozszerzeniami ani repozytorium oprogramowania pod żadną nazwą,
+ - dołączać tego oprogramowania do innego produktu lub usługi ani pobierać
+   jakichkolwiek opłat za dostęp do niego,
+ - dokonywać inżynierii wstecznej, dekompilacji ani dezasemblacji tego
+   oprogramowania, ani w inny sposób próbować pozyskać jego kodu źródłowego,
+   z wyjątkiem zakresu, w jakim taki zakaz jest niedozwolony przez
+   obowiązujące prawo.
 
 Oprogramowanie jest dostarczane w stanie "tak jak jest", bez jakiejkolwiek
-gwarancji, wyraznej lub dorozumianej. Autor w zadnym wypadku nie ponosi
-odpowiedzialnosci za roszczenia, szkody ani inne zobowiazania wynikajace
-z uzywania tego oprogramowania.
+gwarancji, wyraźnej lub dorozumianej, w tym bez dorozumianych gwarancji
+przydatności handlowej, przydatności do określonego celu i nienaruszania
+praw osób trzecich. W maksymalnym zakresie dozwolonym przez obowiązujące
+prawo autor w żadnym wypadku nie ponosi odpowiedzialności za jakiekolwiek
+szkody bezpośrednie, pośrednie, uboczne, szczególne, o charakterze karnym
+ani następcze, ani za jakiekolwiek roszczenia lub inne zobowiązania
+wynikające z używania lub niemożności używania tego oprogramowania.
+
+Jeżeli którekolwiek postanowienie niniejszej licencji okaże się nieważne
+lub niewykonalne w świetle obowiązującego prawa, będzie ono stosowane
+w najszerszym dopuszczalnym przez to prawo zakresie, a pozostałe
+postanowienia zachowują pełną moc.
 
 Autor: romanzbudowy
 
-W razie rozbieznosci miedzy wersjami jezykowymi wiazaca jest wersja angielska.
+W razie rozbieżności między wersjami językowymi wiążąca jest wersja
+angielska.
 In case of any discrepancy between language versions, the English version
 prevails.

@@ -1,0 +1,167 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blog - Turn It Up, Son!</title>
+<meta name="description" content="Guides on getting the sound you want out of a browser tab: nightcore, slowed and reverb, skipping artists automatically, and how to judge whether a booster extension is safe.">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../type.css">
+<link rel="stylesheet" href="../base.css">
+<style>
+  .posts{margin-top:16px}
+  .post{
+    display:block;padding:30px 0 28px;position:relative;
+    border-bottom:2px solid rgba(22,48,94,.14);
+  }
+  .post:last-of-type{border-bottom:none}
+  .post .p-kick{font-family:var(--hand);font-size:var(--hand-s);color:var(--blue);transform:rotate(-1.4deg);display:inline-block}
+  .post h2{
+    font-family:var(--disp);font-weight:800;font-size:var(--head-m);
+    letter-spacing:-.035em;line-height:1.1;color:var(--ink);margin:4px 0 10px;max-width:20ch;
+  }
+  .post p{max-width:720px;font-size:var(--text-m);line-height:1.65;color:var(--ink3)}
+  .post .go{
+    display:inline-flex;align-items:center;gap:9px;margin-top:14px;
+    font-family:var(--disp);font-weight:800;font-size:var(--text-s);color:var(--ink);
+  }
+  .post .go svg{width:26px;height:14px;overflow:visible}
+  .post .go svg path{fill:none;stroke:var(--red);stroke-width:3;stroke-linecap:round}
+  .post .go svg polygon{fill:var(--red)}
+  .post:hover h2{color:var(--blue)}
+  .post:hover .go{color:var(--blue)}
+  .post .go i{font-style:normal;position:relative}
+  .post .go i::after{
+    content:"";position:absolute;left:0;right:0;bottom:-2px;height:.4em;z-index:-1;
+    background:var(--hl);border-radius:3px;transform:scaleX(0);transform-origin:left;
+    transition:transform .18s ease;
+  }
+  .post:hover .go i::after{transform:scaleX(1)}
+</style>
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true">
+  <filter id="b0" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b1" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b2" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+
+<div class="paper" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="../index.html"><img src="../img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
+    <div class="nav-links">
+      <a class="hide-m" href="../index.html">Home</a>
+      <a class="hide-m" href="../changelog.html">Changelog</a>
+      <a class="hide-m" href="../privacy.html">Privacy</a>
+    </div>
+    <div class="nav-right">
+      <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap page-head">
+  <div class="head-art" aria-hidden="true">
+    <svg viewBox="0 0 190 150"><g class="boil">
+      <path class="fill-p" d="M34 26 L136 26 L136 128 L34 128 Z"/>
+      <path class="ln" d="M50 52 L120 52 M50 72 L120 72 M50 92 L102 92"/>
+      <path class="ln" d="M146 34 L146 54 M136 44 L156 44 M139 37 L153 51 M153 37 L139 51"/>
+      <path class="ln" d="M150 106 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M157 103 L161 74 M161 74 C 172 77, 176 86, 169 93"/>
+      <path class="ln" d="M8 96 C 8 84, 24 80, 29 89 C 35 78, 46 81, 46 92"/>
+    </g></svg>
+  </div>
+
+  <div class="eyebrow">how to get the sound you want</div>
+  <h1>Blog</h1>
+  <p class="page-sub">Guides on bending the audio of a browser tab into the shape you actually want it. Written by the person who built the extension, so nothing here promises more than it does.</p>
+</div>
+
+<main class="wrap">
+  <div class="posts">
+
+    <a class="post" href="how-to-make-any-song-nightcore.html">
+      <span class="p-kick">nightcore</span>
+      <h2>How to make any song Nightcore in your browser</h2>
+      <p>Faster tempo, higher voice, brighter top end, on whatever is already playing. No downloads and no hunting for a re-upload that may not exist.</p>
+      <span class="go"><i>Read it</i>
+        <svg viewBox="0 0 26 14"><path d="M2 7 H17"/><polygon points="24 7, 15 3, 15 11"/></svg>
+      </span>
+    </a>
+
+    <a class="post" href="slowed-and-reverb-any-song.html">
+      <span class="p-kick">slowed + reverb</span>
+      <h2>How to get the slowed and reverb version of any song</h2>
+      <p>Drag the tempo down, put a big room around it, and the voice drops with it. Then build your own version with the full mixer and save it under your own name.</p>
+      <span class="go"><i>Read it</i>
+        <svg viewBox="0 0 26 14"><path d="M2 7 H17"/><polygon points="24 7, 15 3, 15 11"/></svg>
+      </span>
+    </a>
+
+    <a class="post" href="skip-artists-you-hate-automatically.html">
+      <span class="p-kick">auto skip</span>
+      <h2>How to automatically skip artists you cannot stand</h2>
+      <p>Put a name on a list once and never hear it again on YouTube, YouTube Music, Spotify or SoundCloud. Or ban whatever is playing right now with one click.</p>
+      <span class="go"><i>Read it</i>
+        <svg viewBox="0 0 26 14"><path d="M2 7 H17"/><polygon points="24 7, 15 3, 15 11"/></svg>
+      </span>
+    </a>
+
+    <a class="post" href="are-volume-booster-extensions-safe.html">
+      <span class="p-kick">the honest one</span>
+      <h2>Are volume booster extensions safe?</h2>
+      <p>Which permission is the one worth thinking about, what to check on any store page before you install, and how this extension answers each of those points. Written by someone with an obvious interest, and saying so.</p>
+      <span class="go"><i>Read it</i>
+        <svg viewBox="0 0 26 14"><path d="M2 7 H17"/><polygon points="24 7, 15 3, 15 11"/></svg>
+      </span>
+    </a>
+
+  </div>
+
+  <div class="back-row">
+    <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - free</a>
+  </div>
+</main>
+
+<div class="closing" aria-hidden="true">
+  <svg viewBox="0 0 1400 190" preserveAspectRatio="xMidYMax meet"><g class="boil">
+    <path class="ln" d="M-420 148 C -180 140, 20 154, 240 146 C 460 138, 640 154, 860 145 C 1060 137, 1240 152, 1440 144 C 1620 139, 1740 148, 1860 143"/>
+    <path class="ln" d="M-380 168 C -140 162, 80 176, 320 166 C 580 156, 820 174, 1080 164 C 1300 156, 1520 168, 1860 160" style="opacity:.5"/>
+    <g class="ln">
+      <path d="M280 148 L280 118"/>
+      <path d="M280 120 C 252 118, 250 94, 268 91 C 270 74, 298 74, 301 90 C 319 93, 315 118, 280 120"/>
+    </g>
+    <g class="ln" style="opacity:.6">
+      <path d="M740 148 L740 124"/>
+      <path d="M740 126 C 718 124, 716 104, 731 101 C 733 87, 756 87, 759 100 C 774 103, 771 124, 740 126"/>
+    </g>
+    <g class="ln">
+      <path d="M1120 148 L1120 118"/>
+      <path d="M1120 120 C 1092 118, 1090 94, 1108 91 C 1110 74, 1138 74, 1141 90 C 1159 93, 1155 118, 1120 120"/>
+    </g>
+    <g class="ln" style="opacity:.5">
+      <path d="M500 148 L496 134 M506 148 L508 132 M512 148 L516 135"/>
+      <path d="M950 146 L946 132 M956 146 L958 130 M962 146 L966 133"/>
+    </g>
+  </g></svg>
+</div>
+
+<footer>
+  <div class="foot-in">
+    <span>© 2026 romanzbudowy · Turn It Up, Son!</span>
+    <div class="foot-links">
+      <a href="../index.html">Home</a>
+      <a href="../changelog.html">Changelog</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Are volume booster extensions safe? - Turn It Up, Son!</title>
+<meta name="description" content="An honest guide to judging any volume booster extension: which permissions matter, what to check before installing, and what the risks actually are.">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../type.css">
+<link rel="stylesheet" href="../base.css">
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true">
+  <filter id="b0" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b1" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b2" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+
+<div class="paper" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="../index.html"><img src="../img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
+    <div class="nav-links">
+      <a class="hide-m" href="../index.html">Home</a>
+      <a class="hide-m" href="index.html">Blog</a>
+      <a class="hide-m" href="../changelog.html">Changelog</a>
+      <a class="hide-m" href="../privacy.html">Privacy</a>
+    </div>
+    <div class="nav-right">
+      <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap page-head">
+  <div class="eyebrow">before you install</div>
+  <h1>Are volume booster extensions safe?</h1>
+  <p class="page-sub">The category has a bad reputation, and some of it is deserved. Here is how to judge any booster extension for yourself, from someone who has an obvious interest in the answer.</p>
+</div>
+
+<main class="wrap article">
+  <div class="block">
+    <h2>First, who is writing this</h2>
+    <p>I make one of these extensions. This page lives on the site of <strong>Turn It Up, Son!</strong>, a free volume booster for Chrome. So read everything below knowing I am not a neutral party.</p>
+    <p>I am writing it anyway, because the useful version of this article is not "trust me". It is a set of checks you can run on any booster, including mine. If they lead you somewhere else, that is a fine outcome.</p>
+  </div>
+
+  <div class="block">
+    <h2>What a booster actually needs in order to work</h2>
+    <p>There is no way to make a browser tab louder without touching that tab's audio. The sound has to be picked up, amplified and played back out. So an extension that asks for nothing at all is not being polite, it is impossible.</p>
+    <p>That means "it asks for permissions" is not by itself a warning sign. <span class="ok">The real question is not whether it asks, but which permissions, and when.</span></p>
+    <p>A booster has a reasonable case for capturing tab audio, for seeing which tabs are making sound so it can list them, and for saving your settings. Those are all tied to the job.</p>
+  </div>
+
+  <div class="block">
+    <h2>The permission worth thinking about</h2>
+    <p>The one that deserves a pause is broad access to every website you visit, granted permanently at install time. In the browser prompt it reads as something close to "read and change all your data on all websites".</p>
+    <p>That permission lets the extension run its own code on every page you open. In an honest extension it might be there to control a video player. In a dishonest one, the same access is what would allow it to read whatever is on the page, including things that have nothing to do with audio.</p>
+    <p>Audio processing itself does not require it. Some features around the edges do, like changing playback speed, because that means driving the page's own player. The healthy pattern is an extension that asks for site access only when you switch such a feature on, for that site, and gives it back when you switch the feature off.</p>
+    <p>To be fair about it: broad access is not proof of bad intent, and plenty of legitimate extensions need it. It just raises the amount of trust being asked for, so it should be earned rather than clicked through.</p>
+  </div>
+
+  <svg class="rule boil" viewBox="0 0 1000 26" preserveAspectRatio="none"><path d="M4 16 C 180 6, 300 22, 480 12 C 660 2, 780 22, 996 10"/></svg>
+
+  <div class="block">
+    <h2>A checklist you can use on any extension</h2>
+    <p>Five minutes on the store page will tell you most of what you need. This works for boosters, and for everything else you install.</p>
+    <ol class="steps">
+      <li><strong>Read the permission list on the store page</strong>, then the browser's own prompt when you click install. That is the actual contract. If it mentions access to all sites, ask what a volume slider would need that for.</li>
+      <li><strong>Check whether the source code is public.</strong> Public code is not a guarantee that nobody looks at it, but it does mean anyone can, and a developer with something to hide rarely invites that.</li>
+      <li><strong>Look for a real privacy policy</strong>, one that names what is collected and what is sent where. A page of generic legal filler that never mentions the extension is a non-answer.</li>
+      <li><strong>See whether access is requested up front or on demand.</strong> An extension that stays quiet until you enable the feature that needs it is showing you how it thinks.</li>
+      <li><strong>Check whether it recently changed hands.</strong> A popular extension is valuable to buy precisely because it already has permission on a lot of machines, and behaviour can change after a sale while the old reviews stay.</li>
+      <li><strong>Read the recent reviews, not the average.</strong> An old average describes a version nobody is running. Sort by newest and look for people describing behaviour.</li>
+      <li><strong>Ask whether it needs an account.</strong> A local audio tool asking you to sign in is worth a question, because it attaches your usage to an identity somewhere.</li>
+    </ol>
+    <p>General hygiene helps more than any single check. Install fewer extensions than you are tempted to, read the prompt instead of clicking past it, and go through your list every few months to remove the ones you stopped using. An unused extension keeps its permissions.</p>
+  </div>
+
+  <svg class="rule boil" viewBox="0 0 1000 26" preserveAspectRatio="none"><path d="M4 16 C 180 6, 300 22, 480 12 C 660 2, 780 22, 996 10"/></svg>
+
+  <div class="block">
+    <h2>How this one answers each point</h2>
+    <p>Having handed you a checklist, it is only fair to run mine through it.</p>
+    <ul>
+      <li><strong>Permissions</strong>. Four, and each has a job: storage to keep your settings, tabCapture to process the tab's audio, tabs to list which tabs are playing something, offscreen to run the audio engine in the background.</li>
+      <li><strong>Site access</strong>. Not requested at install. It is asked for only when you turn on playback speed, auto skip or YouTube auto-continue, only for the site involved, and it is handed back when you turn that feature off. By default the extension sits under "No access needed" in the browser's extensions menu, and it leaves no code on any page while nothing is enabled.</li>
+      <li><strong>Source code</strong>. Public on <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>. You can read exactly what the four permissions are used for.</li>
+      <li><strong>Where settings live</strong>. In the browser's local extension storage on your own machine. Synced storage is not used, so nothing travels to a Google account. There is a button in the settings that wipes all of it.</li>
+      <li><strong>Network requests</strong>. Two kinds, both optional. Pasting a song link into the auto skip list sends only that link to the public track info endpoint of YouTube, Spotify or SoundCloud, to fetch the title. Feedback you choose to send from the uninstall page or the bug report box goes to a Google Form. No telemetry, no usage reporting.</li>
+      <li><strong>Accounts and tracking</strong>. None. No analytics, no ads, no tracking. Audio is processed live as it plays and is never recorded, stored or transmitted.</li>
+    </ul>
+    <p>Do not take my word for it. Every item above is checkable against the store listing, the browser's permission screen and the code.</p>
+  </div>
+
+  <div class="block">
+    <h2>The risk that has nothing to do with privacy</h2>
+    <p>There is a second kind of safety here, and it gets ignored because it is less dramatic.</p>
+    <p>Pushing audio well above 100% can distort it. A limiter, which this extension has, catches the crackle and keeps loud playback clean. What a limiter does not do is protect you. <span class="ok">Clean sound at a dangerous volume is still a dangerous volume.</span></p>
+    <p>Loud playback over long stretches can damage hearing permanently, and headphones put all of it right against your ears. Boost is genuinely useful for a quiet recording or a badly mixed lecture. It is a poor way to listen to music for three hours. Use the boost you need, then bring it back down.</p>
+  </div>
+
+  <div class="block">
+    <h2>So, are they safe?</h2>
+    <p>Some are, some are not, and the difference is visible before you install if you spend five minutes looking. Judge the permissions, whether the code is open, and whether access is asked for only when a feature needs it.</p>
+    <p>If Turn It Up, Son! holds up against that checklist for you, it is free and runs in Chrome, Edge and Brave. If it does not, use the checklist on whatever you install instead. That was the point of the page.</p>
+  </div>
+
+  <div class="back-row">
+    <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - free</a>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <span>© 2026 romanzbudowy · Turn It Up, Son!</span>
+    <div class="foot-links">
+      <a href="../index.html">Home</a>
+      <a href="index.html">Blog</a>
+      <a href="../privacy.html">Privacy</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

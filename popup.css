@@ -1256,3 +1256,50 @@ body.hasban .tabs-list {
 .donate-link {
   color: rgba(255, 255, 255, 0.78);
 }
+
+.ver-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(245, 182, 44, 0.17), rgba(245, 182, 44, 0.07));
+  border: 1px solid rgba(245, 182, 44, 0.38);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.ver-open:hover {
+  border-color: rgba(245, 182, 44, 0.72);
+  background: linear-gradient(180deg, rgba(245, 182, 44, 0.24), rgba(245, 182, 44, 0.1));
+}
+.ver-open-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: #f5b62c;
+}
+.ver-open-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.ver-open-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.ver-open-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.ver-open-arrow {
+  font-size: 20px;
+  color: #f5b62c;
+  line-height: 1;
+  flex-shrink: 0;
+}

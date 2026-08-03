@@ -41,6 +41,180 @@ if (defBassSelect && HAS_STORAGE) {
   });
 }
 
+const phaseRotToggle = document.getElementById("phaseRotToggle");
+if (phaseRotToggle && HAS_STORAGE) {
+  chrome.storage.local.get("vbPhaseRot", (d) => {
+    if (chrome.runtime.lastError || !d) return;
+    phaseRotToggle.checked = d.vbPhaseRot === true;
+  });
+  phaseRotToggle.addEventListener("change", () => {
+    chrome.storage.local.set({ vbPhaseRot: phaseRotToggle.checked }, flashSaved);
+  });
+}
+
+const limiterToggle = document.getElementById("limiterToggle");
+const limiterCeiling = document.getElementById("limiterCeiling");
+const limiterBass = document.getElementById("limiterBass");
+const limiterCeilingRow = document.getElementById("limiterCeilingRow");
+const limiterBassRow = document.getElementById("limiterBassRow");
+const limiterVal = document.getElementById("limiterVal");
+const limiterBassVal = document.getElementById("limiterBassVal");
+const limiterMax = document.getElementById("limiterMax");
+const limiterMaxRow = document.getElementById("limiterMaxRow");
+const limiterMaxVal = document.getElementById("limiterMaxVal");
+if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
+  const limSavedEl = document.getElementById("limiterSaved");
+  const flashLim = () => {
+    if (!limSavedEl) return;
+    limSavedEl.textContent = VBI18N.t("saved");
+    setTimeout(() => (limSavedEl.textContent = ""), 1400);
+  };
+  const fmtCeil = (v) => v + " dB";
+  const limiterCharRow = document.getElementById("limiterCharRow");
+  const charBtns = Array.from(document.querySelectorAll(".lim-chars .btn"));
+  const syncChars = (v) => {
+    charBtns.forEach((b) => b.classList.toggle("on", Number(b.getAttribute("data-red")) === Number(v)));
+  };
+  const syncLimRow = (on) => {
+    if (limiterCeilingRow) limiterCeilingRow.classList.toggle("off", !on);
+    if (limiterBassRow) limiterBassRow.classList.toggle("off", !on);
+    if (limiterMaxRow) limiterMaxRow.classList.toggle("off", !on);
+    if (limiterCharRow) limiterCharRow.classList.toggle("off", !on);
+  };
+  chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed"], (d) => {
+    const on = d.vbLimiterOn !== false;
+    const c = typeof d.vbLimiterCeiling === "number" ? d.vbLimiterCeiling : 0;
+    const b = typeof d.vbLimiterBass === "number" ? d.vbLimiterBass : 0;
+    const m = typeof d.vbLimiterMaxRed === "number" ? Math.max(1, Math.min(8, d.vbLimiterMaxRed)) : 6;
+    limiterToggle.checked = on;
+    limiterCeiling.value = String(c);
+    limiterBass.value = String(b);
+    if (limiterVal) limiterVal.textContent = fmtCeil(c);
+    if (limiterBassVal) limiterBassVal.textContent = fmtCeil(b);
+    if (limiterMax) limiterMax.value = String(m);
+    if (limiterMaxVal) limiterMaxVal.textContent = m + " dB";
+    syncChars(m);
+    syncLimRow(on);
+  });
+  limiterToggle.addEventListener("change", () => {
+    chrome.storage.local.set({ vbLimiterOn: limiterToggle.checked }, () => {
+      void chrome.runtime.lastError;
+      syncLimRow(limiterToggle.checked);
+      flashLim();
+    });
+  });
+  const wireCeil = (slider, valEl, key, fmt) => {
+    if (!slider) return;
+    const f = fmt || fmtCeil;
+    let timer = null;
+    const save = () => {
+      clearTimeout(timer);
+      chrome.storage.local.set({ [key]: Number(slider.value) }, () => {
+        void chrome.runtime.lastError;
+        flashLim();
+      });
+    };
+    slider.addEventListener("input", () => {
+      if (valEl) valEl.textContent = f(slider.value);
+      clearTimeout(timer);
+      timer = setTimeout(save, 220);
+    });
+    slider.addEventListener("change", save);
+  };
+  wireCeil(limiterCeiling, limiterVal, "vbLimiterCeiling");
+  wireCeil(limiterBass, limiterBassVal, "vbLimiterBass");
+  wireCeil(limiterMax, limiterMaxVal, "vbLimiterMaxRed", (v) => v + " dB");
+  if (limiterMax) limiterMax.addEventListener("input", () => syncChars(limiterMax.value));
+  charBtns.forEach((b) => {
+    b.addEventListener("click", () => {
+      const v = Number(b.getAttribute("data-red"));
+      if (limiterMax) limiterMax.value = String(v);
+      if (limiterMaxVal) limiterMaxVal.textContent = v + " dB";
+      syncChars(v);
+      chrome.storage.local.set({ vbLimiterMaxRed: v }, () => {
+        void chrome.runtime.lastError;
+        flashLim();
+      });
+    });
+  });
+
+  const meterBassBar = document.getElementById("meterBassBar");
+  const meterMainBar = document.getElementById("meterMainBar");
+  const meterBassVal = document.getElementById("meterBassVal");
+  const meterMainVal = document.getElementById("meterMainVal");
+  const limiterMode = document.getElementById("limiterMode");
+  if (meterBassBar && meterMainBar) {
+    const MAX_RED = 24;
+    let meterTimer = null;
+    const paint = (bar, valEl, db) => {
+      const red = db < 0 ? -db : 0;
+      bar.style.width = Math.min(100, (red / MAX_RED) * 100) + "%";
+      valEl.textContent = (red < 0.05 ? "0.0" : "-" + red.toFixed(1)) + " dB";
+    };
+    const clearMeters = (note) => {
+      paint(meterBassBar, meterBassVal, 0);
+      paint(meterMainBar, meterMainVal, 0);
+      if (limiterMode) limiterMode.textContent = note || "";
+    };
+    const tick = () => {
+      try {
+        chrome.runtime.sendMessage({ type: "vb-meter-any" }, (r) => {
+          if (chrome.runtime.lastError || !r) {
+            clearMeters(VBI18N.t("limiter_idle"));
+            return;
+          }
+          paint(meterBassBar, meterBassVal, Number(r.bass) || 0);
+          paint(meterMainBar, meterMainVal, Number(r.main) || 0);
+          if (limiterMode) {
+            if (!r.playing) {
+              limiterMode.textContent = VBI18N.t("limiter_idle");
+            } else {
+              const mode = VBI18N.t(r.hq ? "limiter_hq" : "limiter_basic");
+              const n = Number(r.tabs) || 1;
+              limiterMode.textContent = n > 1 ? mode + " · " + VBI18N.t("limiter_tabs", { n: n }) : mode;
+            }
+          }
+        });
+      } catch (e) {
+        clearMeters(VBI18N.t("limiter_idle"));
+      }
+    };
+    const startMeter = () => {
+      if (meterTimer) return;
+      tick();
+      meterTimer = setInterval(tick, 150);
+    };
+    const stopMeter = () => {
+      clearInterval(meterTimer);
+      meterTimer = null;
+    };
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopMeter();
+      else startMeter();
+    });
+    VBI18N.ready(startMeter);
+  }
+
+  const limiterReset = document.getElementById("limiterReset");
+  if (limiterReset) {
+    limiterReset.addEventListener("click", () => {
+      chrome.storage.local.set({ vbLimiterOn: true, vbLimiterCeiling: 0, vbLimiterBass: 0, vbLimiterMaxRed: 6 }, () => {
+        void chrome.runtime.lastError;
+        limiterToggle.checked = true;
+        limiterCeiling.value = "0";
+        limiterBass.value = "0";
+        if (limiterMax) limiterMax.value = "6";
+        if (limiterVal) limiterVal.textContent = fmtCeil(0);
+        if (limiterBassVal) limiterBassVal.textContent = fmtCeil(0);
+        if (limiterMaxVal) limiterMaxVal.textContent = "6 dB";
+        syncChars(6);
+        syncLimRow(true);
+        flashLim();
+      });
+    });
+  }
+}
+
 const mark3d = document.getElementById("mark3d");
 if (mark3d) {
   let markRaf = null;
@@ -336,8 +510,6 @@ if (verHeroEl && chrome.runtime && typeof chrome.runtime.getManifest === "functi
 }
 
 const DONATE_URL = "https://buymeacoffee.com/romanzbudowy";
-const donateBtn = document.getElementById("donateBtn");
-const engineStars = document.getElementById("engineStars");
 
 function openUrl(url) {
   if (chrome.tabs && chrome.tabs.create) {
@@ -345,21 +517,6 @@ function openUrl(url) {
   } else {
     try { window.open(url, "_blank"); } catch (e) {}
   }
-}
-
-if (engineStars) {
-  const stars = Array.from(engineStars.querySelectorAll(".star"));
-  const paintStars = (n) => stars.forEach((s, i) => s.classList.toggle("hl", i < n));
-  stars.forEach((s) => {
-    s.addEventListener("mouseenter", () => paintStars(Number(s.dataset.v)));
-    s.addEventListener("click", () => {
-      openUrl("https://chrome.google.com/webstore/detail/" + chrome.runtime.id + "/reviews");
-    });
-  });
-  engineStars.addEventListener("mouseleave", () => paintStars(0));
-}
-if (donateBtn) {
-  donateBtn.addEventListener("click", () => openUrl(DONATE_URL));
 }
 
 const supportTop = document.getElementById("supportTop");
@@ -474,6 +631,10 @@ function showPane(name) {
   window.scrollTo(0, 0);
 }
 tabButtons.forEach((b) => b.addEventListener("click", () => showPane(b.dataset.pane)));
+
+if (window.location.hash === "#changelog") {
+  VBI18N.ready(() => showPane("changelog"));
+}
 
 const bugPill = document.getElementById("bugPill");
 const bugCard = document.getElementById("bugCard");

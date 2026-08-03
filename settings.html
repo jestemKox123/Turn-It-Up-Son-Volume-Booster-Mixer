@@ -186,23 +186,6 @@
       ul { margin: 6px 0 0; padding-left: 20px; }
       li { margin-bottom: 6px; font-size: 13.5px; }
 
-      .opt {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-        padding: 12px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        cursor: pointer;
-        margin-bottom: 10px;
-        transition: border-color 0.12s ease, background 0.12s ease;
-      }
-      .opt:hover { border-color: var(--border-strong); }
-      .opt.sel { border-color: var(--accent); background: rgba(110, 86, 255, 0.10); }
-      .opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); }
-      .opt .t { font-weight: 600; margin-bottom: 3px; font-size: 13.5px; }
-      .opt .d { font-size: 12.5px; color: var(--muted); }
-
       .note {
         font-size: 12.5px;
         color: var(--muted);
@@ -250,6 +233,9 @@
         cursor: pointer;
       }
       .btn:hover { border-color: var(--accent); color: var(--accent); }
+      .lim-chars { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      .lim-chars .btn { margin-top: 0; padding: 8px 11px; font-size: 12.5px; }
+      .lim-chars .btn.on { border-color: var(--accent); color: var(--accent); background: rgba(74, 144, 255, 0.12); }
       #clFull { font-size: 14.5px; padding: 12px 20px; border-radius: 11px; }
       .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
       select.btn { cursor: pointer; }
@@ -437,8 +423,15 @@
         cursor: pointer;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
       }
-      #glowStrengthRow.off, #glowColorRow.off { opacity: 0.4; pointer-events: none; }
+      #glowStrengthRow.off, #glowColorRow.off, #limiterCeilingRow.off, #limiterBassRow.off, #limiterMaxRow.off, #limiterCharRow.off { opacity: 0.4; pointer-events: none; }
       .glow-val { font-size: 12.5px; color: var(--muted); min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
+      .lim-meters { display: flex; flex-direction: column; gap: 8px; min-width: 230px; }
+      .lim-m { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+      .lim-m .lbl { min-width: 58px; }
+      .lim-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--border-strong); overflow: hidden; }
+      .lim-bar i { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.09s linear; }
+      .lim-m .num { min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
+      .lim-mode { font-size: 12px; color: var(--xdim); margin: 10px 0 0; }
       .glow-col { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
       .glow-col .th-dot { width: 34px; height: 34px; }
       .glow-col .themes { gap: 13px; }
@@ -674,7 +667,88 @@
             <option value="warm" data-i18n="bm_warm">Ciepły</option>
           </select>
         </div>
+        <div class="row sep">
+          <div>
+            <h2 style="margin:0" data-i18n="rot_h">Podbicie głosu</h2>
+            <p class="mini-d" data-i18n="rot_d">Ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie. Nic nie podbija ani nie ścisza, ale głos układa się równiej i brzmi pełniej. Wyłączony znaczy, że przy 100 procent wtyczka oddaje dźwięk dokładnie taki, jaki dostała.</p>
+          </div>
+          <input type="checkbox" class="switch" id="phaseRotToggle" />
+        </div>
         <div class="saved" id="saved"></div>
+      </div>
+
+      <div class="sec-h" data-i18n="sec_limiter">Limiter</div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <h2 style="margin:0" data-i18n="limiter_h">Limiter</h2>
+            <p class="mini-d" data-i18n="limiter_d">Pilnuje, żeby dźwięk nie przesterował przy mocnym podbiciu. Sam z siebie nic nie robi: budzi się dopiero wtedy, gdy muzyka dobija do sufitu. Przy 200% i wyżej bez niego robi się wyraźnie brudno, bo szczyty ścina wtedy już samo nasycenie.</p>
+          </div>
+          <input type="checkbox" class="switch" id="limiterToggle" checked />
+        </div>
+        <div class="row sep" id="limiterCeilingRow">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_ceil_h">Sufit głośności</h2>
+            <p class="mini-d" data-i18n="limiter_ceil_d">Poziom, do którego limiter sprowadza dźwięk. Dotyczy całego miksu, razem z basem. 0 dB to maksimum możliwe cyfrowo, czyli najgłośniej i najczyściej, bo limiter ma najmniej pracy. Niżej zostawiasz zapas: ciszej, ale bezpieczniej na słabszym sprzęcie.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="limiterVal" class="glow-val" style="min-width:42px">0 dB</span>
+            <input type="range" class="glow-range" id="limiterCeiling" min="-6" max="0" step="1" value="0" />
+          </div>
+        </div>
+        <div class="row sep" id="limiterBassRow">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_bass_h">Sufit basu</h2>
+            <p class="mini-d" data-i18n="limiter_bass_d">To samo, ale wyłącznie dla dołu (poniżej 150 Hz). Bas ma własny tor pomiarowy, więc możesz go przytrzymać, nie ściągając w dół całego miksu. Zejdź niżej, jeśli bas dudni albo się rozjeżdża.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="limiterBassVal" class="glow-val" style="min-width:42px">0 dB</span>
+            <input type="range" class="glow-range" id="limiterBass" min="-6" max="0" step="1" value="0" />
+          </div>
+        </div>
+        <div class="row sep" id="limiterMaxRow">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_maxred_h">Maksymalne dociskanie</h2>
+            <p class="mini-d" data-i18n="limiter_maxred_d">Do ilu decybeli limiter dociska pełną siłą. Powyżej tej wartości nie przestaje pracować, tylko zwalnia mniej więcej o połowę i coraz więcej roboty oddaje nasyceniu, które ścina szczyty. Dlatego miernik obok potrafi pokazać większą liczbę niż ta ustawiona tutaj. Niżej (1 dB) znaczy mocniejszy bas i gęstsze brzmienie, ale wyraźnie więcej zniekształcenia. Wyżej (8 dB) znaczy spokojniejszy, mocniej trzymany bas. Najczyściej jest w okolicach 5 i 6 dB, stąd taka wartość domyślna.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="limiterMaxVal" class="glow-val" style="min-width:42px">6 dB</span>
+            <input type="range" class="glow-range" id="limiterMax" min="1" max="8" step="1" value="6" />
+          </div>
+        </div>
+        <div class="row sep" id="limiterMeterRow">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_meter_h">Redukcja na żywo</h2>
+            <p class="mini-d" data-i18n="limiter_meter_d">Ile limiter dociska w tej chwili. Zero znaczy, że śpi i w ogóle nie dotyka dźwięku. Paski ruszają się dopiero, gdy któraś karta gra i muzyka dobija do sufitu.</p>
+            <p class="lim-mode" id="limiterMode"></p>
+          </div>
+          <div class="lim-meters">
+            <div class="lim-m">
+              <span class="lbl" data-i18n="limiter_m_main">Głośność</span>
+              <span class="lim-bar"><i id="meterMainBar"></i></span>
+              <span class="num" id="meterMainVal">0.0 dB</span>
+            </div>
+            <div class="lim-m">
+              <span class="lbl" data-i18n="limiter_m_bass">Bas</span>
+              <span class="lim-bar"><i id="meterBassBar"></i></span>
+              <span class="num" id="meterBassVal">0.0 dB</span>
+            </div>
+          </div>
+        </div>
+        <div class="row sep" id="limiterCharRow">
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="limchar_h">Charakter</h2>
+            <p class="mini-d" data-i18n="limchar_d">Gotowe ustawienia dociskania. Czysto trzyma dźwięk najczystszy i tak zostaje domyślnie. Głośno pozwala limiterowi dociskać krócej, więc gra głośniej, ale szczyty ścina już nasycenie i przy mocnym podbiciu słychać brud. Przy jednej karcie, bez efektów i do 150 procent limiter prawie nie pracuje, więc różnicy nie usłyszysz. Bas, presety z Miksu i kolejne grające karty budzą go dużo wcześniej.</p>
+          </div>
+          <div class="lim-chars">
+            <button class="btn" type="button" id="limCharClean" data-red="6" data-i18n="limchar_clean">Czysto</button>
+            <button class="btn" type="button" id="limCharMid" data-red="4" data-i18n="limchar_mid">Średnio</button>
+            <button class="btn" type="button" id="limCharLoud" data-red="2" data-i18n="limchar_loud">Głośno</button>
+          </div>
+        </div>
+        <button class="btn" id="limiterReset" type="button" data-i18n="limiter_reset" style="margin-top:12px">Przywróć domyślny limiter</button>
+        <div class="saved" id="limiterSaved"></div>
       </div>
 
       <div class="sec-h" data-i18n="skip_sec">Auto-pomijanie</div>

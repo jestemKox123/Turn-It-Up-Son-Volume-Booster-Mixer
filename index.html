@@ -1,699 +1,860 @@
 <!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Turn It Up, Son! - Volume Booster & Mixer for Chrome</title>
-<meta name="description" content="Free Chrome extension. Boost any tab up to 700%, remix any song live: Sped Up, Nightcore, Slowed + Reverb, Drill, Phonk, 8D. Auto-skip artists you don't like. No account, no tracking.">
-<meta property="og:title" content="Turn It Up, Son!">
-<meta property="og:description" content="Boost any tab to 700%. Remix any song live. Auto-skip artists you hate. Free, private, no account.">
-<meta property="og:image" content="https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/poster.jpg">
-<meta property="og:url" content="https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='26' fill='%23ff5447'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23050505'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Turn It Up, Son! - Volume Booster, Mix Panel and Auto Skip for Chrome</title>
+<meta name="description" content="Free Chrome extension. Boost any tab up to 700%, remix any song live with a full Mix panel, and auto-skip artists you never want to hear. No account, no tracking.">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="type.css">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --obsidian:#050505;
-    --s-lowest:#190a08;
-    --s-low:#231311;
-    --s:#1f0f0d;
-    --s-container:#2c1b19;
-    --panel:#0e0e10;
-    --line:rgba(255,255,255,.09);
-    --line-2:rgba(255,255,255,.06);
-    --text:#fbdbd7;
-    --muted:#e5bdb8;
-    --dim:rgba(229,189,184,.5);
-    --primary:#ffb4aa;
-    --tertiary:#64d6e5;
-    --mint:#45e0a0;
-    --heat:linear-gradient(120deg,#ff6b52,#ff2d55);
-    --neon:linear-gradient(135deg,#6e56ff,#3ddcff);
-    --red:#ff5447;
-    --fdisp:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-    --fbody:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-  }
+    --paper:#f7fbff;
+    --paper2:#e7f0fd;
+    --paper3:#cfe0f7;
+    --ink:#0a1730;
+    --ink2:#16305e;
+    --ink3:#2c4270;
+    --soft:#64749c;
+    --blue:#1d4ed8;
+    --blue2:#3b82f6;
+    --hl:#ffd21e;
+    --red:#e02b12;
+    --disp:"Hanken Grotesk",system-ui,sans-serif;
+    --body:"Inter",system-ui,sans-serif;
+    --hand:"Caveat",cursive;  }
   html{scroll-behavior:smooth}
   body{
-    background:var(--obsidian);
-    color:var(--text);
-    font-family:var(--fbody);
-    -webkit-font-smoothing:antialiased;
+    background:var(--paper);
+    font-size:var(--text-m);
+    color:var(--ink);
+    font-family:var(--body);
     line-height:1.55;
+    -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
+    position:relative;
   }
   a{color:inherit;text-decoration:none}
-  img,video{max-width:100%}
-  ::selection{background:rgba(255,84,71,.35)}
+  img{max-width:100%;display:block}
+  ::selection{background:var(--hl);color:var(--ink)}
 
-  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
-  .heat-text{background:var(--heat);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .neon-text{background:var(--neon);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .eyebrow{
-    font-family:var(--fdisp);font-size:12.5px;font-weight:700;
-    letter-spacing:.24em;text-transform:uppercase;color:var(--primary);
+  .paper{
+    position:fixed;inset:0;z-index:-3;
+    background:
+      radial-gradient(1100px 800px at 78% 8%,rgba(29,78,216,.10) 0%,rgba(29,78,216,0) 62%),
+      radial-gradient(900px 700px at 12% 78%,rgba(29,78,216,.08) 0%,rgba(29,78,216,0) 60%),
+      linear-gradient(160deg,var(--paper) 0%,var(--paper2) 48%,var(--paper3) 100%);
+  }
+  .grid-lines{
+    position:fixed;inset:0;z-index:-2;pointer-events:none;
+    background-image:repeating-linear-gradient(90deg,rgba(20,60,130,.055) 0 1px,transparent 1px 58px);
   }
 
-  /* ---------- nav ---------- */
-  nav{
-    position:fixed;inset:0 0 auto 0;z-index:50;
-    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    background:rgba(5,5,5,.6);
-    border-bottom:1px solid var(--line-2);
+  .boil{animation:boil 1.35s steps(1,end) infinite}
+  @keyframes boil{
+    0%{filter:url(#b0)}
+    34%{filter:url(#b1)}
+    67%{filter:url(#b2)}
   }
-  .nav-in{
-    max-width:1080px;margin:0 auto;padding:0 24px;
-    height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  .defs{position:absolute;width:0;height:0;overflow:hidden}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px;position:relative}
+
+  nav{position:fixed;inset:0 0 auto 0;z-index:60;backdrop-filter:blur(14px);background:rgba(247,251,255,.72)}
+  nav::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(22,48,94,.25) 12%,rgba(22,48,94,.25) 88%,transparent);
   }
-  .brand{display:flex;align-items:center;gap:10px;font-family:var(--fdisp);font-weight:800;letter-spacing:-.03em;font-size:16px}
-  .brand-dot{
-    width:22px;height:22px;border-radius:50%;
-    background:radial-gradient(circle at 35% 35%,#ff8a75,var(--red) 55%,#b3170f);
-    box-shadow:0 0 16px rgba(255,84,71,.55);
-    position:relative;flex-shrink:0;
+  .nav-in{max-width:1120px;margin:0 auto;padding:0 28px;height:66px;display:flex;align-items:center;gap:20px}
+  .brand{flex:1;display:flex;align-items:center;gap:11px;white-space:nowrap;font-family:var(--disp);font-weight:800;font-size:var(--text-m);letter-spacing:-.02em;color:var(--ink)}
+  .brand img{width:30px;height:30px;border-radius:8px}
+  .nav-links{flex:0 0 auto;display:flex;align-items:center;gap:24px;font-size:var(--text-s);font-weight:500;color:var(--ink3)}
+  .nav-links a{position:relative;padding:4px 0}
+  .nav-links a::after{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:.42em;z-index:-1;
+    background:var(--hl);border-radius:3px;transform:scaleX(0);transform-origin:left;
+    transition:transform .18s ease;
   }
-  .brand-dot::after{content:"";position:absolute;inset:35%;border-radius:50%;background:var(--obsidian)}
-  .nav-links{display:flex;align-items:center;gap:26px;font-family:var(--fdisp);font-size:13.5px;font-weight:600;color:var(--muted)}
-  .nav-links a:hover{color:var(--text)}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{transform:scaleX(1)}
+  .nav-right{flex:1;display:flex;align-items:center;justify-content:flex-end;gap:18px}
+  .nav-rate{display:flex;align-items:center;gap:8px;font-size:var(--text-s);color:var(--soft);white-space:nowrap}
+  .nav-rate .stars{color:#f0a500;letter-spacing:1.5px;font-size:var(--text-s)}
+  .nav-rate b{color:var(--ink);font-weight:700;font-family:var(--disp)}
+  .nav-tag{font-family:var(--hand);font-size:var(--hand-s);color:var(--red);transform:rotate(-5deg);margin-left:10px;line-height:1}
+  @media (max-width:1080px){.nav-rate{display:none}}
+  @media (max-width:900px){.nav-tag{display:none}}
+
   .btn{
-    display:inline-flex;align-items:center;gap:9px;
-    background:var(--heat);color:#fff;font-family:var(--fdisp);font-weight:700;
-    border-radius:999px;padding:9px 20px;font-size:13.5px;
-    transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
-    box-shadow:0 4px 26px rgba(255,84,71,.35);
+    position:relative;display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--disp);font-weight:800;font-size:var(--text-s);letter-spacing:-.01em;
+    color:#fff;background:var(--ink);border-radius:14px;padding:12px 22px;
+    border:2px solid var(--ink);
+    box-shadow:5px 5px 0 rgba(10,23,48,.22);
+    transition:transform .14s ease,box-shadow .14s ease;
     white-space:nowrap;
   }
-  .btn:hover{transform:translateY(-1px);filter:brightness(1.07);box-shadow:0 8px 34px rgba(255,84,71,.5)}
-  .btn:active{transform:scale(.97)}
-  .btn.big{padding:16px 34px;font-size:16.5px;box-shadow:0 8px 44px rgba(255,84,71,.42)}
-  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);box-shadow:none}
-  .btn.ghost:hover{color:var(--text);border-color:rgba(255,255,255,.28);box-shadow:none;filter:none}
+  .btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 rgba(10,23,48,.26)}
+  .btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(10,23,48,.22)}
+  .btn.big{font-size:var(--text-l);padding:17px 34px;border-radius:17px}
+  .btn.ghost{background:transparent;color:var(--ink);box-shadow:4px 4px 0 rgba(10,23,48,.14)}
+  .btn.ghost:hover{background:rgba(255,255,255,.6)}
 
-  /* ---------- hero ---------- */
-  header{
-    position:relative;text-align:center;
-    padding:150px 24px 90px;
-    display:flex;flex-direction:column;align-items:center;
-    overflow:hidden;
+  header.hero{padding:92px 0 84px;position:relative;overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:1fr 306px;gap:44px;align-items:center;position:relative;z-index:2}
+
+  .scene{position:absolute;left:0;right:0;bottom:0;height:240px;z-index:0;pointer-events:none;overflow:hidden}
+  .scene svg{width:100%;height:100%;display:block;overflow:visible}
+  .scene .ln{fill:none;stroke:var(--blue);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round}
+  .scene .soft{stroke:rgba(29,78,216,.42);stroke-width:3}
+  .scene .fill-p{fill:var(--paper);stroke:var(--blue);stroke-width:3.4;stroke-linejoin:round}
+  .sun{transform-box:fill-box;transform-origin:center;animation:spin 26s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .house{transform-box:fill-box;transform-origin:50% 100%;animation:shake .5s ease-in-out infinite}
+  @keyframes shake{0%,100%{transform:rotate(-.5deg)}50%{transform:rotate(.5deg)}}
+  .nt{transform-box:fill-box;transform-origin:center;animation:pop 3.2s ease-out infinite;opacity:0}
+  @keyframes pop{
+    0%{transform:translate(0,0) scale(.7);opacity:0}
+    14%{opacity:1}
+    72%{opacity:1}
+    100%{transform:translate(22px,-34px) scale(1.06);opacity:0}
   }
-  .hero-glow{
-    position:absolute;left:50%;top:-120px;transform:translateX(-50%);
-    width:min(1200px,140vw);height:820px;border-radius:50%;
-    background:radial-gradient(ellipse at 50% 30%,rgba(255,84,71,.16),rgba(255,45,85,.06) 42%,transparent 68%);
-    filter:blur(60px);pointer-events:none;z-index:-1;
+
+  .eyebrow{
+    font-family:var(--hand);font-size:var(--hand-m);color:var(--blue);
+    transform:rotate(-2deg);display:inline-block;margin-bottom:6px;
   }
-  .ring{
-    position:absolute;left:50%;top:150px;
-    width:min(46vmin,420px);height:min(46vmin,420px);border-radius:50%;
-    border:1px solid rgba(255,84,71,.28);
-    transform:translate(-50%,-50%) scale(.6);
-    animation:ring 6s ease-out infinite;pointer-events:none;z-index:-1;
-  }
-  .ring.r2{animation-delay:2s}
-  .ring.r3{animation-delay:4s}
-  @keyframes ring{
-    0%{transform:translate(-50%,-50%) scale(.55);opacity:0}
-    12%{opacity:.6}
-    100%{transform:translate(-50%,-50%) scale(2.3);opacity:0}
-  }
-  header .eyebrow{margin-bottom:26px}
   h1{
-    font-family:var(--fdisp);
-    font-size:clamp(52px,11vw,120px);
-    line-height:.94;letter-spacing:-.05em;font-weight:800;
+    font-family:var(--disp);font-weight:800;
+    font-size:var(--head-l);line-height:.98;letter-spacing:-.045em;color:var(--ink);
   }
-  .sub{
-    max-width:640px;margin:28px auto 0;
-    font-size:clamp(16px,2.1vw,19px);color:var(--muted);line-height:1.6;
-  }
-  .sub b{color:var(--text);font-weight:600}
-  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:38px}
-  .trust{
-    margin-top:24px;font-size:12.5px;color:var(--dim);
-    display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
-  }
-  .trust .sep{opacity:.5}
-  .trust .stars{color:#f5b301;letter-spacing:2px}
+  .side{position:absolute;top:0;bottom:0;width:132px;z-index:0;pointer-events:none;overflow:hidden;display:flex;align-items:center}
+  .side.l{left:0}
+  .side.r{right:0}
+  .side svg{width:132px;height:auto;display:block}
+  .side .ln{fill:none;stroke:rgba(29,78,216,.34);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+  section > .wrap{z-index:2}
+  @media (max-width:1279px){.side{display:none}}
 
-  /* hero video */
-  .hero-video{
-    width:100%;max-width:1000px;margin:56px auto 0;position:relative;cursor:pointer;
-    border-radius:24px;overflow:hidden;
-    border:1px solid var(--line);
-    background:rgba(25,10,8,.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    box-shadow:0 40px 100px rgba(0,0,0,.6),0 20px 60px rgba(255,45,85,.14);
-  }
-  .hero-video video{display:block;width:100%}
-  .vf-curtain{
-    position:absolute;inset:0;border:none;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
-    background:linear-gradient(180deg,rgba(5,5,5,.28),rgba(5,5,5,.55));
-    transition:opacity .35s ease;
-  }
-  .vf-curtain .vf-play{
-    width:88px;height:88px;border-radius:50%;
-    background:var(--heat);display:flex;align-items:center;justify-content:center;
-    box-shadow:0 10px 44px rgba(255,84,71,.5);transition:transform .18s ease;
-  }
-  .vf-curtain .vf-play svg{margin-left:5px}
-  .vf-curtain:hover .vf-play{transform:scale(1.08)}
-  .vf-cap{
-    font-family:var(--fdisp);font-weight:700;font-size:16px;letter-spacing:.02em;
-    color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.7);
-  }
-  .hero-video.playing .vf-curtain{opacity:0;pointer-events:none}
-
-  /* ---------- sections ---------- */
-  section{padding:clamp(90px,14vh,150px) 0;position:relative}
-  section.tint{background:var(--s-lowest)}
-  section.tint2{background:var(--s-low)}
-  .kicker{margin-bottom:18px}
-  .kicker.cyan{color:var(--tertiary)}
-  h2{font-family:var(--fdisp);font-size:clamp(34px,5.2vw,58px);letter-spacing:-.035em;line-height:1.04;font-weight:800;max-width:760px}
-  .lead{max-width:600px;margin-top:22px;font-size:17px;color:var(--muted);line-height:1.65}
-  .lead b{color:var(--text);font-weight:600}
-
-  /* reveal on scroll */
-  .rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s ease}
-  .rv.in{opacity:1;transform:none}
-
-  /* ---------- 700% ---------- */
-  .seven{text-align:center}
-  .seven-num{
-    font-family:var(--fdisp);font-size:clamp(120px,24vw,240px);
-    font-weight:800;letter-spacing:-.06em;line-height:1;
-    background:var(--heat);-webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 0 70px rgba(255,84,71,.3));
-  }
-  .seven h3{font-family:var(--fdisp);font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.03em;line-height:1.15;max-width:760px;margin:26px auto 0}
-  .seven h3 span{color:var(--muted)}
-  .seven .lead{margin:18px auto 0;text-align:center}
-
-  /* ---------- remix (two-col) ---------- */
-  .two{display:flex;gap:56px;align-items:center;flex-wrap:wrap}
-  .two .col{flex:1 1 380px;min-width:0}
-  .pills{display:flex;flex-wrap:wrap;gap:11px;margin-top:34px}
-  .pill{
-    border:1px solid var(--line);border-radius:999px;
-    padding:11px 20px;font-family:var(--fdisp);font-size:14px;font-weight:600;color:var(--muted);
-    background:rgba(255,255,255,.02);transition:all .2s ease;cursor:default;
-  }
-  .pill em{font-style:normal;color:var(--dim);font-size:12px;margin-left:7px}
-  .pill:hover{color:#fff;border-color:rgba(255,84,71,.6);background:rgba(255,84,71,.1);transform:translateY(-2px)}
-  .glass-frame{
-    position:relative;border-radius:24px;padding:20px;
-    background:rgba(25,10,8,.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    border:1px solid var(--line);display:flex;justify-content:center;
-    box-shadow:0 30px 80px rgba(0,0,0,.5);
-  }
-  .glass-frame::before{
-    content:"";position:absolute;inset:-1px;border-radius:24px;z-index:-1;
-    background:linear-gradient(120deg,rgba(255,84,71,.5),rgba(100,214,229,.4));
-    filter:blur(16px);opacity:.25;
+  .mark{position:relative;display:inline-block;padding:0 6px;z-index:1}
+  .mark::before{
+    content:"";position:absolute;left:0;right:0;bottom:.06em;height:.52em;z-index:-1;
+    background:var(--hl);border-radius:4px;transform:rotate(-.6deg);
   }
 
-  /* ---------- screenshots grid ---------- */
-  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;margin-top:52px;justify-items:center;align-items:start}
+  .sub{max-width:520px;margin-top:26px;font-size:var(--text-l);line-height:1.6;color:var(--ink3)}
+  .sub b{color:var(--ink);font-weight:600}
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px}
+  .trust{margin-top:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:var(--text-s);color:var(--soft)}
+  .trust .stars{color:#f0a500;letter-spacing:2px;font-size:var(--text-s)}
+  .trust .sep{opacity:.45}
 
-  /* ---------- features ---------- */
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:52px}
-  .card{
-    background:var(--panel);border:1px solid var(--line);border-radius:18px;
-    padding:26px 24px;transition:transform .2s ease,border-color .2s ease;
+  .hero-art{position:relative}
+  .hero-art img.pop{
+    width:276px;border-radius:16px;margin-left:auto;
+    box-shadow:0 40px 70px rgba(6,20,50,.30),0 14px 28px rgba(6,20,50,.18),0 0 0 1px rgba(9,26,60,.16);
   }
-  .card:hover{transform:translateY(-4px);border-color:rgba(255,84,71,.42)}
-  .card .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
-  .ic.red{background:rgba(255,84,71,.12)}.ic.red svg{stroke:var(--red)}
-  .ic.cyan{background:rgba(100,214,229,.12)}.ic.cyan svg{stroke:var(--tertiary)}
-  .ic.mint{background:rgba(69,224,160,.12)}.ic.mint svg{stroke:var(--mint)}
-  .ic.violet{background:rgba(110,86,255,.14)}.ic.violet svg{stroke:#8f7bff}
-  .card .ic svg{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .card h3{font-family:var(--fdisp);font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
-  .card p{font-size:14px;color:var(--muted);line-height:1.6}
-
-  /* ---------- privacy ---------- */
-  .privacy{text-align:center}
-  .privacy h2{margin:0 auto}
-  .privacy .lead{margin-left:auto;margin-right:auto}
-  .nosy{
-    margin:44px auto 0;max-width:820px;text-align:left;position:relative;overflow:hidden;
-    border-radius:24px;padding:clamp(28px,5vw,52px);
-    background:linear-gradient(140deg,var(--s-low),var(--obsidian));
-    border:1px solid var(--line);
+  .sticker{
+    position:absolute;left:-116px;top:255px;z-index:3;
+    font-family:var(--hand);font-size:var(--hand-m);line-height:1.1;color:var(--ink);
+    background:var(--hl);padding:9px 15px;border-radius:9px;transform:rotate(-4deg);
+    box-shadow:4px 6px 0 rgba(150,110,10,.28);
   }
-  .nosy h3{font-family:var(--fdisp);font-size:clamp(26px,4vw,36px);font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
-  .nosy h3 span{color:var(--tertiary)}
-  .nosy .nlead{color:var(--muted);margin-bottom:28px}
-  .nosy ul{list-style:none;display:flex;flex-direction:column;gap:18px;max-width:520px;position:relative;z-index:1}
-  .nosy li{display:flex;gap:13px;align-items:flex-start}
-  .nosy li svg{flex-shrink:0;margin-top:2px;stroke:var(--mint);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .nosy .nt{font-family:var(--fdisp);font-weight:700;font-size:15px}
-  .nosy .nd{font-size:13.5px;color:var(--muted);line-height:1.55}
-  .nosy .lock{position:absolute;right:-40px;top:50%;transform:translateY(-50%);opacity:.12;pointer-events:none;z-index:0}
-  .nosy .lock svg{width:280px;height:280px;stroke:var(--tertiary);fill:none;stroke-width:1.2}
-  .priv-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:40px}
-  .priv-chip{border:1px solid var(--line);border-radius:999px;padding:10px 20px;font-size:13.5px;color:var(--muted);background:rgba(255,255,255,.02)}
-  .priv-chip b{color:var(--text)}
-  a.priv-chip:hover{border-color:rgba(255,84,71,.55);color:var(--text)}
+  .sticker-arrow{position:absolute;left:-27px;top:293px;width:96px;height:70px;z-index:3;overflow:visible}
+  .sticker-arrow path{fill:none;stroke:var(--red);stroke-width:8;stroke-linecap:round}
+  .sticker-arrow polygon{fill:var(--red)}
 
-  /* ---------- footer ---------- */
-  footer{background:var(--s-lowest);border-top:1px solid var(--line-2);padding:34px 0 46px;font-size:13px;color:var(--dim)}
-  .foot-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-  .foot-links{display:flex;gap:20px;flex-wrap:wrap}
-  .foot-links a:hover{color:var(--text)}
+  section{padding:66px 0;position:relative}
+  #loud{padding-top:44px}
+  .gap{height:104px;display:flex;align-items:center;justify-content:center;position:relative}
+  .gap svg{width:min(100%,880px);height:100px;overflow:hidden;display:block}
+  .gap .ln{fill:none;stroke:rgba(29,78,216,.42);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+  .gap .fill-p{fill:var(--paper);stroke:rgba(29,78,216,.42);stroke-width:3.2;stroke-linejoin:round}
+  .kicker{font-family:var(--hand);font-size:var(--hand-l);color:var(--blue);transform:rotate(-1.6deg);display:inline-block;margin-bottom:4px}
+  h2{font-family:var(--disp);font-weight:800;font-size:var(--head-m);line-height:1.03;letter-spacing:-.04em;color:var(--ink);max-width:14ch}
+  .lead{max-width:520px;margin-top:20px;font-size:var(--text-l);line-height:1.62;color:var(--ink3)}
+  .lead b{color:var(--ink);font-weight:600}
+  .note{margin-top:14px;font-size:var(--text-m);color:var(--soft)}
 
-  #bmc-wbtn{width:86px!important;height:86px!important}
-  #bmc-wbtn img{height:44px!important;width:auto!important}
+  .pnote{
+    margin-top:16px;font-family:var(--hand);font-size:var(--hand-m);line-height:1.2;
+    color:var(--red);transform:rotate(-1.2deg);min-height:30px;
+  }
 
-  /* ---------- 1:1 popup replicas ---------- */
-  .tius{width:300px;background:#05060b;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:12px 16px 14px;font-family:var(--fbody);color:#fff;font-size:12.5px;line-height:1.4;box-shadow:0 24px 70px rgba(0,0,0,.6);transition:transform .2s ease,box-shadow .2s ease}
-  .tius:hover{transform:translateY(-6px);box-shadow:0 34px 84px rgba(255,45,85,.16),0 24px 70px rgba(0,0,0,.6)}
-  .tius *{box-sizing:border-box}
-  .tius input{pointer-events:none}
-  .tius .thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-  .tius .tbrand{display:flex;gap:8px;align-items:center;font-weight:700;font-size:15px;letter-spacing:-.2px}
-  .tius .tpow{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#6e56ff}
-  .tius .ptrack{width:38px;height:22px;border-radius:999px;background:linear-gradient(135deg,#6e56ff,#3ddcff);position:relative}
-  .tius .ptrack::after{content:"";position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:#fff}
-  .tius .tstat{display:flex;gap:8px;align-items:center;font-weight:600;font-size:12.5px;padding:7px 11px;border-radius:10px;margin-bottom:8px;background:rgba(69,224,160,.12);border:1px solid rgba(69,224,160,.35);color:#45e0a0}
-  .tius .tstat.info{background:rgba(255,255,255,.07);border-color:transparent;color:rgba(255,255,255,.6)}
-  .tius .tdot{width:9px;height:9px;border-radius:50%;background:#45e0a0;box-shadow:0 0 0 3px rgba(69,224,160,.22);flex-shrink:0}
-  .tius .vbl{background:rgba(255,255,255,.04);border-radius:14px;padding:10px 14px;margin-bottom:8px}
-  .tius .vread{text-align:center;font-size:26px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,#6e56ff,#3ddcff);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:8px}
-  .tius .vread i{font-style:normal;font-size:16px}
-  .tius input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:9px;border-radius:999px;background:rgba(255,255,255,.1)}
-  .tius input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #6e56ff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-  .tius .vol{background:linear-gradient(to right,#6e56ff 0%,#6e56ff 14%,#8f9bff 22%,#eab308 34%,#f59e0b 46%,#ef4444 62%,#b91c1c 100%)}
-  .tius .vscale{display:flex;justify-content:space-between;font-size:9.5px;color:rgba(255,255,255,.6);margin-top:6px}
-  .tius .vscale b{color:#ef4444;font-weight:700}
-  .tius .ticks{display:flex;gap:4px;margin-top:7px}
-  .tius .tick{flex:1;border:1px solid rgba(255,255,255,.1);background:#05060b;color:rgba(255,255,255,.6);border-radius:7px;padding:3px 0;font-size:10.5px;font-weight:600;text-align:center}
-  .tius .srow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 2px;font-size:12.5px}
-  .tius .sw{width:38px;height:22px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);position:relative;flex-shrink:0}
-  .tius .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff}
-  .tius .sw.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);border-color:transparent}
-  .tius .sw.on::after{left:auto;right:2px}
-  .tius .mopen{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 12px;margin:8px 0}
-  .tius .mo-x{flex:1;min-width:0}
-  .tius .mo-t{font-weight:700;font-size:12.5px}
-  .tius .mo-s{font-size:10.5px;color:rgba(255,255,255,.6)}
-  .tius .mo-a{font-size:20px;color:rgba(255,255,255,.6)}
-  .tius .tbt{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.6);margin:8px 0 6px}
-  .tius .titem{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.04);border-radius:9px;padding:6px 10px;font-size:12px}
-  .tius .titem span:nth-of-type(2){flex:1}
-  .tius .ton{font-size:9.5px;font-weight:700;color:#45e0a0;background:rgba(69,224,160,.12);padding:3px 9px;border-radius:999px}
-  .tius .frow{display:flex;gap:8px;margin-top:8px}
-  .tius .fbtn{flex:1;padding:7px;border:1px solid rgba(255,255,255,.1);border-radius:9px;color:rgba(255,255,255,.6);font-size:12px;font-weight:600;text-align:center}
-  .tius .rrow{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;color:rgba(255,255,255,.6)}
-  .tius .rstars{color:rgba(255,255,255,.18);font-size:17px;letter-spacing:2px}
-  .tius .dono{text-align:center;font-size:12px;color:rgba(255,255,255,.6);margin-top:6px}
-  .tius .mhead{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-  .tius .mback{width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:18px}
-  .tius .mtitle{font-weight:700;font-size:14px;flex:1}
-  .tius .anlz{display:inline-flex;gap:2px;align-items:flex-end;height:13px}
-  .tius .anlz i{width:3px;border-radius:1.5px;background:linear-gradient(to top,#6e56ff,#3ddcff)}
-  .tius .mbig{text-align:center;font-size:27px;font-weight:800;letter-spacing:-1px;color:rgba(255,255,255,.6);margin:8px 0}
-  .tius .mtabs{display:flex;gap:3px;padding:3px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:999px;margin-bottom:8px}
-  .tius .mtab{flex:1;text-align:center;border-radius:999px;padding:4px 0;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.6)}
-  .tius .mtab.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff}
-  .tius .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
-  .tius .mp{border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 0;font-size:11px;font-weight:700;color:rgba(255,255,255,.6);text-align:center}
-  .tius .mp.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff;border-color:transparent}
-  .tius .mp.add{grid-column:1/-1;border-style:dashed;font-size:13px}
-  .tius .mfull{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 8px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.04);margin-bottom:8px}
-  .tius .mf-t{display:block;font-size:11.5px;font-weight:700}
-  .tius .mf-d{display:block;font-size:9.5px;color:rgba(255,255,255,.6)}
-  .tius .mrow{margin-bottom:8px}
-  .tius .mrh{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:2px}
-  .tius .mrh b{color:#6e56ff;font-weight:800}
-  .tius .mrd{font-size:9.5px;color:rgba(255,255,255,.6);margin:0 0 4px}
-  .tius .mseg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-  .tius .msg{flex:1 1 30%;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:3px 0;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-align:center}
-  .tius .msg.on{background:linear-gradient(135deg,#6e56ff,#3ddcff);color:#fff;border-color:transparent}
-  .tius .mhint{font-size:10px;color:rgba(255,255,255,.6);margin-top:8px}
+  .dials{margin-top:74px;position:relative}
+  .dials-head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .dials-head h3{font-family:var(--disp);font-weight:800;font-size:var(--head-m);letter-spacing:-.03em;color:var(--ink)}
+  .dials-head span{font-family:var(--hand);font-size:var(--hand-m);color:var(--blue);transform:rotate(-1.4deg)}
+  .dials-sub{font-size:var(--text-m);color:var(--ink3);max-width:760px;margin-bottom:34px}
+  .dial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:30px 44px}
+  .dial{position:relative;padding-left:38px}
+  .dial svg{position:absolute;left:0;top:3px;width:26px;height:20px;overflow:visible}
+  .dial svg path{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round}
+  .dial svg circle{fill:var(--paper);stroke:var(--ink);stroke-width:3}
+  .dial b{display:block;font-family:var(--disp);font-weight:800;font-size:var(--text-l);letter-spacing:-.015em;color:var(--ink)}
+  .dial b i{font-style:normal;font-weight:700;font-size:var(--text-s);color:var(--blue);margin-left:7px}
+  .dial p{margin-top:3px;font-size:var(--text-m);line-height:1.55;color:var(--ink3)}
+  .flavors{margin-top:34px;font-size:var(--text-m);line-height:1.7;color:var(--ink3);max-width:860px}
+  .flavors b{font-family:var(--disp);font-weight:800;color:var(--ink)}
+  .flavors u{text-decoration:none;background:var(--hl);padding:1px 5px;border-radius:3px;color:var(--ink);font-weight:600}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+  .two.flip .col-art{order:-1}
+
+  .big-num{
+    font-family:var(--disp);font-weight:800;font-size:clamp(104px,15vw,182px);line-height:.9;
+    letter-spacing:-.06em;color:var(--ink);position:relative;display:inline-block;
+  }
+  .swoosh{display:block;width:min(100%,412px);height:26px;margin-top:2px;overflow:visible}
+  .swoosh path{fill:none;stroke:var(--red);stroke-width:7;stroke-linecap:round}
+
+  .presets{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px;max-width:520px}
+  .pbtn{
+    font-family:var(--disp);font-weight:700;font-size:var(--text-s);color:var(--ink2);
+    background:transparent;border:2px solid rgba(22,48,94,.32);border-radius:11px;
+    padding:9px 15px;cursor:pointer;transition:all .14s ease;
+  }
+  .pbtn:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .pbtn.on{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:4px 4px 0 rgba(10,23,48,.2)}
+
+  .art-pop{position:relative;display:flex;justify-content:center}
+  .art-pop img{
+    border-radius:16px;
+    box-shadow:0 40px 72px rgba(6,20,50,.28),0 14px 28px rgba(6,20,50,.16),0 0 0 1px rgba(9,26,60,.15);
+  }
+  .art-pop.tall img{width:286px}
+  .art-pop.wide img{width:min(100%,520px)}
+  .art-pop .tape{
+    position:absolute;z-index:3;width:96px;height:27px;background:rgba(255,210,30,.72);
+    box-shadow:0 2px 6px rgba(120,90,10,.22);
+  }
+  .art-pop .tape.tl{left:50%;top:-13px;transform:translateX(-50%) rotate(-3.5deg)}
+  .art-pop .tape.br{left:50%;bottom:-13px;transform:translateX(-50%) rotate(2.5deg)}
+
+  .banned{display:flex;flex-direction:column;gap:12px;margin-top:30px;max-width:400px}
+  .ban{position:relative;font-family:var(--disp);font-weight:700;font-size:var(--text-l);color:var(--soft);padding:2px 4px;width:fit-content}
+  .ban svg{position:absolute;left:-6px;top:0;width:calc(100% + 14px);height:100%;overflow:visible}
+  .ban svg path{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round}
+
+  .checks{margin-top:30px;display:flex;flex-direction:column;gap:20px;max-width:520px}
+  .chk{display:flex;gap:16px;align-items:flex-start}
+  .chk svg{flex-shrink:0;width:30px;height:30px;margin-top:2px}
+  .chk svg path{fill:none;stroke:var(--blue);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+  .chk-t{font-family:var(--disp);font-weight:800;font-size:var(--text-l);color:var(--ink);letter-spacing:-.015em}
+  .chk-d{font-size:var(--text-m);color:var(--ink3);line-height:1.55}
+
+  .marquee{position:relative;width:300px;height:212px;margin:26px auto 0}
+  .marquee .mq-sign{width:100%;height:100%;overflow:visible;display:block}
+  .mq-plate{fill:none;stroke:var(--ink);stroke-width:5;stroke-linejoin:round}
+  .mq-fill{fill:var(--red)}
+  .mq-word{
+    position:absolute;left:0;right:0;top:26px;text-align:center;
+    font-family:var(--disp);font-weight:800;font-size:31px;letter-spacing:.06em;
+    color:#fff;text-transform:uppercase;pointer-events:none;
+  }
+
+  .lane{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:34px}
+  .chev{display:flex;gap:5px}
+  .chev svg{width:18px;height:26px;display:block}
+  .chev polygon{fill:var(--red);animation:runway 1.6s linear infinite}
+  .chev.r{transform:scaleX(-1)}
+
+  .mq-arrow{position:absolute;width:116px;height:86px;overflow:visible;z-index:3}
+  .mq-arrow path{fill:none;stroke:var(--red);stroke-width:7;stroke-linecap:round}
+  .mq-arrow polygon{fill:var(--red)}
+  .mq-arrow.l{left:-140px;top:18px}
+  .mq-arrow.r{right:-140px;top:18px;transform:scaleX(-1)}
+  .mq-tag{
+    position:absolute;top:126px;font-family:var(--hand);font-size:var(--hand-m);
+    color:var(--blue);white-space:nowrap;z-index:3;
+  }
+  .mq-tag.l{right:calc(100% + 26px);transform:rotate(-4deg)}
+  .mq-tag.r{left:calc(100% + 26px);transform:rotate(4deg)}
+  @media (max-width:900px){.mq-arrow,.mq-tag,.chev{display:none}}
+  @media (max-width:820px){.nav-links .hide-m{display:none}}
+
+  .final-deco{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .final-deco svg{width:100%;height:100%;display:block}
+  .final-deco .ln{fill:none;stroke:rgba(29,78,216,.4);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+  .final-deco .fill-p{fill:var(--paper);stroke:rgba(29,78,216,.4);stroke-width:3.2;stroke-linejoin:round}
+  .final .wrap{position:relative;z-index:2}
+  .twinkle{animation:twinkle 3.4s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+  .bulb{fill:#fff6cf;stroke:var(--ink);stroke-width:2.6;animation:chase 1.5s linear infinite}
+  @keyframes chase{
+    0%,100%{fill:#fff6cf}
+    22%{fill:var(--hl)}
+    46%{fill:#fff6cf}
+  }
+  @keyframes runway{
+    0%,100%{opacity:.22}
+    25%{opacity:1}
+    60%{opacity:.22}
+  }
+
+  .final{text-align:center;padding:130px 0 190px}
+  .final h2{max-width:none;margin:0 auto;font-size:var(--head-l)}
+  .final .cta-row{justify-content:center;margin-top:40px}
+  .final-arrow{width:150px;height:96px;margin:26px auto 0;overflow:visible;display:block}
+  .final-arrow path{fill:none;stroke:var(--red);stroke-width:8;stroke-linecap:round}
+  .final-arrow polygon{fill:var(--red)}
+  .mini{margin-top:26px;font-size:var(--text-s);color:var(--soft)}
+  .mini a{border-bottom:2px solid rgba(29,78,216,.3)}
+  .mini a:hover{color:var(--blue)}
+
+  footer{padding:34px 0 46px;font-size:var(--text-s);color:var(--soft);position:relative}
+  footer::before{
+    content:"";position:absolute;left:28px;right:28px;top:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(22,48,94,.22) 10%,rgba(22,48,94,.22) 90%,transparent);
+  }
+  .foot-in{max-width:1120px;margin:0 auto;padding:0 28px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .foot-links{display:flex;gap:22px}
+  .foot-links a:hover{color:var(--blue)}
+
+  html.js .rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+  html.js .rv.in{opacity:1;transform:none}
 
   @media (prefers-reduced-motion:reduce){
-    .ring{animation:none}
+    .boil,.sun,.house,.nt,.bulb,.chev polygon{animation:none}
+    .chev polygon{opacity:1}
     .rv{opacity:1;transform:none;transition:none}
   }
-  @media (max-width:600px){
+  @media (max-width:920px){
+    .hero-grid{grid-template-columns:1fr;gap:52px}
+    .hero-art img.pop{width:260px}
+    .hero-art img.pop{margin:0 auto}
+    .sticker{left:0;top:250px;font-size:var(--hand-s)}
+    .sticker-arrow{left:52px;top:292px;width:70px;height:52px}
+    .two{grid-template-columns:1fr;gap:44px}
+    .two.flip .col-art{order:0}
+    h2{max-width:none}
+  }
+  @media (max-width:560px){
     .nav-links .hide-m{display:none}
-    .nav-links{gap:16px}
-    .two{gap:36px}
+    .chev{display:none}
+    .marquee{width:230px;height:164px}
+    .mq-word{top:19px;font-size:24px}
+    header.hero{padding-top:118px}
   }
 </style>
 </head>
 <body>
 
+<svg class="defs" aria-hidden="true">
+  <filter id="b0" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b1" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b2" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+
+<div class="paper" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+
 <nav>
   <div class="nav-in">
-    <a class="brand" href="#top">
-      <span class="brand-dot" aria-hidden="true"></span>
-      Turn It Up, Son!
-    </a>
+    <a class="brand" href="#top"><img src="img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
     <div class="nav-links">
-      <a class="hide-m" href="#remix">Mixer</a>
-      <a class="hide-m" href="#skip">Auto-skip</a>
-      <a class="hide-m" href="#features">Features</a>
-      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      <a class="hide-m" href="#loud">700%</a>
+      <a class="hide-m" href="#mix">Mix panel</a>
+      <a class="hide-m" href="#skip">Auto Skip</a>
+      <a class="hide-m" href="#privacy">Privacy</a>
+      <a class="hide-m" href="blog/index.html">Blog</a>
+    </div>
+    <div class="nav-right">
+      <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
       <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
     </div>
   </div>
 </nav>
 
-<header id="top">
-  <div class="hero-glow" aria-hidden="true"></div>
-  <div class="ring" aria-hidden="true"></div>
-  <div class="ring r2" aria-hidden="true"></div>
-  <div class="ring r3" aria-hidden="true"></div>
+<header class="hero" id="top">
+  <div class="scene" aria-hidden="true">
+    <svg viewBox="0 0 1400 264" preserveAspectRatio="xMidYMax meet">
+      <g class="boil" transform="translate(0,106)">
+        <path class="ln soft" d="M-420 152 C -250 132, -60 128, 60 144 C 190 158, 320 148, 420 140 C 470 136, 500 142, 520 146"/>
+        <path class="ln soft" d="M880 148 C 960 132, 1050 130, 1120 140 C 1260 156, 1430 148, 1580 138 C 1690 131, 1780 140, 1840 136"/>
+        <path class="ln" d="M-420 154 C -200 148, 0 160, 220 152 C 420 144, 600 160, 800 151 C 990 143, 1180 158, 1380 150 C 1560 144, 1700 154, 1840 148"/>
 
-  <div class="eyebrow">Free Chrome extension</div>
-  <h1>Turn it up.<br><span class="heat-text">Way up.</span></h1>
-  <p class="sub">
-    Boost any tab up to <b>700%</b>. Remix any song <b>live</b>: sped up, nightcore,
-    slowed + reverb, drill, 8D. <b>Auto-skip</b> the artists you never want to hear.
-    Works on YouTube, Spotify and everywhere else.
-  </p>
-  <div class="cta-row">
-    <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - it's free</a>
-    <a class="btn big ghost" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">View source</a>
-  </div>
-  <div class="trust">
-    <span class="stars" aria-hidden="true">★★★★★</span>
-    <span>on Chrome Web Store</span>
-    <span class="sep">·</span><span>No account</span>
-    <span class="sep">·</span><span>No tracking</span>
+        <g class="house">
+          <path class="fill-p" d="M654 152 L654 100 L770 100 L770 152 Z"/>
+          <path class="ln" d="M640 102 L712 62 L784 102"/>
+          <path class="ln" d="M756 82 L756 66 L770 66 L770 90"/>
+          <path class="ln" d="M696 152 L696 122 L722 122 L722 152"/>
+          <path class="ln" d="M740 116 m -9 0 a 9 9 0 1 0 18 0 a 9 9 0 1 0 -18 0"/>
+          <path class="ln" d="M731 116 L749 116 M740 107 L740 125"/>
+        </g>
+
+        <g class="ln">
+          <path d="M300 152 L300 122"/>
+          <path d="M300 124 C 270 122, 268 96, 287 92 C 289 74, 319 74, 323 91 C 342 95, 338 122, 300 124"/>
+        </g>
+        <g class="ln">
+          <path d="M964 152 L964 126"/>
+          <path d="M964 128 C 940 126, 938 104, 954 101 C 956 86, 981 86, 984 100 C 1000 103, 997 126, 964 128"/>
+        </g>
+        <g class="ln">
+          <path d="M1146 152 L1146 130"/>
+          <path d="M1146 132 C 1126 130, 1124 112, 1138 109 C 1140 96, 1161 96, 1163 108 C 1177 111, 1174 130, 1146 132"/>
+        </g>
+
+        <g class="ln soft">
+          <path d="M366 92 C 366 74, 392 68, 400 81 C 409 62, 440 66, 441 85 C 456 86, 456 101, 440 101 L 378 101 C 362 101, 362 94, 366 92"/>
+          <path d="M1032 76 C 1032 62, 1052 58, 1058 68 C 1065 54, 1089 57, 1090 72 C 1102 73, 1102 84, 1089 84 L 1042 84 C 1029 84, 1029 79, 1032 76"/>
+        </g>
+
+        <g class="ln soft">
+          <path d="M508 90 C 515 81, 522 81, 529 90"/>
+          <path d="M529 90 C 536 81, 543 81, 550 90"/>
+          <path d="M576 74 C 581 67, 587 67, 592 74"/>
+        </g>
+
+        <g class="sun">
+          <path class="ln" d="M1340 92 m -26 0 a 26 26 0 1 0 52 0 a 26 26 0 1 0 -52 0"/>
+          <path class="ln" d="M1340 56 L1340 44 M1340 140 L1340 128 M1376 92 L1388 92 M1292 92 L1304 92 M1366 66 L1374 58 M1306 126 L1314 118 M1366 118 L1374 126 M1306 58 L1314 66"/>
+        </g>
+
+        <g class="ln soft">
+          <path d="M596 152 L592 140 M602 152 L604 138 M608 152 L612 141"/>
+          <path d="M860 150 L856 138 M866 150 L868 136 M872 150 L876 139"/>
+          <path d="M1300 148 L1296 136 M1306 148 L1308 134"/>
+        </g>
+      </g>
+      <g class="notes" transform="translate(0,106)">
+        <g class="nt" style="animation-delay:0s"><path class="ln" d="M764 58 m -7 3 a 7 5.5 -18 1 0 0.1 0 M770 56 L773 38 M773 38 C 781 40, 783 46, 779 51"/></g>
+        <g class="nt" style="animation-delay:1.05s"><path class="ln" d="M788 48 m -6 2.6 a 6 4.8 -18 1 0 0.1 0 M793 46 L796 31 M796 31 C 803 33, 805 38, 801 42"/></g>
+        <g class="nt" style="animation-delay:2.1s"><path class="ln" d="M742 54 m -5.5 2.4 a 5.5 4.4 -18 1 0 0.1 0 M747 52 L749 39 M749 39 C 755 41, 757 45, 753 48"/></g>
+      </g>
+    </svg>
   </div>
 
-  <div class="hero-video" id="vidFrame">
-    <video id="vid" src="showcase.mp4" poster="poster.jpg" loop playsinline preload="metadata" controls controlslist="nodownload noplaybackrate"></video>
-    <button class="vf-curtain" id="vfCurtain" aria-label="Play video">
-      <span class="vf-play">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-      </span>
-      <span class="vf-cap">Click to play the demo</span>
-    </button>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">free chrome extension</div>
+      <h1>Turn it up.<br><span class="mark">Way up.</span></h1>
+      <p class="sub">
+        Boost any tab up to <b>700%</b>, then remix whatever is playing with a full
+        <b>Mix panel</b>: nightcore, slowed + reverb, phonk, 8D. Works on YouTube,
+        Spotify and any tab with sound.
+      </p>
+      <div class="cta-row">
+        <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - free</a>
+        <a class="btn big ghost" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <div class="trust">
+        <span class="stars">★★★★★</span><span>on the Chrome Web Store</span>
+        <span class="sep">·</span><span>no account</span>
+        <span class="sep">·</span><span>no tracking</span>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <div class="sticker">no other<br>booster<br>has this</div>
+      <svg class="sticker-arrow boil" viewBox="0 0 120 86">
+        <path d="M8 6 C 34 22, 62 40, 92 58"/>
+        <polygon points="110 74, 80 66, 96 46"/>
+      </svg>
+      <img class="pop" src="img/popup-main.png" alt="Turn It Up, Son! popup with the volume slider at 700%">
+    </div>
   </div>
 </header>
 
-<section class="seven tint">
-  <div class="wrap rv">
-    <div class="seven-num">700%</div>
-    <h3>Seven times louder than your browser allows. <span>Each tab has its own level, so one tab can scream while the rest stay quiet.</span></h3>
-    <p class="lead">A built-in limiter keeps it from crackling even at max boost. Pure, powerful sound without the distortion.</p>
-  </div>
-</section>
-
-<section id="remix">
-  <div class="wrap rv">
-    <div class="two">
-      <div class="col">
-        <div class="kicker eyebrow cyan">Live mixer</div>
-        <h2>Any song.<br><span class="neon-text">Your version.</span> Live.</h2>
-        <p class="lead">
-          Stop hunting YouTube for a sped up version that <b>half the time does not exist</b>.
-          One click remixes whatever is already playing - in real time, on any site.
-        </p>
-        <div class="pills">
-          <span class="pill">Sped Up <em>1.25x</em></span>
-          <span class="pill">Nightcore <em>1.35x</em></span>
-          <span class="pill">Slowed + Reverb <em>0.85x</em></span>
-          <span class="pill">8D Audio <em>headphones</em></span>
-          <span class="pill">Drill / Rap <em>808</em></span>
-          <span class="pill">Phonk</span>
-          <span class="pill">NY Drill</span>
-          <span class="pill">Your own mix <em>save it</em></span>
-        </div>
-      </div>
-      <div class="col">
-        <div class="glass-frame">
-          <!-- Mix panel replica -->
-          <div class="tius" aria-label="Extension popup, Mix and effects panel">
-            <div class="mhead">
-              <span class="mback">‹</span>
-              <span class="mtitle">Mix and effects</span>
-              <span class="anlz"><i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:80%"></i><i style="height:55%"></i></span>
-            </div>
-            <div class="mbig">1.25x</div>
-            <div class="tstat"><span class="tdot"></span>Sped Up - playing</div>
-            <div class="mtabs"><span class="mtab on">Presets</span><span class="mtab">Your mixes</span></div>
-            <div class="mgrid">
-              <span class="mp">Normal</span><span class="mp on">Sped Up</span>
-              <span class="mp">Nightcore</span><span class="mp">Sped Up + Reverb</span>
-              <span class="mp">Slowed + Reverb</span><span class="mp">8D Audio</span>
-              <span class="mp">Drill / Rap</span><span class="mp">Phonk</span>
-              <span class="mp">NY Drill</span><span class="mp">Chill Drill</span>
-              <span class="mp add">＋</span>
-            </div>
-            <div class="mrow">
-              <div class="mrh"><span>Speed</span><b>1.25x</b></div>
-              <input type="range" min="50" max="160" value="125" tabindex="-1">
-              <div class="vscale"><span>0.5x</span><span>1x</span><span>1.6x</span></div>
-            </div>
-            <p class="mhint">Speed works on pages with a video or audio player. The other effects work everywhere.</p>
-          </div>
-        </div>
-      </div>
+<section id="loud">
+  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 420"><g class="boil">
+    <path class="ln" d="M84 74 L84 98 M72 86 L96 86 M76 78 L92 94 M92 78 L76 94"/>
+    <path class="ln" d="M56 184 C 56 166, 82 160, 90 173 C 100 153, 130 157, 131 176"/>
+    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
+  </g></svg></div>
+  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 460" ><g class="boil">
+    <path class="ln" d="M22 96 C 22 76, 50 69, 59 84 C 69 62, 103 67, 104 88 C 120 89, 120 106, 103 106 L 35 106 C 18 106, 18 99, 22 96"/>
+    <path class="ln" d="M44 196 L44 216 M34 206 L54 206 M37 199 L51 213 M51 199 L37 213"/>
+    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
+    <path class="ln" d="M28 386 C 35 377, 43 377, 50 386 M50 386 C 57 377, 65 377, 72 386"/>
+  </g></svg></div>
+  <div class="wrap two rv">
+    <div>
+      <div class="kicker">seven times louder</div>
+      <span class="big-num">700%</span>
+      <svg class="swoosh boil" viewBox="0 0 290 26">
+        <path d="M6 17 C 74 6, 152 24, 284 9"/>
+      </svg>
+      <p class="lead">
+        The slider on a page can only take away volume. It starts at whatever the
+        recording gives you and goes down from there. <b>There is no up.</b>
+      </p>
+      <p class="lead">
+        This extension takes the sound of the tab before it reaches your speakers,
+        amplifies it, and hands it back. 100% is the untouched signal, 700% is seven
+        times that. <b>Every tab keeps its own level</b>, so one can scream while the
+        rest stay quiet, and the level comes back by itself after you refresh.
+      </p>
+      <p class="note">Nothing is recorded on the way through. The sound only passes, gets louder, and plays.</p>
+    </div>
+    <div class="col-art art-pop wide">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/popup-main.png" alt="The popup with the volume slider pushed to 700%" style="width:min(100%,286px)">
     </div>
   </div>
-</section>
 
-<section id="skip" class="tint2">
-  <div class="wrap rv">
-    <div class="two">
-      <div class="col">
-        <div class="glass-frame">
-          <!-- Auto-skip replica -->
-          <div class="tius" aria-label="Extension popup, auto-skip">
-            <div class="thead">
-              <span class="tbrand">🔊 Turn It Up, Son!</span>
-              <span class="tpow"><span class="ptrack"></span>On</span>
-            </div>
-            <div class="tstat"><span class="tdot"></span>Active: 100%</div>
-            <div class="mopen">
-              <span class="anlz"><i style="height:100%"></i><i style="height:45%"></i><i style="height:75%"></i></span>
-              <span class="mo-x"><span class="mo-t">Now playing</span><br><span class="mo-s">Artist you blacklisted - Track</span></span>
-              <span class="mo-a">›</span>
-            </div>
-            <div class="titem" style="background:rgba(255,84,71,.1);border:1px solid rgba(255,84,71,.3)">
-              <span style="font-size:14px">⏭</span><span>Skip this track</span><span class="ton" style="color:#ff8a75;background:rgba(255,84,71,.14)">BAN</span>
-            </div>
-            <div class="srow" style="margin-top:8px"><span>Auto-skip artists</span><span class="sw on"></span></div>
-            <div class="srow"><span>Skip everywhere, not only boosted tabs</span><span class="sw"></span></div>
-            <div class="tbt">On your blacklist</div>
-            <div class="titem"><span class="tdot" style="background:#ff5447;box-shadow:0 0 0 3px rgba(255,84,71,.2)"></span><span>3 artists, 2 tracks</span><span class="ton">SKIPPING</span></div>
-            <div class="frow"><span class="fbtn">Reset</span><span class="fbtn">Manage list</span></div>
-          </div>
-        </div>
+  <div class="wrap dials rv">
+    <div class="dials-head">
+      <h3>Then the limiter catches it</h3>
+      <span>so loud does not mean broken</span>
+    </div>
+    <p class="dials-sub">
+      Amplify anything far enough and it stops fitting. The peaks run past what the
+      speaker can produce, get chopped flat, and that is the crackle you hear on other
+      boosters. A limiter is the thing that leans on those peaks a moment before they
+      arrive, so the loud parts stay loud and the sound stays whole.
+    </p>
+
+    <div class="dial-grid">
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="21" cy="10" r="4.6"/></svg>
+        <b>Volume ceiling</b>
+        <p>The line the sound will never cross. Zero is the digital maximum, which is also the loudest and the cleanest setting, because it leaves the limiter the least work to do. Lower it only if your speakers are weak.</p>
       </div>
-      <div class="col">
-        <div class="kicker eyebrow">Auto-skip</div>
-        <h2>Songs you hate?<br><span class="heat-text">Never again.</span></h2>
-        <p class="lead">
-          Add an artist, a channel or one specific track to your blacklist - or ban
-          whatever is playing with <b>one click in the popup</b>. The moment it starts,
-          the extension <b>jumps to the next song by itself</b>.
-        </p>
-        <div class="pills">
-          <span class="pill">YouTube</span>
-          <span class="pill">YouTube Music</span>
-          <span class="pill">Spotify</span>
-          <span class="pill">SoundCloud</span>
-          <span class="pill">Ban a single track <em>paste a link</em></span>
-        </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="17" cy="10" r="4.6"/></svg>
+        <b>Bass ceiling</b>
+        <p>The same line, but for everything below 150 Hz. Bass is measured on its own, so a heavy kick does not duck the vocals and the rest of the mix with it. Drop it if the low end booms over everything else.</p>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="13" cy="10" r="4.6"/></svg>
+        <b>Maximum reduction</b>
+        <p>How many decibels the limiter is allowed to take. Past that line it stops turning things down and saturation shaves the peaks instead. Lower means more bass and a denser sound with more grit, higher means calmer bass held down harder.</p>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="9" cy="10" r="4.6"/></svg>
+        <b>Live meter</b>
+        <p>Two bars showing how hard the limiter is working at this second, one for the whole mix and one for the bass. Zero means it is asleep and not touching your sound at all.</p>
       </div>
     </div>
+
+    <div class="art-pop wide" style="margin-top:44px">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/set-limiter.png" alt="The limiter settings card with both ceilings, the maximum reduction slider and the live meter">
+    </div>
+
+    <p class="flavors">
+      <b>Rather not think about it?</b> Leave <u>Limiter live</u> switched on and it reads how hard
+      you are pushing and picks the reduction for you, gentler at 100% and firmer at 700%.
+      The three sliders grey out while it does. Switch it off and your own numbers come straight back.
+    </p>
   </div>
 </section>
+<div class="gap" aria-hidden="true">
+  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
+    <path class="ln" d="M96 54 C 96 34, 124 27, 133 41 C 143 20, 176 25, 177 45 C 193 46, 193 62, 176 62 L 109 62 C 92 62, 92 56, 96 54"/>
+    <path class="ln" d="M704 40 C 704 24, 726 19, 733 30 C 741 15, 767 18, 768 34 C 781 35, 781 47, 767 47 L 715 47 C 701 47, 701 43, 704 40"/>
+    <path class="ln" d="M380 46 C 388 36, 396 36, 404 46 M404 46 C 412 36, 420 36, 428 46"/>
+    <path class="ln" d="M470 30 C 476 22, 483 22, 489 30 M489 30 C 495 22, 502 22, 508 30"/>
+    <path class="ln" d="M556 58 C 562 51, 568 51, 574 58"/>
+  </g></svg>
+</div>
 
-<section id="shots">
-  <div class="wrap rv">
-    <div class="kicker eyebrow">Screenshots</div>
-    <h2>Take a look<br><span class="heat-text">inside.</span></h2>
-    <div class="shots">
 
-      <!-- Main view -->
-      <div class="tius" aria-label="Extension popup, main view">
-        <div class="thead">
-          <span class="tbrand">🔊 Turn It Up, Son!</span>
-          <span class="tpow"><span class="ptrack"></span>On</span>
-        </div>
-        <div class="tstat"><span class="tdot"></span>Active: 100%</div>
-        <div class="vbl">
-          <div class="vread">100<i>%</i></div>
-          <input type="range" class="vol" min="0" max="700" value="100" tabindex="-1">
-          <div class="vscale"><span>quiet</span><b>clipping zone</b></div>
-          <div class="ticks"><span class="tick">100%</span><span class="tick">200%</span><span class="tick">400%</span><span class="tick">600%</span><span class="tick">MAX</span></div>
-        </div>
-        <div class="srow"><span>Fix sound stuck in one ear</span><span class="sw"></span></div>
-        <div class="srow"><span>Bass boost</span><span class="sw"></span></div>
-        <div class="srow"><span>Auto-continue on YouTube</span><span class="sw"></span></div>
-        <div class="srow"><span>Auto-skip artists</span><span class="sw on"></span></div>
-        <div class="mopen">
-          <span class="anlz"><i style="height:100%"></i><i style="height:45%"></i><i style="height:75%"></i></span>
-          <span class="mo-x"><span class="mo-t">Mix and effects</span><br><span class="mo-s">Tempo, reverb, brightness, 8D</span></span>
-          <span class="mo-a">›</span>
-        </div>
-        <div class="tbt">Tabs currently playing audio</div>
-        <div class="titem"><span class="tdot"></span><span>YouTube</span><span class="ton">ON</span></div>
-        <div class="frow"><span class="fbtn">Reset</span><span class="fbtn">Settings</span></div>
-        <div class="rrow"><span>Rate the extension</span><span class="rstars">★★★★★</span></div>
-        <div class="dono">☕ Support me</div>
+<section id="mix">
+  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 560"><g class="boil">
+    <path class="ln" d="M20 90 L46 112 L20 134"/>
+    <path class="ln" d="M56 90 L82 112 L56 134"/>
+    <path class="ln" d="M40 244 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M47 241 L51 212 M51 212 C 62 215, 66 224, 59 231"/>
+    <path class="ln" d="M56 372 L56 396 M44 384 L68 384 M48 376 L64 392 M64 376 L48 392"/>
+    <path class="ln" d="M26 494 C 26 478, 50 472, 58 484 C 67 466, 96 470, 97 488"/>
+  </g></svg></div>
+  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 620" ><g class="boil">
+    <path class="ln" d="M58 78 m -9 4 a 9 7 -18 1 0 0.1 0 M66 75 L70 44 M70 44 C 82 47, 86 57, 79 65"/>
+    <path class="ln" d="M92 208 m -7 3 a 7 5.5 -18 1 0 0.1 0 M98 205 L101 181 M101 181 C 111 183, 114 191, 108 197"/>
+    <path class="ln" d="M46 336 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M53 333 L57 304 M57 304 C 68 307, 72 316, 65 323"/>
+    <path class="ln" d="M96 462 m -6 2.6 a 6 4.8 -18 1 0 0.1 0 M101 459 L104 435 M104 435 C 113 437, 116 445, 110 451"/>
+    <path class="ln" d="M52 566 m -9 4 a 9 7 -18 1 0 0.1 0 M60 563 L64 532 M64 532 C 76 535, 80 545, 73 553"/>
+  </g></svg></div>
+  <div class="wrap two flip rv">
+    <div class="col-art art-pop tall">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/popup-mix.png" alt="The Mix panel with presets and sliders">
+    </div>
+    <div>
+      <div class="kicker">the part nobody else has</div>
+      <h2>Any song.<br><span class="mark">Your version.</span></h2>
+      <p class="lead">
+        Stop hunting for a sped up version that half the time does not exist.
+        One click remixes <b>whatever is already playing</b>, live, on any site.
+      </p>
+      <div class="presets" id="presets">
+        <button type="button" class="pbtn on">Normal</button>
+        <button type="button" class="pbtn">Sped Up</button>
+        <button type="button" class="pbtn">Nightcore</button>
+        <button type="button" class="pbtn">Sped Up + Reverb</button>
+        <button type="button" class="pbtn">Slowed + Reverb</button>
+        <button type="button" class="pbtn">8D Audio</button>
+        <button type="button" class="pbtn">Drill / Rap</button>
+        <button type="button" class="pbtn">Phonk</button>
+        <button type="button" class="pbtn">NY Drill</button>
+        <button type="button" class="pbtn">Chill Drill</button>
       </div>
-
-      <!-- Mix presets -->
-      <div class="tius" aria-label="Extension popup, Mix and effects panel">
-        <div class="mhead">
-          <span class="mback">‹</span>
-          <span class="mtitle">Mix and effects</span>
-          <span class="anlz"><i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:80%"></i><i style="height:55%"></i></span>
-        </div>
-        <div class="mbig">1.00x</div>
-        <div class="tstat info">Start playback to hear the effect</div>
-        <div class="mtabs"><span class="mtab on">Presets</span><span class="mtab">Your mixes</span></div>
-        <div class="mgrid">
-          <span class="mp on">Normal</span><span class="mp">Sped Up</span>
-          <span class="mp">Nightcore</span><span class="mp">Sped Up + Reverb</span>
-          <span class="mp">Slowed + Reverb</span><span class="mp">8D Audio</span>
-          <span class="mp">Drill / Rap</span><span class="mp">Phonk</span>
-          <span class="mp">NY Drill</span><span class="mp">Chill Drill</span>
-          <span class="mp add">＋</span>
-        </div>
-        <div class="mfull">
-          <span><span class="mf-t">Full mixer</span><span class="mf-d">All sliders at once, dial it in yourself</span></span>
-          <span class="sw"></span>
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Speed</span></div>
-          <p class="mrd">Song tempo. Faster also raises the voice, slower deepens it.</p>
-          <input type="range" min="50" max="160" value="100" tabindex="-1">
-          <div class="vscale"><span>0.5x</span><span>1x</span><span>1.6x</span></div>
-        </div>
-        <p class="mhint">Speed works on pages with a video or audio player. The other effects work everywhere.</p>
-      </div>
-
-      <!-- Full mixer -->
-      <div class="tius" aria-label="Extension popup, full mixer">
-        <div class="mfull">
-          <span><span class="mf-t">Full mixer</span><span class="mf-d">All sliders at once, dial it in yourself</span></span>
-          <span class="sw on"></span>
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Reverb</span><b>0%</b></div>
-          <p class="mrd">Echo like in a big hall. More = the sound feels distant and dreamy.</p>
-          <input type="range" min="0" max="100" value="0" tabindex="-1">
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Brightness</span><b>0%</b></div>
-          <p class="mrd">Boosts the high tones. The sound gets sharper and clearer.</p>
-          <input type="range" min="0" max="100" value="0" tabindex="-1">
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Bass</span><b>0%</b></div>
-          <p class="mrd">Classic = even lift, Sub = deepest, Punch = kick thump, Rumble = cinematic roar, 808 = drill boom, Warm = soft vintage low end.</p>
-          <div class="mseg"><span class="msg on">Classic</span><span class="msg">Sub</span><span class="msg">Punch</span><span class="msg">Rumble</span><span class="msg">808</span><span class="msg">Warm</span></div>
-          <input type="range" min="0" max="100" value="0" tabindex="-1">
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Vocal</span><b>0%</b></div>
-          <p class="mrd">Brings the voice to the front so it does not drown under the bass and reverb.</p>
-          <input type="range" min="0" max="100" value="0" tabindex="-1">
-        </div>
-        <div class="mrow">
-          <div class="mrh"><span>Power</span><b>0%</b></div>
-          <p class="mrd">Glues the mix and adds radio-style loudness. The limiter keeps it from crackling.</p>
-          <input type="range" min="0" max="100" value="0" tabindex="-1">
-        </div>
-      </div>
-
+      <p class="pnote" id="presetNote">untouched, the way the artist left it</p>
+      <p class="note">Ten presets to start from. Flip on the full mixer and every one of them becomes a starting point you can bend.</p>
     </div>
   </div>
-</section>
 
-<section id="features" class="tint">
-  <div class="wrap rv">
-    <div class="kicker eyebrow">Everything in one popup</div>
-    <h2>Small window.<br>Serious sound engine.</h2>
-    <div class="grid">
-      <div class="card">
-        <div class="ic red"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6l-5 4H4z"/><path d="M16.5 9.5a4 4 0 0 1 0 5"/><path d="M18.5 7a7.5 7.5 0 0 1 0 10"/></svg></div>
-        <h3>Per-tab volume, up to 700%</h3>
-        <p>Boost one tab while the others play at normal level. Green ON badge shows where it is working. Settings survive a page refresh.</p>
+  <div class="wrap dials rv">
+    <div class="dials-head">
+      <h3>Flip on the full mixer</h3>
+      <span>every slider at once</span>
+    </div>
+    <p class="dials-sub">
+      Presets are one click. The full mixer opens the same panel wide and hands you every control
+      behind them, so you can build a sound nobody else is listening to.
+    </p>
+
+    <div class="dial-grid">
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="18" cy="10" r="4.6"/></svg>
+        <b>Speed <i>0.5x to 1.6x</i></b>
+        <p>The tempo of the song. Faster lifts the voice with it, slower deepens it. This is what turns a track into Nightcore or into a slowed edit.</p>
       </div>
-      <div class="card">
-        <div class="ic cyan"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 4v16M12 4v16M19 4v16"/><circle cx="5" cy="14" r="2.4"/><circle cx="12" cy="8" r="2.4"/><circle cx="19" cy="15" r="2.4"/></svg></div>
-        <h3>Full mixer</h3>
-        <p>Speed, reverb, brightness, muffle, bass, vocal, power and 8D rotation. Dial in your sound and save it as your own named mix.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="9" cy="10" r="4.6"/></svg>
+        <b>Reverb</b>
+        <p>Echo, like the song is playing in a big hall. The more you add, the more distant and dreamy it feels. Half of what makes Slowed + Reverb sound the way it does.</p>
       </div>
-      <div class="card">
-        <div class="ic mint"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 12c2-6 4-6 6 0s4 6 6 0 4-6 6 0"/></svg></div>
-        <h3>Six bass flavors</h3>
-        <p>Classic, Sub, Punch, Rumble, 808 and Warm. From a cinematic roar you feel in your chest to a drill boom that cuts through laptop speakers.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="20" cy="10" r="4.6"/></svg>
+        <b>Brightness</b>
+        <p>Lifts the high tones. Cymbals and consonants come forward, the whole thing gets sharper and clearer. Good for muddy uploads and old rips.</p>
       </div>
-      <div class="card">
-        <div class="ic violet"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 6 14.5" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="2.6"/></svg></div>
-        <h3>8D audio</h3>
-        <p>The sound smoothly orbits your head. Best with headphones, with a slider for how fast it spins.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="7" cy="10" r="4.6"/></svg>
+        <b>Muffle</b>
+        <p>The opposite move. Takes the top off so it sounds like the music is coming through a wall, from the room next door. The bass stays.</p>
       </div>
-      <div class="card">
-        <div class="ic red"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M7 4a8 8 0 0 1 0 16"/><path d="M17 4a8 8 0 0 0 0 16" opacity=".4"/><path d="M12 9v6"/></svg></div>
-        <h3>Fix one-ear sound</h3>
-        <p>Some uploads play only in the left or right channel. One switch mixes both channels to the center so you hear everything in both ears.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="16" cy="10" r="4.6"/></svg>
+        <b>Bass <i>six flavors</i></b>
+        <p>How much low end, and what kind of low end. Pick the character first, then decide how hard it hits.</p>
       </div>
-      <div class="card">
-        <div class="ic cyan"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="4.5" rx="2"/><rect x="4" y="14.5" width="16" height="4.5" rx="2"/><circle cx="8" cy="7.2" r=".8"/><circle cx="8" cy="16.8" r=".8"/></svg></div>
-        <h3>Every playing tab, listed</h3>
-        <p>The popup shows every tab with audio and each one toggles on or off with a single click. Turning it back on restores your last settings.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="13" cy="10" r="4.6"/></svg>
+        <b>Vocal</b>
+        <p>Pushes the voice to the front so it does not drown under the bass and the reverb. The fix for when you turn everything up and lose the singer.</p>
       </div>
-      <div class="card">
-        <div class="ic mint"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M5 5v14l9-7z"/><path d="M17 5v14"/></svg></div>
-        <h3>Auto-skip songs you hate</h3>
-        <p>Blacklist artists, channels or single tracks. When one starts on YouTube, YouTube Music, Spotify or SoundCloud, the next song plays by itself.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="21" cy="10" r="4.6"/></svg>
+        <b>Power</b>
+        <p>Glues the mix together and adds that radio-style loudness where nothing drops out. The limiter sits behind it and keeps the peaks from crackling.</p>
       </div>
-      <div class="card">
-        <div class="ic violet"><svg width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="9" cy="10" r="1.2"/><circle cx="15" cy="10" r="1.2"/><path d="M8.5 15a5 5 0 0 0 7 0"/></svg></div>
-        <h3>Make it yours</h3>
-        <p>Color themes, an interface in English or Polish, your own saved mixes and a max volume cap if 700% is more than you need.</p>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="11" cy="10" r="4.6"/></svg>
+        <b>Spin <i>8D</i></b>
+        <p>Sends the sound circling around your head and sets how fast it goes round. Headphones only, on speakers there is nothing to circle.</p>
       </div>
+    </div>
+
+    <p class="flavors">
+      <b>The six bass flavors:</b>
+      <u>Classic</u> an even lift across the low end,
+      <u>Sub</u> the deepest one, felt more than heard,
+      <u>Punch</u> the thump of the kick drum,
+      <u>Rumble</u> a cinematic roar,
+      <u>808</u> the drill boom that cuts through laptop speakers,
+      <u>Warm</u> a soft vintage bottom.
+      Landed on something good? Save the whole set under your own name and it waits for you in <b>Your mixes</b>.
+    </p>
+  </div>
+</section>
+<div class="gap" aria-hidden="true">
+  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
+    <path class="ln" d="M150 74 m -9 4 a 9 7 -18 1 0 0.1 0 M158 71 L162 40 M162 40 C 174 43, 178 53, 171 61"/>
+    <path class="ln" d="M296 52 m -7 3 a 7 5.5 -18 1 0 0.1 0 M302 50 L305 26 M305 26 C 315 28, 318 36, 312 42"/>
+    <path class="ln" d="M452 80 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M459 77 L463 48 M463 48 C 474 51, 478 60, 471 67"/>
+    <path class="ln" d="M604 48 m -7 3 a 7 5.5 -18 1 0 0.1 0 M610 45 L613 21 M613 21 C 623 23, 626 31, 620 37"/>
+    <path class="ln" d="M742 72 m -9 4 a 9 7 -18 1 0 0.1 0 M750 69 L754 38 M754 38 C 766 41, 770 51, 763 59"/>
+  </g></svg>
+</div>
+
+
+<section id="skip">
+  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 440"><g class="boil">
+    <path class="ln" d="M54 84 m -9 4 a 9 7 -18 1 0 0.1 0 M62 81 L66 50 M66 50 C 78 53, 82 63, 75 71"/>
+    <path class="ln" d="M40 200 L40 224 M28 212 L52 212 M32 204 L48 220 M48 204 L32 220"/>
+    <path class="ln" d="M46 336 L74 358 L46 380"/>
+    <path class="ln" d="M84 336 L112 358 L84 380"/>
+  </g></svg></div>
+  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 480" ><g class="boil">
+    <path class="ln" d="M30 70 L58 92 L30 114"/>
+    <path class="ln" d="M66 70 L94 92 L66 114"/>
+    <path class="ln" d="M52 214 m -14 0 a 14 14 0 1 0 28 0 a 14 14 0 1 0 -28 0 M40 226 L64 202"/>
+    <path class="ln" d="M34 330 L62 352 L34 374"/>
+    <path class="ln" d="M70 330 L98 352 L70 374"/>
+  </g></svg></div>
+  <div class="wrap two rv">
+    <div>
+      <div class="kicker">auto skip</div>
+      <h2>That one artist? <span class="mark">Never again.</span></h2>
+      <p class="lead">
+        Put an artist on the list once. From then on their tracks are
+        <b>skipped by themselves</b> the moment they start. Or ban whatever
+        is playing right now with one click in the popup.
+      </p>
+      <div class="banned" aria-hidden="true">
+        <span class="ban">DJ Nightfall<svg viewBox="0 0 200 30" preserveAspectRatio="none" class="boil"><path d="M4 22 C 60 12, 120 20, 196 8"/></svg></span>
+        <span class="ban">Grey Static<svg viewBox="0 0 200 30" preserveAspectRatio="none" class="boil"><path d="M4 10 C 70 22, 130 8, 196 20"/></svg></span>
+        <span class="ban">MC Lowkey<svg viewBox="0 0 200 30" preserveAspectRatio="none" class="boil"><path d="M4 18 C 66 8, 128 22, 196 10"/></svg></span>
+      </div>
+      <p class="note">Works on YouTube, YouTube Music, Spotify and SoundCloud. Single tracks too, just paste the link.</p>
+    </div>
+    <div class="col-art art-pop wide">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/set-skip.png" alt="Auto Skip list in the settings">
     </div>
   </div>
 </section>
+<div class="gap" aria-hidden="true">
+  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
+    <path class="ln" d="M330 30 L358 50 L330 70"/>
+    <path class="ln" d="M372 30 L400 50 L372 70"/>
+    <path class="ln" d="M414 30 L442 50 L414 70"/>
+    <path class="ln" d="M462 28 L462 72"/>
+    <path class="ln" d="M528 66 m -10 4.5 a 10 8 -18 1 0 0.1 0 M537 62 L541 28 M541 28 C 554 31, 558 42, 550 50"/>
+    <path class="ln" d="M498 84 L576 20"/>
+  </g></svg>
+</div>
 
-<section class="privacy">
+
+<section id="privacy">
+  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 460"><g class="boil">
+    <path class="ln" d="M28 96 L76 96 L76 130 L28 130 Z M37 96 L37 84 C 37 70, 67 70, 67 84 L67 96"/>
+    <path class="ln" d="M50 250 L50 274 M38 262 L62 262 M42 254 L58 270 M58 254 L42 270"/>
+    <path class="ln" d="M34 386 m -11 0 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0 M45 386 L96 386 M86 386 L86 399 M96 386 L96 397"/>
+  </g></svg></div>
+  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 520" ><g class="boil">
+    <path class="ln" d="M52 96 L100 96 L100 130 L52 130 Z M61 96 L61 84 C 61 70, 91 70, 91 84 L91 96"/>
+    <path class="ln" d="M46 268 m -11 0 a 11 11 0 1 0 22 0 a 11 11 0 1 0 -22 0 M57 268 L108 268 M98 268 L98 281 M108 268 L108 279"/>
+    <path class="ln" d="M62 404 L62 428 M50 416 L74 416 M54 408 L70 424 M70 408 L54 424"/>
+  </g></svg></div>
+  <div class="wrap two flip rv">
+    <div class="col-art art-pop wide">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/set-privacy.png" alt="Privacy settings with site access and the wipe button">
+    </div>
+    <div>
+      <div class="kicker">loud, not nosy</div>
+      <h2>Nothing leaves<br>your <span class="mark">computer.</span></h2>
+      <div class="checks">
+        <div class="chk">
+          <svg viewBox="0 0 24 24" class="boil"><path d="M20 6 9 17l-5-5"/></svg>
+          <div><div class="chk-t">No servers, no analytics, no accounts</div><div class="chk-d">Every bit of the sound is processed inside your browser. Nothing is recorded, nothing is sent.</div></div>
+        </div>
+        <div class="chk">
+          <svg viewBox="0 0 24 24" class="boil"><path d="M20 6 9 17l-5-5"/></svg>
+          <div><div class="chk-t">Zero site access by default</div><div class="chk-d">It only asks when you switch on a feature that needs it, and hands the access straight back when you switch it off.</div></div>
+        </div>
+        <div class="chk">
+          <svg viewBox="0 0 24 24" class="boil"><path d="M20 6 9 17l-5-5"/></svg>
+          <div><div class="chk-t">One button wipes everything</div><div class="chk-d">Settings, lists and your saved mixes live only on this computer, and you can clear all of it whenever you want.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="gap" aria-hidden="true">
+  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
+    <path class="fill-p" d="M386 44 L470 44 L470 90 L386 90 Z"/>
+    <path class="ln" d="M402 44 L402 28 C 402 12, 454 12, 454 28 L454 44"/>
+    <path class="ln" d="M428 60 L428 76"/>
+    <path class="ln" d="M508 66 m -12 0 a 12 12 0 1 0 24 0 a 12 12 0 1 0 -24 0"/>
+    <path class="ln" d="M520 66 L578 66 M566 66 L566 80 M578 66 L578 78"/>
+  </g></svg>
+</div>
+
+<section class="final">
+  <div class="final-deco" aria-hidden="true">
+    <svg viewBox="0 0 1400 640" preserveAspectRatio="xMidYMax slice"><g class="boil">
+      <path class="ln twinkle" style="animation-delay:0s" d="M196 96 L196 130 M179 113 L213 113 M184 101 L208 125 M208 101 L184 125"/>
+      <path class="ln twinkle" style="animation-delay:1.1s" d="M1206 76 L1206 104 M1192 90 L1220 90 M1196 80 L1216 100 M1216 80 L1196 100"/>
+      <path class="ln twinkle" style="animation-delay:2.2s" d="M310 250 L310 274 M298 262 L322 262"/>
+      <path class="ln twinkle" style="animation-delay:.6s" d="M1100 236 L1100 260 M1088 248 L1112 248"/>
+      <path class="ln" d="M150 300 m -9 4 a 9 7 -18 1 0 0.1 0 M158 297 L162 266 M162 266 C 174 269, 178 279, 171 287"/>
+      <path class="ln" d="M1244 330 m -9 4 a 9 7 -18 1 0 0.1 0 M1252 327 L1256 296 M1256 296 C 1268 299, 1272 309, 1265 317"/>
+      <path class="ln" d="M244 186 C 244 168, 270 162, 278 175 C 288 155, 320 159, 321 179 C 336 180, 336 195, 320 195 L 256 195 C 240 195, 240 189, 244 186"/>
+      <path class="ln" d="M1096 152 C 1096 138, 1116 134, 1122 144 C 1129 130, 1153 133, 1154 148 C 1166 149, 1166 160, 1153 160 L 1106 160 C 1093 160, 1093 155, 1096 152"/>
+      <g transform="translate(0,64)">
+        <path class="ln" d="M0 548 C 190 538, 330 556, 520 546 C 720 536, 900 556, 1090 546 C 1230 539, 1320 550, 1400 544"/>
+        <path class="ln" d="M0 572 C 240 566, 420 580, 640 570 C 880 560, 1080 578, 1400 566" style="opacity:.5"/>
+        <g class="ln">
+          <path d="M212 548 L212 512"/>
+          <path d="M212 514 C 178 512, 176 482, 197 478 C 199 458, 233 458, 237 477 C 258 481, 254 512, 212 514"/>
+        </g>
+        <g class="ln">
+          <path d="M1188 548 L1188 518"/>
+          <path d="M1188 520 C 1160 518, 1158 494, 1176 491 C 1178 474, 1206 474, 1209 490 C 1227 493, 1223 518, 1188 520"/>
+        </g>
+        <g class="ln" style="opacity:.62">
+          <path d="M560 548 L560 522"/>
+          <path d="M560 524 C 536 522, 534 500, 550 497 C 552 482, 577 482, 580 496 C 596 499, 593 522, 560 524"/>
+        </g>
+        <g class="ln" style="opacity:.62">
+          <path d="M868 548 L868 524"/>
+          <path d="M868 526 C 846 524, 844 504, 859 501 C 861 487, 884 487, 887 500 C 902 503, 899 524, 868 526"/>
+        </g>
+        <g class="ln soft" style="opacity:.55">
+          <path d="M394 548 L390 534 M400 548 L402 532 M406 548 L410 535"/>
+          <path d="M1006 546 L1002 532 M1012 546 L1014 530 M1018 546 L1022 533"/>
+          <path d="M700 548 L696 536 M706 548 L708 534"/>
+        </g>
+      </g>
+    </g></svg>
+  </div>
   <div class="wrap rv">
-    <div class="kicker eyebrow">Privacy</div>
-    <h2>Nothing leaves<br>your device. <span class="heat-text">Ever.</span></h2>
-    <div class="nosy">
-      <div class="lock" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4"/></svg></div>
-      <h3>Loud, <span>not nosy</span></h3>
-      <p class="nlead">Everything happens locally in your browser.</p>
-      <ul>
-        <li>
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-          <div><div class="nt">Zero access to websites by default</div><div class="nd">It only asks when you turn on a feature that needs it, and gives the access back after.</div></div>
-        </li>
-        <li>
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-          <div><div class="nt">No servers, no analytics, no accounts</div><div class="nd">Your audio never leaves the browser. Nothing is collected, nothing is sent.</div></div>
-        </li>
-        <li>
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
-          <div><div class="nt">One button wipes all extension data</div><div class="nd">Settings, lists and mixes live only on your computer, and you can clear them anytime.</div></div>
-        </li>
-      </ul>
+    <h2>Your speakers are<br><span class="mark">holding back.</span></h2>
+    <div class="marquee" aria-hidden="true">
+      <svg class="mq-sign" viewBox="0 0 300 212">
+        <path class="mq-fill" d="M76 10 L224 10 L224 92 L266 92 L150 202 L34 92 L76 92 Z"/>
+        <path id="mqPath" class="mq-plate" d="M76 10 L224 10 L224 92 L266 92 L150 202 L34 92 L76 92 Z"/>
+        <g id="mqBulbs"></g>
+      </svg>
+      <div class="mq-word">get it</div>
+      <svg class="mq-arrow l boil" viewBox="0 0 120 86">
+        <path d="M6 10 C 32 22, 60 40, 88 58"/>
+        <polygon points="108 74, 78 66, 94 46"/>
+      </svg>
+      <svg class="mq-arrow r boil" viewBox="0 0 120 86">
+        <path d="M6 10 C 32 22, 60 40, 88 58"/>
+        <polygon points="108 74, 78 66, 94 46"/>
+      </svg>
+      <span class="mq-tag l">right here</span>
+      <span class="mq-tag r">it is free</span>
     </div>
-    <div class="priv-row">
-      <span class="priv-chip"><b>0</b> servers</span>
-      <span class="priv-chip"><b>0</b> analytics</span>
-      <span class="priv-chip"><b>0</b> accounts</span>
-      <span class="priv-chip">Source <b>public on GitHub</b></span>
-      <a class="priv-chip" href="privacy.html"><b>Privacy policy &rarr;</b></a>
+    <div class="lane">
+      <span class="chev l" aria-hidden="true">
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.40s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.20s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.00s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.80s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.60s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.40s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.20s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.00s"/></svg>
+      </span>
+      <a class="btn big" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome - free</a>
+      <span class="chev r" aria-hidden="true">
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.40s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.20s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-1.00s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.80s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.60s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.40s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.20s"/></svg>
+        <svg viewBox="0 0 22 30"><polygon points="2,2 20,15 2,28" style="animation-delay:-0.00s"/></svg>
+      </span>
     </div>
+    <p class="mini">
+      Chrome, Edge and Brave ·
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">source on GitHub</a> ·
+      <a href="privacy.html">privacy policy</a>
+    </p>
   </div>
 </section>
 
@@ -703,32 +864,63 @@
     <div class="foot-links">
       <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Chrome Web Store</a>
       <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
-      <a href="privacy.html">Privacy policy</a>
-      <a href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">Buy me a coffee</a>
+      <a href="blog/index.html">Blog</a>
+      <a href="changelog.html">Changelog</a>
+      <a href="privacy.html">Privacy</a>
     </div>
   </div>
 </footer>
 
 <script>
-  const io = new IntersectionObserver((es) => {
-    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll(".rv").forEach((el) => io.observe(el));
+  const PRESET_NOTE = {
+    Normal: "untouched, the way the artist left it",
+    "Sped Up": "1.25x, and the voice rises with the tempo",
+    Nightcore: "1.35x with the top end lifted, the classic edit",
+    "Sped Up + Reverb": "1.25x with a hall around it",
+    "Slowed + Reverb": "0.85x, dragged out and drowned in reverb",
+    "8D Audio": "the sound orbits your head, put headphones on",
+    "Drill / Rap": "808 bass, tempo untouched, vocals kept up front",
+    Phonk: "punchy bass, bright top, cranked to radio loudness",
+    "NY Drill": "0.95x, deep sub bass and a touch of haze",
+    "Chill Drill": "light sub bass, easy on everything else"
+  };
 
-  const vid = document.getElementById("vid");
-  const vidFrame = document.getElementById("vidFrame");
-  const curtain = document.getElementById("vfCurtain");
-  if (vid && curtain) {
-    curtain.addEventListener("click", () => {
-      vid.muted = false;
-      vid.play();
-    });
-    vid.addEventListener("play", () => vidFrame.classList.add("playing"));
-    new IntersectionObserver((es) => {
-      es.forEach((e) => { if (!e.isIntersecting && !vid.paused) vid.pause(); });
-    }, { threshold: 0.25 }).observe(vid);
+  const presets = document.getElementById("presets");
+  const note = document.getElementById("presetNote");
+
+  presets.addEventListener("click", (e) => {
+    const b = e.target.closest(".pbtn");
+    if (!b) return;
+    presets.querySelectorAll(".pbtn").forEach((x) => x.classList.remove("on"));
+    b.classList.add("on");
+    note.textContent = PRESET_NOTE[b.textContent.trim()] || "";
+  });
+
+  const mqPath = document.getElementById("mqPath");
+  const mqBulbs = document.getElementById("mqBulbs");
+  if (mqPath && mqBulbs) {
+    const total = mqPath.getTotalLength();
+    const count = 26;
+    const step = total / count;
+    for (let i = 0; i < count; i++) {
+      const p = mqPath.getPointAtLength(i * step);
+      const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      c.setAttribute("cx", p.x.toFixed(1));
+      c.setAttribute("cy", p.y.toFixed(1));
+      c.setAttribute("r", "5.6");
+      c.setAttribute("class", "bulb");
+      c.style.animationDelay = (-(i / count) * 1.5).toFixed(3) + "s";
+      mqBulbs.appendChild(c);
+    }
+  }
+
+  if ("IntersectionObserver" in window) {
+    document.documentElement.classList.add("js");
+    const io = new IntersectionObserver((es) => {
+      es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0, rootMargin: "0px 0px -40px 0px" });
+    document.querySelectorAll(".rv").forEach((el) => io.observe(el));
   }
 </script>
-<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="romanzbudowy" data-description="Support me on Buy me a coffee!" data-message="" data-color="#ff5447" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 </html>

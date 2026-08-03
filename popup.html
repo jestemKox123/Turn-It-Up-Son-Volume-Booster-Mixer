@@ -20,6 +20,17 @@
         </button>
       </header>
 
+      <button type="button" id="verBanner" class="ver-open" hidden>
+        <span class="ver-open-icon" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 2.6 L14 9 L20.4 11 L14 13 L12 19.4 L10 13 L3.6 11 L10 9 Z" fill="currentColor" /></svg>
+        </span>
+        <span class="ver-open-text">
+          <span class="ver-open-title"><span data-i18n="ver_h">Nowa wersja</span> <span id="verNum"></span></span>
+          <span class="ver-open-sub" data-i18n="ver_d">Zobacz, co się zmieniło</span>
+        </span>
+        <span class="ver-open-arrow" aria-hidden="true">›</span>
+      </button>
+
       <div id="status" class="status status-idle">
         <span class="status-dot"></span>
         <span id="statusText" data-i18n="status_checking">Sprawdzam karte...</span>

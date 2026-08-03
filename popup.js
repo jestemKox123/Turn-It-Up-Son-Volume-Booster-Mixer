@@ -19,6 +19,8 @@ let mixHostUnsupported = false;
 
 const powerEl = document.getElementById("power");
 const powerLabelEl = document.getElementById("powerLabel");
+const verBannerEl = document.getElementById("verBanner");
+const verNumEl = document.getElementById("verNum");
 const volumeEl = document.getElementById("volume");
 const volumeLabelEl = document.getElementById("volumeLabel");
 const monoFixEl = document.getElementById("monoFix");
@@ -1191,7 +1193,31 @@ function sendMsg(message) {
   });
 }
 
+function initVerBanner() {
+  if (!verBannerEl) return;
+  const ver = chrome.runtime.getManifest().version;
+  verBannerEl.addEventListener("click", () => {
+    chrome.storage.local.set({ vbVerAck: ver, vbVerLeft: 0 });
+    verBannerEl.hidden = true;
+    chrome.tabs.create({ url: chrome.runtime.getURL("settings.html#changelog") });
+    window.close();
+  });
+  chrome.storage.local.get(["vbVerAck", "vbVerFor", "vbVerLeft"], (d) => {
+    if (chrome.runtime.lastError) return;
+    if (d.vbVerFor !== ver || d.vbVerAck === ver) return;
+    const left = Number(d.vbVerLeft) || 0;
+    if (left <= 0) {
+      chrome.storage.local.set({ vbVerAck: ver });
+      return;
+    }
+    if (verNumEl) verNumEl.textContent = ver;
+    verBannerEl.hidden = false;
+    chrome.storage.local.set({ vbVerLeft: left - 1 });
+  });
+}
+
 async function init() {
+  initVerBanner();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || tab.id == null) {
     setStatus("unsupported", VBI18N.t("status_cant_read"));

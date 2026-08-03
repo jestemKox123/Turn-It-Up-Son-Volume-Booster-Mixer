@@ -18,6 +18,108 @@ function keyFor(tabId) {
   return "vb_tab_" + tabId;
 }
 
+function fsKey(tabId) {
+  return "vb_fs_" + tabId;
+}
+
+const tabWin = new Map();
+const winPrev = new Map();
+const fsOwned = new Set();
+
+async function cacheWindowFor(tabId) {
+  try {
+    const t = await chrome.tabs.get(tabId);
+    if (!t || t.windowId == null) return;
+    tabWin.set(tabId, t.windowId);
+    const w = await chrome.windows.get(t.windowId);
+    if (w && w.state && w.state !== "fullscreen") winPrev.set(t.windowId, w.state);
+  } catch (e) {}
+}
+
+function goFullscreen(windowId, tabId) {
+  if (fsOwned.has(windowId)) return;
+  const prev = winPrev.get(windowId);
+  if (!prev) return;
+  fsOwned.add(windowId);
+  chrome.windows.update(windowId, { state: "fullscreen" }).catch(() => {});
+  chrome.storage.session.set({ [fsKey(tabId)]: { windowId, state: prev } });
+}
+
+async function slowFullscreen(tabId) {
+  try {
+    const t = await chrome.tabs.get(tabId);
+    if (!t || t.windowId == null) return;
+    tabWin.set(tabId, t.windowId);
+    const w = await chrome.windows.get(t.windowId);
+    if (!w || w.state === "fullscreen") return;
+    winPrev.set(t.windowId, w.state || "normal");
+    goFullscreen(t.windowId, tabId);
+  } catch (e) {}
+}
+
+async function restoreWindowByTab(tabId) {
+  const known = tabWin.get(tabId);
+  if (known != null && fsOwned.has(known)) {
+    const prev = winPrev.get(known) || "normal";
+    fsOwned.delete(known);
+    chrome.windows.update(known, { state: prev }).catch(() => {});
+    chrome.storage.session.remove(fsKey(tabId));
+    return;
+  }
+  const d = await chrome.storage.session.get(fsKey(tabId));
+  const v = d[fsKey(tabId)];
+  if (!v || v.windowId == null) return;
+  fsOwned.delete(v.windowId);
+  await chrome.storage.session.remove(fsKey(tabId));
+  try {
+    await chrome.windows.update(v.windowId, { state: v.state || "normal" });
+  } catch (e) {}
+}
+
+if (chrome.tabCapture && chrome.tabCapture.onStatusChanged) {
+  chrome.tabCapture.onStatusChanged.addListener((info) => {
+    if (!info || info.tabId == null) return;
+    if (info.status === "stopped" || info.status === "error") {
+      restoreWindowByTab(info.tabId);
+      return;
+    }
+    if (info.status !== "active") return;
+    if (!info.fullscreen) {
+      restoreWindowByTab(info.tabId);
+      return;
+    }
+    const windowId = tabWin.get(info.tabId);
+    if (windowId != null && winPrev.has(windowId)) {
+      goFullscreen(windowId, info.tabId);
+      return;
+    }
+    slowFullscreen(info.tabId);
+  });
+}
+
+if (chrome.windows.onBoundsChanged) {
+  chrome.windows.onBoundsChanged.addListener((win) => {
+    if (!win || win.id == null) return;
+    if (fsOwned.has(win.id)) return;
+    if (win.state && win.state !== "fullscreen") winPrev.set(win.id, win.state);
+  });
+}
+
+if (chrome.tabs.onAttached) {
+  chrome.tabs.onAttached.addListener((tabId, info) => {
+    if (!info || info.newWindowId == null) return;
+    if (tabWin.has(tabId)) tabWin.set(tabId, info.newWindowId);
+    cacheWindowFor(tabId);
+  });
+}
+
+if (chrome.windows.onRemoved) {
+  chrome.windows.onRemoved.addListener((windowId) => {
+    fsOwned.delete(windowId);
+    winPrev.delete(windowId);
+  });
+}
+
 async function getBackup() {
   const { vbBackup } = await chrome.storage.local.get("vbBackup");
   return vbBackup || {};
@@ -117,26 +219,25 @@ async function enginePresent() {
   return await hasOffscreen();
 }
 
+async function pushLimiter() {
+  const { vbLimiterOn, vbLimiterCeiling, vbLimiterBass, vbLimiterMaxRed, vbPhaseRot } = await chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed", "vbPhaseRot"]);
+  const payload = {
+    on: vbLimiterOn !== false,
+    ceiling: typeof vbLimiterCeiling === "number" ? vbLimiterCeiling : 0,
+    bass: typeof vbLimiterBass === "number" ? vbLimiterBass : 0,
+    maxred: typeof vbLimiterMaxRed === "number" ? Math.max(1, Math.min(8, vbLimiterMaxRed)) : 6,
+    rot: vbPhaseRot === true,
+  };
+  if (!(await enginePresent())) return;
+  await sendToEngine({ type: "vb-limiter", ...payload });
+}
+
 async function getActiveTabIds() {
   if (!(await enginePresent())) return [];
   const resp = await sendToEngine({ type: "vb-list" });
   const ids = (resp && resp.tabIds) || [];
   cachedActiveIds = ids;
   return ids;
-}
-
-async function closeEngineIfEmpty() {
-  if (!(await enginePresent())) return;
-  const resp = await sendToEngine({ type: "vb-list" });
-  if (!resp) return;
-  const ids = resp.tabIds || [];
-  cachedActiveIds = ids;
-  if (ids.length > 0) return;
-  if (await hasOffscreen()) {
-    try {
-      await chrome.offscreen.closeDocument();
-    } catch (e) {}
-  }
 }
 
 async function stopEverything() {
@@ -157,11 +258,12 @@ async function startCapture(tabId, streamId, settings) {
     resp = await sendToEngine({ type: "vb-start", tabId, streamId, settings });
   }
   if (!resp || !resp.ok) {
-    await closeEngineIfEmpty();
     return { active: false, error: (resp && resp.error) || "start-failed" };
   }
   cachedActiveIds = resp.tabIds || cachedActiveIds;
   setBadge(tabId, true, settings);
+  pushLimiter();
+  cacheWindowFor(tabId);
   return { active: true };
 }
 
@@ -176,9 +278,9 @@ async function stopCapture(tabId) {
   setBadge(tabId, false);
   await snapshotTab(tabId);
   chrome.storage.session.remove(keyFor(tabId));
+  await restoreWindowByTab(tabId);
   if (!(await enginePresent())) return { active: false };
   await sendToEngine({ type: "vb-stop", tabId });
-  await closeEngineIfEmpty();
   return { active: false };
 }
 
@@ -323,11 +425,6 @@ async function releaseUnusedAccess() {
   if (drop.length) {
     try {
       await chrome.permissions.remove({ origins: drop });
-    } catch (e) {}
-  }
-  if (!ytAutoContinue && !skipEnabled && !mixTabs.length) {
-    try {
-      await chrome.permissions.remove({ permissions: ["scripting"] });
     } catch (e) {}
   }
 }
@@ -641,6 +738,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  if (msg.type === "vb-meter-any") {
+    (async () => {
+      if (await enginePresent()) {
+        const r = await sendToEngine({ type: "vb-meter" });
+        if (r && r.playing) {
+          sendResponse(r);
+          return;
+        }
+      }
+      sendResponse(null);
+    })();
+    return true;
+  }
+
   if (msg.type === "vb-ended") {
     setBadge(msg.tabId, false);
     (async () => {
@@ -656,10 +767,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         } catch (e) {
           alive = false;
         }
-        if (asleep) {
-          closeEngineIfEmpty();
-          return;
-        }
+        if (asleep) return;
         const last = endedRestartAt.get(tabId) || 0;
         if (alive && Date.now() - last > 10000) {
           endedRestartAt.set(tabId, Date.now());
@@ -675,7 +783,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         chrome.storage.session.remove(keyFor(tabId));
       }
-      closeEngineIfEmpty();
     })();
     return false;
   }
@@ -685,6 +792,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   chrome.storage.session.remove(keyFor(tabId));
+  restoreWindowByTab(tabId).then(() => tabWin.delete(tabId));
   (async () => {
     const mix = await getMixState(tabId);
     if (mix) {
@@ -770,9 +878,19 @@ async function finishPendingMix() {
   await setMix(p.tabId, p.rate, p.origin);
 }
 
+chrome.storage.onChanged.addListener((ch, area) => {
+  if (area === "local" && (ch.vbLimiterOn || ch.vbLimiterCeiling || ch.vbLimiterBass || ch.vbLimiterMaxRed || ch.vbPhaseRot)) pushLimiter();
+});
+
+const VER_SHOWS = 5;
+
 chrome.runtime.onInstalled.addListener((details) => {
+  const ver = chrome.runtime.getManifest().version;
   if (details.reason === "install") {
+    chrome.storage.local.set({ vbVerFor: ver, vbVerAck: ver, vbVerLeft: 0 });
     chrome.tabs.create({ url: chrome.runtime.getURL("welcome.html") });
+  } else if (details.reason === "update" && details.previousVersion !== ver) {
+    chrome.storage.local.set({ vbVerFor: ver, vbVerAck: "", vbVerLeft: VER_SHOWS });
   }
   syncYt();
   syncSkip();
