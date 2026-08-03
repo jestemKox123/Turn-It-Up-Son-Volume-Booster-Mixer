@@ -71,6 +71,8 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
   };
   const fmtCeil = (v) => v + " dB";
   const limiterCharRow = document.getElementById("limiterCharRow");
+  const limiterMixRow = document.getElementById("limiterMixRow");
+  const limCharInMix = document.getElementById("limCharInMix");
   const charBtns = Array.from(document.querySelectorAll(".lim-chars .btn"));
   const syncChars = (v) => {
     charBtns.forEach((b) => b.classList.toggle("on", Number(b.getAttribute("data-red")) === Number(v)));
@@ -80,6 +82,7 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
     if (limiterBassRow) limiterBassRow.classList.toggle("off", !on);
     if (limiterMaxRow) limiterMaxRow.classList.toggle("off", !on);
     if (limiterCharRow) limiterCharRow.classList.toggle("off", !on);
+    if (limiterMixRow) limiterMixRow.classList.toggle("off", !on);
   };
   chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed"], (d) => {
     const on = d.vbLimiterOn !== false;
@@ -125,6 +128,18 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
   wireCeil(limiterBass, limiterBassVal, "vbLimiterBass");
   wireCeil(limiterMax, limiterMaxVal, "vbLimiterMaxRed", (v) => v + " dB");
   if (limiterMax) limiterMax.addEventListener("input", () => syncChars(limiterMax.value));
+  if (limCharInMix) {
+    chrome.storage.local.get("vbLimCharInMix", (d) => {
+      if (chrome.runtime.lastError || !d) return;
+      limCharInMix.checked = d.vbLimCharInMix === true;
+    });
+    limCharInMix.addEventListener("change", () => {
+      chrome.storage.local.set({ vbLimCharInMix: limCharInMix.checked }, () => {
+        void chrome.runtime.lastError;
+        flashLim();
+      });
+    });
+  }
   charBtns.forEach((b) => {
     b.addEventListener("click", () => {
       const v = Number(b.getAttribute("data-red"));
@@ -194,6 +209,21 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
     });
     VBI18N.ready(startMeter);
   }
+
+  chrome.storage.onChanged.addListener((ch, area) => {
+    if (area !== "local") return;
+    if (ch.vbLimiterMaxRed) {
+      const v = Number(ch.vbLimiterMaxRed.newValue);
+      if (limiterMax) limiterMax.value = String(v);
+      if (limiterMaxVal) limiterMaxVal.textContent = v + " dB";
+      syncChars(v);
+    }
+    if (ch.vbLimiterOn) {
+      limiterToggle.checked = ch.vbLimiterOn.newValue !== false;
+      syncLimRow(limiterToggle.checked);
+    }
+    if (ch.vbLimCharInMix && limCharInMix) limCharInMix.checked = ch.vbLimCharInMix.newValue === true;
+  });
 
   const limiterReset = document.getElementById("limiterReset");
   if (limiterReset) {

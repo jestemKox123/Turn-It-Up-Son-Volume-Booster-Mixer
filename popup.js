@@ -1037,6 +1037,32 @@ if (fullMixEl) {
   });
 }
 
+const mixLimRow = document.getElementById("mixLimRow");
+if (mixLimRow) {
+  const limBtns = Array.from(mixLimRow.querySelectorAll(".mix-lim-b"));
+  const paintLim = (v) => {
+    const n = typeof v === "number" ? Math.max(1, Math.min(8, v)) : 6;
+    limBtns.forEach((b) => b.classList.toggle("on", Number(b.getAttribute("data-red")) === n));
+  };
+  chrome.storage.local.get(["vbLimCharInMix", "vbLimiterMaxRed"], (d) => {
+    if (chrome.runtime.lastError || !d) return;
+    mixLimRow.hidden = d.vbLimCharInMix !== true;
+    paintLim(d.vbLimiterMaxRed);
+  });
+  limBtns.forEach((b) => {
+    b.addEventListener("click", () => {
+      const v = Number(b.getAttribute("data-red"));
+      paintLim(v);
+      chrome.storage.local.set({ vbLimiterMaxRed: v }, () => void chrome.runtime.lastError);
+    });
+  });
+  chrome.storage.onChanged.addListener((ch, area) => {
+    if (area !== "local") return;
+    if (ch.vbLimCharInMix) mixLimRow.hidden = ch.vbLimCharInMix.newValue !== true;
+    if (ch.vbLimiterMaxRed) paintLim(ch.vbLimiterMaxRed.newValue);
+  });
+}
+
 let powerBusy = false;
 powerEl.addEventListener("click", async () => {
   if (powerBusy) return;
