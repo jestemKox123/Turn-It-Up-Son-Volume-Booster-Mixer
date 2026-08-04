@@ -159,3 +159,12 @@
   :root:not([data-theme="light"]) .theme-btn .sun{display:block}
   :root:not([data-theme="light"]) .theme-btn .moon{display:none}
 }
+
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:strona-wyjscie .26s ease both}
+::view-transition-new(root){animation:strona-wejscie .26s ease both}
+@keyframes strona-wyjscie{to{opacity:0;transform:translateX(-26px)}}
+@keyframes strona-wejscie{from{opacity:0;transform:translateX(26px)}}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}

@@ -18,7 +18,7 @@ body{
   position:relative;
 }
 a{color:inherit;text-decoration:none}
-img{max-width:100%;display:block}
+img{max-width:100%;display:block;height:auto}
 ::selection{background:var(--hl);color:var(--on-hl)}
 
 .paper{
@@ -173,7 +173,19 @@ footer::before{
 .foot-links{display:flex;gap:22px}
 .foot-links a:hover{color:var(--blue)}
 
-.back-row{margin-top:36px}
+.back-row{margin-top:36px;display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px}
+.back-link{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--disp);font-weight:700;font-size:var(--text-s);
+  color:var(--ink3);padding:9px 0;
+  transition:color .16s ease;
+}
+.back-link:hover{color:var(--blue)}
+.back-link svg{width:22px;height:13px;overflow:visible;flex:0 0 auto;transition:transform .18s ease}
+.back-link svg path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.back-link:hover svg{transform:translateX(-4px)}
+.back-top{display:flex;width:fit-content;margin-bottom:12px}
+@media (prefers-reduced-motion:reduce){.back-link svg{transition:none}}
 
 @media (prefers-reduced-motion:reduce){
   .boil{animation:none}

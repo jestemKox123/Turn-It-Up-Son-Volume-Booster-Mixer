@@ -34,7 +34,7 @@
     position:relative;
   }
   a{color:inherit;text-decoration:none}
-  img{max-width:100%;display:block}
+  img{max-width:100%;display:block;height:auto}
   ::selection{background:var(--hl);color:var(--on-hl)}
 
   .paper{
@@ -174,6 +174,20 @@
   .gap .ln{fill:none;stroke:rgba(var(--sketch-rgb),.42);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
   .gap .fill-p{fill:var(--paper);stroke:rgba(var(--sketch-rgb),.42);stroke-width:3.2;stroke-linejoin:round}
   .kicker{font-family:var(--hand);font-size:var(--hand-l);color:var(--blue);transform:rotate(-1.6deg);display:inline-block;margin-bottom:4px}
+  .only{
+    display:flex;width:fit-content;align-items:center;gap:8px;margin-bottom:14px;
+    font-family:var(--disp);font-weight:800;font-size:var(--text-s);letter-spacing:.02em;
+    text-transform:uppercase;color:var(--on-hl);background:var(--hl);
+    padding:7px 14px;border-radius:999px;transform:rotate(-1.2deg);
+    box-shadow:var(--note-shadow);
+  }
+  .only::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--red);flex:0 0 auto}
+  #mix .wrap{position:relative}
+  #mix::before{
+    content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(680px 460px at 50% 42%,rgba(var(--glow-rgb),var(--glow-a)) 0%,rgba(var(--glow-rgb),0) 70%);
+  }
+  #mix{position:relative}
   h2{font-family:var(--disp);font-weight:800;font-size:var(--head-m);line-height:1.03;letter-spacing:-.04em;color:var(--ink);max-width:14ch}
   .lead{max-width:520px;margin-top:20px;font-size:var(--text-l);line-height:1.62;color:var(--ink3)}
   .lead b{color:var(--ink);font-weight:600}
@@ -228,7 +242,7 @@
     transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s ease;
   }
   @media (hover:hover){
-    .art-pop img:hover{transform:scale(1.06);box-shadow:var(--shot-shadow-hover);z-index:2}
+    .art-pop img:hover{transform:translateY(-5px) scale(1.03);box-shadow:var(--shot-shadow-hover);z-index:2}
   }
   .art-pop.tall img{width:286px}
   .art-pop.wide img{width:min(100%,520px)}
@@ -374,8 +388,8 @@
   <div class="nav-in">
     <a class="brand" href="#top"><img src="img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
     <div class="nav-links">
-      <a class="hide-m" href="#loud">700%</a>
       <a class="hide-m" href="#mix">Mix panel</a>
+      <a class="hide-m" href="#loud">700%</a>
       <a class="hide-m" href="#skip">Auto Skip</a>
       <a class="hide-m" href="#privacy">Privacy</a>
       <a class="hide-m" href="/blog/">Blog</a>
@@ -477,105 +491,10 @@
         <path d="M8 6 C 34 22, 62 40, 92 58"/>
         <polygon points="110 74, 80 66, 96 46"/>
       </svg>
-      <img class="pop" src="img/popup-main.png" alt="Turn It Up, Son! popup with the volume slider at 700%">
+      <img class="pop" src="img/popup-main.webp" width="600" height="1184" fetchpriority="high" decoding="async" alt="Turn It Up, Son! popup with the volume slider at 700%">
     </div>
   </div>
 </header>
-
-<section id="loud">
-  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 420"><g class="boil">
-    <path class="ln" d="M84 74 L84 98 M72 86 L96 86 M76 78 L92 94 M92 78 L76 94"/>
-    <path class="ln" d="M56 184 C 56 166, 82 160, 90 173 C 100 153, 130 157, 131 176"/>
-    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
-  </g></svg></div>
-  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 460" ><g class="boil">
-    <path class="ln" d="M22 96 C 22 76, 50 69, 59 84 C 69 62, 103 67, 104 88 C 120 89, 120 106, 103 106 L 35 106 C 18 106, 18 99, 22 96"/>
-    <path class="ln" d="M44 196 L44 216 M34 206 L54 206 M37 199 L51 213 M51 199 L37 213"/>
-    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
-    <path class="ln" d="M28 386 C 35 377, 43 377, 50 386 M50 386 C 57 377, 65 377, 72 386"/>
-  </g></svg></div>
-  <div class="wrap two rv">
-    <div>
-      <div class="kicker">seven times louder</div>
-      <span class="big-num">700%</span>
-      <svg class="swoosh boil" viewBox="0 0 290 26">
-        <path d="M6 17 C 74 6, 152 24, 284 9"/>
-      </svg>
-      <p class="lead">
-        The slider on a page can only take away volume. It starts at whatever the
-        recording gives you and goes down from there. <b>There is no up.</b>
-      </p>
-      <p class="lead">
-        This extension takes the sound of the tab before it reaches your speakers,
-        amplifies it, and hands it back. 100% is the untouched signal, 700% is seven
-        times that. <b>Every tab keeps its own level</b>, so one can scream while the
-        rest stay quiet, and the level comes back by itself after you refresh.
-      </p>
-      <p class="note">Nothing is recorded on the way through. The sound only passes, gets louder, and plays.</p>
-    </div>
-    <div class="col-art art-pop wide">
-      <span class="tape tl" aria-hidden="true"></span>
-      <img src="img/popup-main.png" alt="The popup with the volume slider pushed to 700%" style="width:min(100%,286px)">
-    </div>
-  </div>
-
-  <div class="wrap dials rv">
-    <div class="dials-head">
-      <h3>Then the limiter catches it</h3>
-      <span>so loud does not mean broken</span>
-    </div>
-    <p class="dials-sub">
-      Amplify anything far enough and it stops fitting. The peaks run past what the
-      speaker can produce, get chopped flat, and that is the crackle you hear on other
-      boosters. A limiter is the thing that leans on those peaks a moment before they
-      arrive, so the loud parts stay loud and the sound stays whole.
-    </p>
-
-    <div class="dial-grid">
-      <div class="dial">
-        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="21" cy="10" r="4.6"/></svg>
-        <b>Volume ceiling</b>
-        <p>The line the sound will never cross. Zero is the digital maximum, which is also the loudest and the cleanest setting, because it leaves the limiter the least work to do. Lower it only if your speakers are weak.</p>
-      </div>
-      <div class="dial">
-        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="17" cy="10" r="4.6"/></svg>
-        <b>Bass ceiling</b>
-        <p>The same line, but for everything below 150 Hz. Bass is measured on its own, so a heavy kick does not duck the vocals and the rest of the mix with it. Drop it if the low end booms over everything else.</p>
-      </div>
-      <div class="dial">
-        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="13" cy="10" r="4.6"/></svg>
-        <b>Maximum reduction</b>
-        <p>How many decibels the limiter is allowed to take. Past that line it stops turning things down and saturation shaves the peaks instead. Lower means more bass and a denser sound with more grit, higher means calmer bass held down harder.</p>
-      </div>
-      <div class="dial">
-        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="9" cy="10" r="4.6"/></svg>
-        <b>Live meter</b>
-        <p>Two bars showing how hard the limiter is working at this second, one for the whole mix and one for the bass. Zero means it is asleep and not touching your sound at all.</p>
-      </div>
-    </div>
-
-    <div class="art-pop wide" style="margin-top:44px">
-      <span class="tape tl" aria-hidden="true"></span>
-      <img src="img/set-limiter.png" alt="The limiter settings card with both ceilings, the maximum reduction slider and the live meter">
-    </div>
-
-    <p class="flavors">
-      <b>Rather not think about it?</b> Leave <u>Limiter live</u> switched on and it reads how hard
-      you are pushing and picks the reduction for you, gentler at 100% and firmer at 700%.
-      The three sliders grey out while it does. Switch it off and your own numbers come straight back.
-    </p>
-  </div>
-</section>
-<div class="gap" aria-hidden="true">
-  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
-    <path class="ln" d="M96 54 C 96 34, 124 27, 133 41 C 143 20, 176 25, 177 45 C 193 46, 193 62, 176 62 L 109 62 C 92 62, 92 56, 96 54"/>
-    <path class="ln" d="M704 40 C 704 24, 726 19, 733 30 C 741 15, 767 18, 768 34 C 781 35, 781 47, 767 47 L 715 47 C 701 47, 701 43, 704 40"/>
-    <path class="ln" d="M380 46 C 388 36, 396 36, 404 46 M404 46 C 412 36, 420 36, 428 46"/>
-    <path class="ln" d="M470 30 C 476 22, 483 22, 489 30 M489 30 C 495 22, 502 22, 508 30"/>
-    <path class="ln" d="M556 58 C 562 51, 568 51, 574 58"/>
-  </g></svg>
-</div>
-
 
 <section id="mix">
   <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 560"><g class="boil">
@@ -595,9 +514,10 @@
   <div class="wrap two flip rv">
     <div class="col-art art-pop tall">
       <span class="tape tl" aria-hidden="true"></span>
-      <img src="img/popup-mix.png" alt="The Mix panel with presets and sliders">
+      <img src="img/popup-mix.webp" width="600" height="1352" loading="lazy" decoding="async" alt="The Mix panel with presets and sliders">
     </div>
     <div>
+      <div class="only">only in this one</div>
       <div class="kicker">the part nobody else has</div>
       <h2>Any song.<br><span class="mark">Your version.</span></h2>
       <p class="lead">
@@ -688,6 +608,101 @@
 </section>
 <div class="gap" aria-hidden="true">
   <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
+    <path class="ln" d="M96 54 C 96 34, 124 27, 133 41 C 143 20, 176 25, 177 45 C 193 46, 193 62, 176 62 L 109 62 C 92 62, 92 56, 96 54"/>
+    <path class="ln" d="M704 40 C 704 24, 726 19, 733 30 C 741 15, 767 18, 768 34 C 781 35, 781 47, 767 47 L 715 47 C 701 47, 701 43, 704 40"/>
+    <path class="ln" d="M380 46 C 388 36, 396 36, 404 46 M404 46 C 412 36, 420 36, 428 46"/>
+    <path class="ln" d="M470 30 C 476 22, 483 22, 489 30 M489 30 C 495 22, 502 22, 508 30"/>
+    <path class="ln" d="M556 58 C 562 51, 568 51, 574 58"/>
+  </g></svg>
+</div>
+
+
+<section id="loud">
+  <div class="side r" aria-hidden="true"><svg viewBox="0 0 132 420"><g class="boil">
+    <path class="ln" d="M84 74 L84 98 M72 86 L96 86 M76 78 L92 94 M92 78 L76 94"/>
+    <path class="ln" d="M56 184 C 56 166, 82 160, 90 173 C 100 153, 130 157, 131 176"/>
+    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
+  </g></svg></div>
+  <div class="side l" aria-hidden="true"><svg viewBox="0 0 132 460" ><g class="boil">
+    <path class="ln" d="M22 96 C 22 76, 50 69, 59 84 C 69 62, 103 67, 104 88 C 120 89, 120 106, 103 106 L 35 106 C 18 106, 18 99, 22 96"/>
+    <path class="ln" d="M44 196 L44 216 M34 206 L54 206 M37 199 L51 213 M51 199 L37 213"/>
+    <path class="ln" d="M70 300 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M77 297 L81 268 M81 268 C 92 271, 96 280, 89 287"/>
+    <path class="ln" d="M28 386 C 35 377, 43 377, 50 386 M50 386 C 57 377, 65 377, 72 386"/>
+  </g></svg></div>
+  <div class="wrap two rv">
+    <div>
+      <div class="kicker">seven times louder</div>
+      <span class="big-num">700%</span>
+      <svg class="swoosh boil" viewBox="0 0 290 26">
+        <path d="M6 17 C 74 6, 152 24, 284 9"/>
+      </svg>
+      <p class="lead">
+        The slider on a page can only take away volume. It starts at whatever the
+        recording gives you and goes down from there. <b>There is no up.</b>
+      </p>
+      <p class="lead">
+        This extension takes the sound of the tab before it reaches your speakers,
+        amplifies it, and hands it back. 100% is the untouched signal, 700% is seven
+        times that. <b>Every tab keeps its own level</b>, so one can scream while the
+        rest stay quiet, and the level comes back by itself after you refresh.
+      </p>
+      <p class="note">Nothing is recorded on the way through. The sound only passes, gets louder, and plays.</p>
+    </div>
+    <div class="col-art art-pop wide">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/popup-main.webp" width="600" height="1184" loading="lazy" decoding="async" alt="The popup with the volume slider pushed to 700%" style="width:min(100%,286px)">
+    </div>
+  </div>
+
+  <div class="wrap dials rv">
+    <div class="dials-head">
+      <h3>Then the limiter catches it</h3>
+      <span>so loud does not mean broken</span>
+    </div>
+    <p class="dials-sub">
+      Amplify anything far enough and it stops fitting. The peaks run past what the
+      speaker can produce, get chopped flat, and that is the crackle you hear on other
+      boosters. A limiter is the thing that leans on those peaks a moment before they
+      arrive, so the loud parts stay loud and the sound stays whole.
+    </p>
+
+    <div class="dial-grid">
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="21" cy="10" r="4.6"/></svg>
+        <b>Volume ceiling</b>
+        <p>The line the sound will never cross. Zero is the digital maximum, which is also the loudest and the cleanest setting, because it leaves the limiter the least work to do. Lower it only if your speakers are weak.</p>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="17" cy="10" r="4.6"/></svg>
+        <b>Bass ceiling</b>
+        <p>The same line, but for everything below 150 Hz. Bass is measured on its own, so a heavy kick does not duck the vocals and the rest of the mix with it. Drop it if the low end booms over everything else.</p>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="13" cy="10" r="4.6"/></svg>
+        <b>Maximum reduction</b>
+        <p>How many decibels the limiter is allowed to take. Past that line it stops turning things down and saturation shaves the peaks instead. Lower means more bass and a denser sound with more grit, higher means calmer bass held down harder.</p>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 26 20"><path d="M2 10 H24"/><circle cx="9" cy="10" r="4.6"/></svg>
+        <b>Live meter</b>
+        <p>Two bars showing how hard the limiter is working at this second, one for the whole mix and one for the bass. Zero means it is asleep and not touching your sound at all.</p>
+      </div>
+    </div>
+
+    <div class="art-pop wide" style="margin-top:44px">
+      <span class="tape tl" aria-hidden="true"></span>
+      <img src="img/set-limiter.webp" width="1280" height="1484" loading="lazy" decoding="async" alt="The limiter settings card with both ceilings, the maximum reduction slider and the live meter">
+    </div>
+
+    <p class="flavors">
+      <b>Rather not think about it?</b> Leave <u>Limiter live</u> switched on and it reads how hard
+      you are pushing and picks the reduction for you, gentler at 100% and firmer at 700%.
+      The three sliders grey out while it does. Switch it off and your own numbers come straight back.
+    </p>
+  </div>
+</section>
+<div class="gap" aria-hidden="true">
+  <svg viewBox="0 0 900 100" preserveAspectRatio="xMidYMid meet"><g class="boil">
     <path class="ln" d="M150 74 m -9 4 a 9 7 -18 1 0 0.1 0 M158 71 L162 40 M162 40 C 174 43, 178 53, 171 61"/>
     <path class="ln" d="M296 52 m -7 3 a 7 5.5 -18 1 0 0.1 0 M302 50 L305 26 M305 26 C 315 28, 318 36, 312 42"/>
     <path class="ln" d="M452 80 m -8 3.5 a 8 6.2 -18 1 0 0.1 0 M459 77 L463 48 M463 48 C 474 51, 478 60, 471 67"/>
@@ -729,7 +744,7 @@
     </div>
     <div class="col-art art-pop wide">
       <span class="tape tl" aria-hidden="true"></span>
-      <img src="img/set-skip.png" alt="Auto Skip list in the settings">
+      <img src="img/set-skip.webp" width="1280" height="932" loading="lazy" decoding="async" alt="Auto Skip list in the settings">
     </div>
   </div>
 </section>
@@ -759,7 +774,7 @@
   <div class="wrap two flip rv">
     <div class="col-art art-pop wide">
       <span class="tape tl" aria-hidden="true"></span>
-      <img src="img/set-privacy.png" alt="Privacy settings with site access and the wipe button">
+      <img src="img/set-privacy.webp" width="1280" height="980" loading="lazy" decoding="async" alt="Privacy settings with site access and the wipe button">
     </div>
     <div>
       <div class="kicker">loud, not nosy</div>

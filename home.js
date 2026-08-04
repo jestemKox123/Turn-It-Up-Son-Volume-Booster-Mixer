@@ -27,19 +27,32 @@ presets.addEventListener("click", (e) => {
 const mqPath = document.getElementById("mqPath");
 const mqBulbs = document.getElementById("mqBulbs");
 if (mqPath && mqBulbs) {
-  const total = mqPath.getTotalLength();
-  const count = 26;
-  const step = total / count;
-  for (let i = 0; i < count; i++) {
-    const p = mqPath.getPointAtLength(i * step);
+  const liczby = (mqPath.getAttribute("d").match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  const rogi = [];
+  for (let i = 0; i + 1 < liczby.length; i += 2) rogi.push({ x: liczby[i], y: liczby[i + 1] });
+
+  const ODSTEP = 27.5;
+  const punkty = [];
+  for (let i = 0; i < rogi.length; i++) {
+    const a = rogi[i];
+    const b = rogi[(i + 1) % rogi.length];
+    const dlugosc = Math.hypot(b.x - a.x, b.y - a.y);
+    const ile = Math.max(1, Math.round(dlugosc / ODSTEP));
+    for (let j = 0; j < ile; j++) {
+      const t = j / ile;
+      punkty.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+    }
+  }
+
+  punkty.forEach((p, i) => {
     const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     c.setAttribute("cx", p.x.toFixed(1));
     c.setAttribute("cy", p.y.toFixed(1));
     c.setAttribute("r", "5.6");
     c.setAttribute("class", "bulb");
-    c.style.animationDelay = (-(i / count) * 1.5).toFixed(3) + "s";
+    c.style.animationDelay = (-(i / punkty.length) * 1.5).toFixed(3) + "s";
     mqBulbs.appendChild(c);
-  }
+  });
 }
 
 if ("IntersectionObserver" in window) {
