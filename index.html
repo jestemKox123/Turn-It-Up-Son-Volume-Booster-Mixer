@@ -924,6 +924,17 @@
     }, { threshold: 0, rootMargin: "0px 0px -40px 0px" });
     document.querySelectorAll(".rv").forEach((el) => io.observe(el));
   }
+
+  const brand = document.querySelector('a.brand[href="#top"]');
+  if (brand) {
+    brand.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      history.replaceState(null, "", location.pathname);
+    });
+  }
+
+  if (location.hash === "#top") history.replaceState(null, "", location.pathname);
 </script>
 </body>
 </html>
