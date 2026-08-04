@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="type.css">
 <link rel="stylesheet" href="theme.css">
-<script>try{var t=localStorage.getItem("tius-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="theme-init.js"></script>
 <script src="theme.js" defer></script>
 <link rel="stylesheet" href="base.css">
 </head>
@@ -223,38 +223,6 @@
   </div>
 </footer>
 
-<script>
-  const DICT = {
-    en: {
-      h1: "Privacy Policy",
-      sub: "Volume Booster & Mixer - Turn It Up, Son! browser extension · Last updated: 2026-07-18",
-      back: "Back to the extension page"
-    },
-    pl: {
-      h1: "Polityka prywatności",
-      sub: "Wtyczka Volume Booster & Mixer - Turn It Up, Son! · Ostatnia aktualizacja: 2026-07-18",
-      back: "Wróć na stronę wtyczki"
-    }
-  };
-
-  const langEn = document.getElementById("langEn");
-  const langPl = document.getElementById("langPl");
-  const back = document.querySelector(".back-row .btn");
-
-  function applyLang(l) {
-    const T = DICT[l] || DICT.en;
-    document.getElementById("t-h1").textContent = T.h1;
-    document.getElementById("t-sub").textContent = T.sub;
-    document.getElementById("c-en").hidden = l !== "en";
-    document.getElementById("c-pl").hidden = l !== "pl";
-    document.documentElement.lang = l;
-    back.textContent = T.back;
-    langEn.classList.toggle("on", l === "en");
-    langPl.classList.toggle("on", l === "pl");
-  }
-
-  langEn.addEventListener("click", () => applyLang("en"));
-  langPl.addEventListener("click", () => applyLang("pl"));
-</script>
+<script src="privacy.js" defer></script>
 </body>
 </html>
