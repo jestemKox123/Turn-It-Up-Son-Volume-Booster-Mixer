@@ -1,0 +1,161 @@
+/* Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+   All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). */
+:root{
+  color-scheme:light;
+
+  --paper:#f7fbff;
+  --paper2:#e7f0fd;
+  --paper3:#cfe0f7;
+  --ink:#0a1730;
+  --ink2:#16305e;
+  --ink3:#2c4270;
+  --soft:#64749c;
+  --blue:#1d4ed8;
+  --blue2:#3b82f6;
+  --hl:#ffd21e;
+  --red:#e02b12;
+  --green:#0f7a53;
+
+  --paper-rgb:247,251,255;
+  --shadow-rgb:10,23,48;
+  --line-rgb:22,48,94;
+  --sketch-rgb:29,78,216;
+  --glow-rgb:29,78,216;
+  --grid-rgb:20,60,130;
+
+  --glow-a:.10;
+  --glow-b:.08;
+  --grid-a:.055;
+  --nav-a:.72;
+
+  --btn-text:#fff;
+  --on-hl:#0a1730;
+  --on-red:#fff;
+  --plate:#e02b12;
+  --mark-b:.06em;
+  --mark-h:.52em;
+  --ghost-hover:rgba(255,255,255,.6);
+  --star:#f0a500;
+  --star-rgb:240,165,0;
+  --bulb:#fff6cf;
+
+  --shot-shadow:0 40px 70px rgba(6,20,50,.30),0 14px 28px rgba(6,20,50,.18),0 0 0 1px rgba(9,26,60,.16);
+  --shot-shadow-2:0 40px 72px rgba(6,20,50,.28),0 14px 28px rgba(6,20,50,.16),0 0 0 1px rgba(9,26,60,.15);
+  --shot-shadow-hover:0 58px 100px rgba(6,20,50,.36),0 22px 44px rgba(6,20,50,.22),0 0 0 1px rgba(9,26,60,.20);
+  --note-shadow:4px 6px 0 rgba(150,110,10,.28);
+  --tape:rgba(255,210,30,.72);
+  --tape-shadow:0 2px 6px rgba(120,90,10,.22);
+}
+
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+
+    --paper:#070b14;
+    --paper2:#0b1220;
+    --paper3:#121d33;
+    --ink:#eef4ff;
+    --ink2:#cfdcf5;
+    --ink3:#b7c8e6;
+    --soft:#8b9ab8;
+    --blue:#5b9bff;
+    --blue2:#8fc0ff;
+    --hl:#ffd21e;
+    --red:#ff6a52;
+    --green:#45e0a0;
+
+    --paper-rgb:7,11,20;
+    --shadow-rgb:96,146,226;
+    --line-rgb:140,170,220;
+    --sketch-rgb:125,170,255;
+    --glow-rgb:56,110,225;
+    --grid-rgb:150,185,255;
+
+    --glow-a:.16;
+    --glow-b:.13;
+    --grid-a:.05;
+    --nav-a:.78;
+
+    --btn-text:#070b14;
+    --on-hl:#0a1730;
+    --on-red:#fff;
+    --plate:#d8321a;
+    --mark-b:-.26em;
+    --mark-h:1.1em;
+    --ghost-hover:rgba(255,255,255,.08);
+    --star:#ffb92e;
+    --star-rgb:255,185,46;
+    --bulb:#fff6cf;
+
+    --shot-shadow:0 40px 70px rgba(0,0,0,.55),0 14px 28px rgba(0,0,0,.42),0 0 0 1px rgba(150,180,230,.20);
+    --shot-shadow-2:0 40px 72px rgba(0,0,0,.52),0 14px 28px rgba(0,0,0,.40),0 0 0 1px rgba(150,180,230,.18);
+    --shot-shadow-hover:0 58px 100px rgba(0,0,0,.62),0 22px 44px rgba(0,0,0,.48),0 0 0 1px rgba(150,180,230,.30);
+    --note-shadow:4px 6px 0 rgba(0,0,0,.45);
+    --tape:rgba(255,210,30,.66);
+    --tape-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+}
+
+:root[data-theme="dark"]{
+  color-scheme:dark;
+
+  --paper:#070b14;
+  --paper2:#0b1220;
+  --paper3:#121d33;
+  --ink:#eef4ff;
+  --ink2:#cfdcf5;
+  --ink3:#b7c8e6;
+  --soft:#8b9ab8;
+  --blue:#5b9bff;
+  --blue2:#8fc0ff;
+  --hl:#ffd21e;
+  --red:#ff6a52;
+  --green:#45e0a0;
+
+  --paper-rgb:7,11,20;
+  --shadow-rgb:96,146,226;
+  --line-rgb:140,170,220;
+  --sketch-rgb:125,170,255;
+  --glow-rgb:56,110,225;
+  --grid-rgb:150,185,255;
+
+  --glow-a:.16;
+  --glow-b:.13;
+  --grid-a:.05;
+  --nav-a:.78;
+
+  --btn-text:#070b14;
+  --on-hl:#0a1730;
+  --on-red:#fff;
+  --plate:#d8321a;
+  --mark-b:-.26em;
+  --mark-h:1.1em;
+  --ghost-hover:rgba(255,255,255,.08);
+  --star:#ffb92e;
+  --star-rgb:255,185,46;
+  --bulb:#fff6cf;
+
+  --shot-shadow:0 40px 70px rgba(0,0,0,.55),0 14px 28px rgba(0,0,0,.42),0 0 0 1px rgba(150,180,230,.20);
+  --shot-shadow-2:0 40px 72px rgba(0,0,0,.52),0 14px 28px rgba(0,0,0,.40),0 0 0 1px rgba(150,180,230,.18);
+  --shot-shadow-hover:0 58px 100px rgba(0,0,0,.62),0 22px 44px rgba(0,0,0,.48),0 0 0 1px rgba(150,180,230,.30);
+  --note-shadow:4px 6px 0 rgba(0,0,0,.45);
+  --tape:rgba(255,210,30,.66);
+  --tape-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+
+.theme-btn{
+  flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;
+  width:38px;height:38px;padding:0;cursor:pointer;
+  background:transparent;color:var(--ink3);
+  border:2px solid rgba(var(--line-rgb),.32);border-radius:12px;
+  transition:color .14s ease,border-color .14s ease,transform .14s ease;
+}
+.theme-btn:hover{color:var(--ink);border-color:var(--ink);transform:translateY(-2px)}
+.theme-btn svg{width:19px;height:19px;display:block;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+.theme-btn .sun{display:none}
+:root[data-theme="dark"] .theme-btn .sun{display:block}
+:root[data-theme="dark"] .theme-btn .moon{display:none}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .theme-btn .sun{display:block}
+  :root:not([data-theme="light"]) .theme-btn .moon{display:none}
+}

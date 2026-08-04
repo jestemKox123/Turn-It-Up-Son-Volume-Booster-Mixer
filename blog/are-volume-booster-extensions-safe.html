@@ -13,6 +13,9 @@
 <link rel="apple-touch-icon" href="../img/icon128.png">
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../type.css">
+<link rel="stylesheet" href="../theme.css">
+<script>try{var t=localStorage.getItem("tius-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="../theme.js" defer></script>
 <link rel="stylesheet" href="../base.css">
 </head>
 <body>
@@ -36,6 +39,10 @@
       <a class="hide-m" href="/privacy">Privacy</a>
     </div>
     <div class="nav-right">
+<button class="theme-btn" type="button" aria-label="Switch between light and dark theme">
+<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></svg>
+<svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.6M12 18.9v2.6M4.3 4.3l1.9 1.9M17.8 17.8l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.3 19.7l1.9-1.9M17.8 6.2l1.9-1.9"/></svg>
+</button>
       <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
       <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
     </div>
