@@ -41,6 +41,18 @@ if (defBassSelect && HAS_STORAGE) {
   });
 }
 
+const bassAmtSelect = document.getElementById("bassAmtSelect");
+if (bassAmtSelect && HAS_STORAGE) {
+  chrome.storage.local.get("vbBassScale", (d) => {
+    if (chrome.runtime.lastError || !d) return;
+    const v = typeof d.vbBassScale === "number" ? Math.round(Math.max(0.6, Math.min(1.3, d.vbBassScale)) * 100) : 100;
+    bassAmtSelect.value = String(v);
+  });
+  bassAmtSelect.addEventListener("change", () => {
+    chrome.storage.local.set({ vbBassScale: (Number(bassAmtSelect.value) || 100) / 100 }, flashSaved);
+  });
+}
+
 const phaseRotToggle = document.getElementById("phaseRotToggle");
 if (phaseRotToggle && HAS_STORAGE) {
   chrome.storage.local.get("vbPhaseRot", (d) => {

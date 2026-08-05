@@ -109,7 +109,8 @@ Past a certain point the slider turns red. That is the range where the source it
 
 ## Links
 
-- [Changelog](https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/changelog.html)
+- [Website](https://letmecook.pl)
+- [Changelog](https://letmecook.pl/changelog)
 - [Buy me a coffee](https://buymeacoffee.com/romanzbudowy)
 - Bugs and ideas: the extension settings have a "Got a bug or an idea?" form. It sends anonymously, no account needed.
 

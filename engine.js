@@ -5,33 +5,7 @@ const CTX = new AudioContext({ latencyHint: "playback" });
 const MASTER = VBAudio.createMaster(CTX);
 const engines = new Map();
 
-function loadLimiterFromStorage() {
-  try {
-    chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed", "vbPhaseRot"], (d) => {
-      if (chrome.runtime.lastError || !d) return;
-      MASTER.applyRotator(d.vbPhaseRot === true);
-      MASTER.applyLimiter(
-        d.vbLimiterOn !== false,
-        typeof d.vbLimiterCeiling === "number" ? d.vbLimiterCeiling : 0,
-        typeof d.vbLimiterBass === "number" ? d.vbLimiterBass : 0,
-        typeof d.vbLimiterMaxRed === "number" ? d.vbLimiterMaxRed : 6
-      );
-    });
-  } catch (e) {}
-}
-
-loadLimiterFromStorage();
-
-try {
-  chrome.storage.onChanged.addListener((ch, area) => {
-    if (area === "local" && (ch.vbLimiterOn || ch.vbLimiterCeiling || ch.vbLimiterBass || ch.vbLimiterMaxRed || ch.vbPhaseRot)) loadLimiterFromStorage();
-  });
-} catch (e) {}
-
-const WORKLET = MASTER.loadWorklet(chrome.runtime.getURL("limiter-worklet.js")).then((ok) => {
-  if (ok) loadLimiterFromStorage();
-  return ok;
-});
+const WORKLET = MASTER.loadWorklet(chrome.runtime.getURL("limiter-worklet.js"));
 
 const IDLE_MS = 300000;
 let idleTimer = null;

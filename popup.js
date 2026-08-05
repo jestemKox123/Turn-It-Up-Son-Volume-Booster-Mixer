@@ -10,6 +10,8 @@ const SKIP_PERMS = {
 
 let currentTabId = null;
 let currentTabUrl = "";
+let bassScale = 1;
+const withScale = (s) => Object.assign({}, s, { bassScale });
 let settings = { ...DEFAULTS };
 let isActive = false;
 let tabsTimer = null;
@@ -201,7 +203,7 @@ function activate() {
       (streamId) =>
         new Promise((resolve) => {
           chrome.runtime.sendMessage(
-            { type: "vb-start", tabId: currentTabId, streamId, settings },
+            { type: "vb-start", tabId: currentTabId, streamId, settings: withScale(settings) },
             (resp) => resolve(resp || { active: false })
           );
         })
@@ -215,7 +217,7 @@ function update() {
   lastLocalEdit = Date.now();
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
-      { type: "vb-update", tabId: currentTabId, settings },
+      { type: "vb-update", tabId: currentTabId, settings: withScale(settings) },
       (resp) => resolve(resp || { active: false })
     );
   });
@@ -1044,9 +1046,10 @@ if (mixLimRow) {
     const n = typeof v === "number" ? Math.max(1, Math.min(8, v)) : 6;
     limBtns.forEach((b) => b.classList.toggle("on", Number(b.getAttribute("data-red")) === n));
   };
-  chrome.storage.local.get(["vbLimCharInMix", "vbLimiterMaxRed"], (d) => {
+  chrome.storage.local.get(["vbLimCharInMix", "vbLimiterMaxRed", "vbLimiterOn"], (d) => {
     if (chrome.runtime.lastError || !d) return;
     mixLimRow.hidden = d.vbLimCharInMix !== true;
+    mixLimRow.classList.toggle("off", d.vbLimiterOn === false);
     paintLim(d.vbLimiterMaxRed);
   });
   limBtns.forEach((b) => {
@@ -1059,6 +1062,7 @@ if (mixLimRow) {
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area !== "local") return;
     if (ch.vbLimCharInMix) mixLimRow.hidden = ch.vbLimCharInMix.newValue !== true;
+    if (ch.vbLimiterOn) mixLimRow.classList.toggle("off", ch.vbLimiterOn.newValue === false);
     if (ch.vbLimiterMaxRed) paintLim(ch.vbLimiterMaxRed.newValue);
   });
 }
@@ -1189,7 +1193,7 @@ async function toggleTab(t, btn) {
         const s = t.backup ? { ...DEFAULTS, ...t.backup } : { ...DEFAULTS };
         const rate = Number(s.mixRate) || 1;
         delete s.mixRate;
-        await sendMsg({ type: "vb-start", tabId: t.tabId, streamId, settings: s });
+        await sendMsg({ type: "vb-start", tabId: t.tabId, streamId, settings: withScale(s) });
         if (rate !== 1) {
           const o = originPattern(t.url || "");
           let ok = false;
@@ -1267,7 +1271,8 @@ async function init() {
     });
   });
 
-  chrome.storage.local.get(["vbMaxVol", "vbBassMode"], (d) => {
+  chrome.storage.local.get(["vbMaxVol", "vbBassMode", "vbBassScale"], (d) => {
+    if (typeof d.vbBassScale === "number") bassScale = Math.max(0.6, Math.min(1.3, d.vbBassScale));
     const mv = Number(d.vbMaxVol) || 700;
     if (mv < 700) {
       volumeEl.max = mv;

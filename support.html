@@ -1,0 +1,174 @@
+<!doctype html>
+<!-- Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
+     All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help - Turn It Up, Son!</title>
+<meta name="description" content="Help for the Turn It Up, Son! Chrome extension. Fixes for distorted sound, no audio, pages that will not boost, and how to report a bug.">
+<link rel="canonical" href="https://letmecook.pl/support">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/icon16.png">
+<link rel="apple-touch-icon" href="img/icon128.png">
+<link rel="stylesheet" href="fonts.css?v=53e130b9">
+<link rel="stylesheet" href="type.css?v=22d4c644">
+<link rel="stylesheet" href="theme.css?v=9bebfa69">
+<script src="theme-init.js?v=369350f5"></script>
+<script src="theme.js?v=4e688509" defer></script>
+<link rel="stylesheet" href="base.css?v=49ef8eb6">
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true">
+  <filter id="b0" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b1" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="11" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+  <filter id="b2" x="-25%" y="-25%" width="150%" height="150%"><feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="23" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+
+<div class="paper" aria-hidden="true"></div>
+<div class="grid-lines" aria-hidden="true"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="brand" href="/"><img src="img/icon128.png" alt="">Turn It Up, Son!<span class="nav-tag">free</span></a>
+    <div class="nav-links">
+      <a class="hide-m" href="/">Home</a>
+      <a class="hide-m" href="/blog/">Blog</a>
+      <a class="hide-m" href="/changelog">Changelog</a>
+    </div>
+    <div class="nav-right">
+<button class="theme-btn" type="button" aria-label="Switch between light and dark theme">
+<svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z"/></svg>
+<svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.6M12 18.9v2.6M4.3 4.3l1.9 1.9M17.8 17.8l1.9 1.9M2.5 12h2.6M18.9 12h2.6M4.3 19.7l1.9-1.9M17.8 6.2l1.9-1.9"/></svg>
+</button>
+      <a class="btn ghost nav-rate-btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik/reviews" target="_blank" rel="noopener"><span class="stars" aria-hidden="true">★★★★★</span> Rate it</a>
+      <a class="btn" href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Add to Chrome</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap page-head">
+  <div class="head-art" aria-hidden="true">
+    <svg viewBox="0 0 190 150"><g class="boil">
+      <path class="fill-p" d="M56 40 L140 40 C 148 40, 152 44, 152 52 L152 92 C 152 100, 148 104, 140 104 L92 104 L70 122 L74 104 L56 104 C 48 104, 44 100, 44 92 L44 52 C 44 44, 48 40, 56 40 Z"/>
+      <path class="ln" d="M84 62 C 84 52, 100 48, 108 55 C 116 62, 108 73, 99 77 C 96 79, 96 83, 96 86"/>
+      <path class="ln" d="M96 93 L96 95"/>
+      <path class="ln" d="M20 62 L20 80 M11 71 L29 71"/>
+      <path class="ln" d="M168 30 L168 44 M161 37 L175 37"/>
+      <path class="ln" d="M156 112 C 156 102, 172 99, 177 107 C 182 98, 190 100, 190 110"/>
+    </g></svg>
+  </div>
+
+  <div class="eyebrow">stuck? start here</div>
+  <h1>Help</h1>
+  <p class="page-sub">The fixes for the things that actually go wrong, and how to reach a human.</p>
+</div>
+
+<main class="wrap">
+  <div class="block">
+    <h2>The sound is distorted or gritty</h2>
+    <p>This is the most common one, and it is almost always the boost being pushed past what the source can take. <span class="ok">Past the red mark on the slider the audio itself starts to break up</span>, before the extension ever touches it. There is nothing to recover at that point, so the fix is to back off or to let the limiter work harder.</p>
+    <ol class="steps">
+      <li><strong>Come down off the red.</strong> Drop the slider below the red mark and listen again. On most tracks the difference between 300% and 500% is smaller than it looks.</li>
+      <li><strong>Check the limiter is on.</strong> Open the extension settings and find <strong>Limiter</strong>. It is on out of the box, so if it got switched off, switch it back.</li>
+      <li><strong>Set Character to Clean.</strong> <strong>Loud</strong> plays louder but lets saturation shave the peaks, which is exactly the grit you are hearing.</li>
+      <li><strong>Raise Maximum reduction.</strong> Around 5 to 6 dB is the cleanest spot and the default. Lower values give denser bass but clearly more distortion.</li>
+      <li><strong>Turn the bass down.</strong> Bass boost and the Mix presets make the limiter work far harder than volume alone. If you run both, expect to give something back.</li>
+    </ol>
+    <p>If you changed a lot and lost track, <strong>Reset limiter to default</strong> puts the whole card back where it started.</p>
+  </div>
+
+  <svg class="rule boil" viewBox="0 0 1000 26" preserveAspectRatio="none"><path d="M4 16 C 180 6, 300 22, 480 12 C 660 2, 780 22, 996 10"/></svg>
+
+  <div class="block">
+    <h2>No sound after turning it on</h2>
+    <ol class="steps">
+      <li><strong>Make sure the tab is really playing.</strong> The extension boosts a tab that already has sound. It cannot start playback for you.</li>
+      <li><strong>Reload the tab, then turn it on again.</strong> This clears almost every case where a page grabbed the audio before the extension did.</li>
+      <li><strong>Read what the popup says.</strong> When a tab cannot be boosted, it tells you so instead of failing quietly.</li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h2>It will not turn on for this page</h2>
+    <p>Some pages are off limits to every extension, not just this one. The browser itself blocks them:</p>
+    <ul>
+      <li><strong>Browser pages</strong> - anything starting with chrome://, including settings and the new tab page</li>
+      <li><strong>The Chrome Web Store</strong> - extensions are not allowed to touch it</li>
+      <li><strong>Tabs with no audio</strong> - there is nothing to capture yet</li>
+    </ul>
+    <p>Nothing is broken when this happens and there is no workaround, because the limit sits in the browser rather than in the extension.</p>
+  </div>
+
+  <svg class="rule boil" viewBox="0 0 1000 26" preserveAspectRatio="none"><path d="M4 12 C 200 24, 320 4, 500 16 C 680 26, 800 6, 996 18"/></svg>
+
+  <div class="block">
+    <h2>It sounds thin on laptop speakers</h2>
+    <p>Not a fault. The extension works on the stereo image, so bass, space and the voice lift land properly on <strong>headphones</strong>. Small laptop speakers physically cannot reproduce most of what the bass modes and 8D add, so a lot of the effect simply has nowhere to go.</p>
+  </div>
+
+  <div class="block">
+    <h2>I lost my settings</h2>
+    <p>Right after a reset the popup offers <strong>Restore previous</strong> with your last values, which is the quickest way back.</p>
+    <p>Worth knowing: everything lives only in your browser's local storage. Nothing is synced to an account, so settings do not travel between computers, and uninstalling removes all of it. You can also wipe everything deliberately with <strong>Clear all extension data</strong> in the settings.</p>
+  </div>
+
+  <svg class="rule boil" viewBox="0 0 1000 26" preserveAspectRatio="none"><path d="M4 16 C 180 6, 300 22, 480 12 C 660 2, 780 22, 996 10"/></svg>
+
+  <div class="block">
+    <h2>Report a bug or ask for a feature</h2>
+    <p>The extension settings have a <strong>Got a bug or an idea?</strong> box. It sends only what you type. <span class="ok">No account, no e-mail, no sign-in.</span> That is the fastest way to reach me and it is read.</p>
+    <p>If you would rather do it in the open, there is <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer/issues" target="_blank" rel="noopener">GitHub issues</a>.</p>
+    <p>When something is broken, the useful details are: the site, the browser, and what you had switched on. It saves a round trip.</p>
+  </div>
+
+  <div class="block">
+    <h2>Still stuck</h2>
+    <p>The <a href="/changelog">changelog</a> is worth a look if something changed recently and you want to know what. The <a href="/privacy">privacy policy</a> covers what the extension does and does not collect, which is nothing.</p>
+  </div>
+
+  <div class="back-row">
+    <a class="btn ghost" href="/">Back to the extension page</a>
+  </div>
+</main>
+
+<div class="closing" aria-hidden="true">
+  <svg viewBox="0 0 1400 190" preserveAspectRatio="xMidYMax meet"><g class="boil">
+    <path class="ln" d="M-420 148 C -180 140, 20 154, 240 146 C 460 138, 640 154, 860 145 C 1060 137, 1240 152, 1440 144 C 1620 139, 1740 148, 1860 143"/>
+    <path class="ln" d="M-380 168 C -140 162, 80 176, 320 166 C 580 156, 820 174, 1080 164 C 1300 156, 1520 168, 1860 160" style="opacity:.5"/>
+    <g class="ln">
+      <path d="M250 148 L250 118"/>
+      <path d="M250 120 C 222 118, 220 94, 238 91 C 240 74, 268 74, 271 90 C 289 93, 285 118, 250 120"/>
+    </g>
+    <g class="ln" style="opacity:.6">
+      <path d="M700 148 L700 124"/>
+      <path d="M700 126 C 678 124, 676 104, 691 101 C 693 87, 716 87, 719 100 C 734 103, 731 124, 700 126"/>
+    </g>
+    <g class="ln">
+      <path d="M1140 148 L1140 118"/>
+      <path d="M1140 120 C 1112 118, 1110 94, 1128 91 C 1130 74, 1158 74, 1161 90 C 1179 93, 1175 118, 1140 120"/>
+    </g>
+    <g class="ln" style="opacity:.5">
+      <path d="M470 148 L466 134 M476 148 L478 132 M482 148 L486 135"/>
+      <path d="M930 146 L926 132 M936 146 L938 130 M942 146 L946 133"/>
+    </g>
+  </g></svg>
+</div>
+
+<footer>
+  <div class="foot-in">
+    <span>© 2026 romanzbudowy · Turn It Up, Son!</span>
+    <div class="foot-links">
+      <a href="https://chromewebstore.google.com/detail/pgcnncfhomdjnliognejpjgllhbmleik" target="_blank" rel="noopener">Chrome Web Store</a>
+      <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+      <a href="/blog/">Blog</a>
+      <a href="/changelog">Changelog</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

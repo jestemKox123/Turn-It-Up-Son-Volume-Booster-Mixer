@@ -68,7 +68,7 @@
   window.VBCHANGELOG = {
     list: CHANGELOG,
     max: 3,
-    url: "https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/changelog.html",
+    url: "https://letmecook.pl/changelog",
     key: (v) => "cl_" + v.replace(/\./g, ""),
   };
 })();
@@ -179,6 +179,8 @@
       limchar_mid: "Średnio",
       limchar_loud: "Głośno",
       limiter_reset: "Przywróć domyślny limiter",
+      bassamt_h: "Ile basu generujemy",
+      bassamt_d: "Decyduje, ile znaczy pełny suwak basu. Na sto procent tryb Klasyk dokłada około trzynastu decybeli przy sześćdziesięciu hercach. Niżej ustawiona wartość ścina wszystkie tryby i presety po równo, więc bas robi się mniej natarczywy, a reszta pasma zostaje bez zmian. Powyżej stu dokłada go ponad to, co daje sam suwak, ale wtedy limiter zabiera więcej i przy mocnym podbiciu szybciej słychać brud.",
       rot_h: "Podbicie głosu",
       rot_d: "Ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie. Nic nie podbija ani nie ścisza, ale głos układa się równiej i brzmi pełniej. Wyłączony znaczy, że przy 100 procent wtyczka oddaje dźwięk dokładnie taki, jaki dostała.",
       limiter_meter_h: "Redukcja na żywo",
@@ -295,7 +297,7 @@
       wipe_confirm: "Na pewno? Kliknij jeszcze raz, żeby wyczyścić",
       skip_all_h: "Pomijaj wszędzie, nawet bez podgłośnienia",
       skip_all_d: "Domyślnie auto-pomijanie działa tylko na kartach, na których wtyczka gra (włączone podgłośnienie). Włącz, żeby pomijało na całej stronie, nawet gdy nic nie podgłaśniasz.",
-      cl_450: "- Dodano: limiter, który pilnuje, żeby dźwięk nie przesterował przy mocnym podbiciu\n- Dodano: własna karta limitera w ustawieniach: sufit głośności, sufit basu i maksymalne dociskanie\n- Dodano: miernik redukcji na żywo, widać ile limiter dociska w tej chwili\n- Dodano: przycisk przywracania domyślnych ustawień limitera\n- Dodano: przyciski charakteru limitera, Czysto, Średnio i Głośno, jednym kliknięciem ustawiasz, ile limiter ma prawo zabrać\n- Dodano: te same przyciski można włączyć w panelu Miks, wtedy zmienisz charakter w trakcie słuchania, bez wchodzenia w ustawienia\n- Dodano: przełącznik podbicia głosu w ustawieniach, ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie\n- Dodano: powiadomienie o nowej wersji w okienku, kliknięcie otwiera listę zmian\n- Naprawiono: pełny ekran działa przy włączonym podgłośnieniu, wtyczka sama przełącza okno przeglądarki i przywraca je po wyjściu\n- Naprawiono: przy 100% i wyłączonych efektach dźwięk jest dokładnie taki sam jak bez wtyczki, wcześniej lekko przygasały wysokie tony\n- Naprawiono: mniej trzasków w słuchawkach przy włączaniu i wyłączaniu podgłośnienia\n- Naprawiono: zmiana charakteru basu w trakcie grania nie strzela już trzaskiem\n- Zmieniono: nowa ikona wtyczki\n- Zmieniono: czystszy dźwięk przy wysokim podbiciu, mniej brudu na szczytach\n- Zmieniono: przebudowane 8D, dźwięk krąży naturalniej i nie przygasa w połowie obrotu\n- Zmieniono: mocniejszy i czystszy bas\n- Zmieniono: nazwa i opis w sklepie w 44 językach zamiast 19",
+      cl_450: "- Dodano: limiter, który pilnuje, żeby dźwięk nie przesterował przy mocnym podbiciu\n- Dodano: własna karta limitera w ustawieniach: sufit głośności, sufit basu i maksymalne dociskanie\n- Dodano: miernik redukcji na żywo, widać ile limiter dociska w tej chwili\n- Dodano: przycisk przywracania domyślnych ustawień limitera\n- Dodano: przyciski charakteru limitera, Czysto, Średnio i Głośno, jednym kliknięciem ustawiasz, ile limiter ma prawo zabrać\n- Dodano: te same przyciski można włączyć w panelu Miks, wtedy zmienisz charakter w trakcie słuchania, bez wchodzenia w ustawienia\n- Dodano: przełącznik podbicia głosu w ustawieniach, ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie\n- Dodano: powiadomienie o nowej wersji w okienku, kliknięcie otwiera listę zmian\n- Dodano: ustawienie ile basu generujemy, od 60 do 130%, ścina albo dokłada wszystkim trybom basu i presetom po równo\n- Dodano: podpowiedź na stronie powitalnej, że najpełniej słychać wtyczkę w słuchawkach\n- Naprawiono: pełny ekran działa przy włączonym podgłośnieniu, wtyczka sama przełącza okno przeglądarki i przywraca je po wyjściu\n- Naprawiono: przy 100% i wyłączonych efektach dźwięk jest dokładnie taki sam jak bez wtyczki, wcześniej lekko przygasały wysokie tony\n- Naprawiono: mniej trzasków w słuchawkach przy włączaniu i wyłączaniu podgłośnienia\n- Naprawiono: zmiana charakteru basu w trakcie grania nie strzela już trzaskiem\n- Naprawiono: wtyczka gubiła zapisane ustawienia limitera i podbicia głosu, kiedy silnik dźwięku uruchamiał się od nowa\n- Naprawiono: tryby basu 808 i Punch miały zapadnięcie w okolicy 100 Hz, przez co ginęło ciało stopy, a pojedyncze nuty basu potrafiły zniknąć\n- Naprawiono: zmiana języka dociera teraz do wszystkich otwartych stron wtyczki, wcześniej część napisów zostawała w starym języku\n- Naprawiono: przyciski charakteru limitera gasną razem z resztą, kiedy limiter jest wyłączony\n- Zmieniono: nowa ikona wtyczki\n- Zmieniono: czystszy dźwięk przy wysokim podbiciu, mniej brudu na szczytach\n- Zmieniono: przebudowane 8D, dźwięk krąży naturalniej i nie przygasa w połowie obrotu\n- Zmieniono: mocniejszy i czystszy bas\n- Zmieniono: nazwa i opis w sklepie w 44 językach zamiast 19",
       cl_440: "- Dodano: poświata w tle z własną paletą kolorów, niezależną od koloru wtyczki\n- Dodano: suwak siły poświaty i przycisk przywracania domyślnego wyglądu\n- Zmieniono: nowa ikona wtyczki\n- Zmieniono: odświeżony wygląd okienka, czarne tło z lazurowym akcentem\n- Zmieniono: wyraźniejsze przyciski Reset i Ustawienia na dole okienka\n- Zmieniono: usunięty powtarzający się motyw kolorów, zostało ich 7\n- Zmieniono: sekcja O wtyczce nazywa się teraz Funkcje\n- Zmieniono: usunięty pływający przycisk wsparcia w ustawieniach\n- Zmieniono: lista zmian pokazuje 3 ostatnie wersje, pełna historia jest na stronie\n- Naprawiono: tło nie rozjeżdża się już przy otwieraniu panelu Mix\n- Naprawiono: suwak siły poświaty zapisuje się za każdym razem\n- Naprawiono: ikona nie ma już obciętych rogów\n- Naprawiono: przewijany napis w ustawieniach nie ma już przerwy\n- Naprawiono: napis w tle ustawień nie przeskakuje przy zmianie zakładki",
       cl_431: "- Naprawiono: tempo (Sped Up itp.) nie gubi się już przy zmianie piosenki\n- Naprawiono: tempo naprawia się samo, kiedy YouTube gra normalnie mimo włączonego mixu\n- Naprawiono: presety nie kasują twojego bass boosta, a Reset czyści wszystko do zera\n- Naprawiono: wyłączenie karty na liście wyłącza też tempo, a włączenie je przywraca\n- Zmieniono: łagodniejszy bass boost, muzyka nie cichnie przy uderzeniach basu\n- Zmieniono: płynne włączanie i wyłączanie wzmocnienia, bez trzasku\n- Dodano: przycisk czyszczenia całej listy auto-pomijania",
       cl_430: "- Dodano: auto-pomijanie artystów na YouTube, YouTube Music, Spotify i SoundCloud\n- Dodano: pomijanie konkretnych utworów (jednym kliknięciem w okienku albo po wklejeniu linka)\n- Dodano: 2 nowe kolory wtyczki (Ogień, Magenta)\n- Dodano: czyszczenie wszystkich danych wtyczki jednym przyciskiem\n- Zmieniono: odświeżony, szklany wygląd okienka\n- Zmieniono: wyraźniejsze charaktery basu i mocniejszy suwak Wokal",
@@ -323,6 +325,8 @@
       wlc_step3_d: "Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.",
       wlc_step4_t: "Ciesz się",
       wlc_step4_d: "To wszystko. Podkręć, zremiksuj, pomiń czego nie lubisz i baw się dźwiękiem.",
+      wlc_hp_h: "Najlepiej w słuchawkach",
+      wlc_hp_d: "Wtyczka pracuje na scenie stereo, więc bas, przestrzeń i podbicie głosu słychać najpełniej w słuchawkach. Na głośnikach laptopa część efektów po prostu nie ma jak wybrzmieć.",
       wlc_links_h: "Podoba się? To pomaga najbardziej",
       wlc_rate_t: "Oceń wtyczkę",
       wlc_rate_d: "Dobra ocena w Chrome Web Store pomaga innym ją znaleźć.",
@@ -437,6 +441,8 @@
       limchar_mid: "Mid",
       limchar_loud: "Loud",
       limiter_reset: "Reset limiter to default",
+      bassamt_h: "How much bass we generate",
+      bassamt_d: "Sets what a full bass slider means. At one hundred percent the Classic mode adds around thirteen decibels at sixty hertz. A lower value scales every mode and preset down by the same amount, so the bass stops shouting while the rest of the range stays untouched. Above one hundred it pushes past what the slider alone gives, but then the limiter takes more back and dirt shows up sooner on big boosts.",
       rot_h: "Voice lift",
       rot_d: "The same phase trick radio stations use on speech. It boosts nothing and cuts nothing, but the voice sits more evenly and sounds fuller. Off means that at 100 percent the extension gives back exactly the sound it got.",
       limiter_meter_h: "Live reduction",
@@ -553,7 +559,7 @@
       wipe_confirm: "Are you sure? Click again to clear",
       skip_all_h: "Skip everywhere, even without boosting",
       skip_all_d: "By default auto-skip works only on tabs where the extension is playing (boost on). Turn this on to skip on the whole site even when you are not boosting anything.",
-      cl_450: "- Added: a limiter that keeps the sound from distorting on heavy boost\n- Added: its own limiter card in settings: volume ceiling, bass ceiling and maximum reduction\n- Added: a live reduction meter showing how hard the limiter is working right now\n- Added: a button to restore the default limiter settings\n- Added: limiter character buttons, Clean, Mid and Loud, one click sets how much the limiter may take\n- Added: the same buttons can be turned on in the Mix panel, so you change the character while listening, without opening settings\n- Added: a voice lift switch in settings, the same phase trick radio stations use on speech\n- Added: a new version notice in the popup, clicking it opens the changelog\n- Fixed: fullscreen now works while the boost is on, the extension switches the browser window itself and puts it back on exit\n- Fixed: at 100% with effects off the sound is now exactly the same as without the extension, the highs used to be slightly dulled\n- Fixed: fewer clicks in the headphones when the boost is switched on and off\n- Fixed: switching the bass flavor while the sound is playing no longer clicks\n- Changed: new extension icon\n- Changed: cleaner sound at high boost, less grit on the peaks\n- Changed: rebuilt 8D, the sound circles more naturally and no longer dips mid rotation\n- Changed: stronger and cleaner bass\n- Changed: the store name and summary now come in 44 languages instead of 19",
+      cl_450: "- Added: a limiter that keeps the sound from distorting on heavy boost\n- Added: its own limiter card in settings: volume ceiling, bass ceiling and maximum reduction\n- Added: a live reduction meter showing how hard the limiter is working right now\n- Added: a button to restore the default limiter settings\n- Added: limiter character buttons, Clean, Mid and Loud, one click sets how much the limiter may take\n- Added: the same buttons can be turned on in the Mix panel, so you change the character while listening, without opening settings\n- Added: a voice lift switch in settings, the same phase trick radio stations use on speech\n- Added: a new version notice in the popup, clicking it opens the changelog\n- Added: a how much bass we generate setting, from 60 to 130%, scaling every bass mode and preset by the same amount\n- Added: a note on the welcome page that the extension comes through fullest on headphones\n- Fixed: fullscreen now works while the boost is on, the extension switches the browser window itself and puts it back on exit\n- Fixed: at 100% with effects off the sound is now exactly the same as without the extension, the highs used to be slightly dulled\n- Fixed: fewer clicks in the headphones when the boost is switched on and off\n- Fixed: switching the bass flavor while the sound is playing no longer clicks\n- Fixed: the extension lost saved limiter and voice lift settings whenever the audio engine started up again\n- Fixed: the 808 and Punch bass modes had a dip around 100 Hz that swallowed the kick body and could make single bass notes disappear\n- Fixed: a language change now reaches every open extension page, some labels used to stay in the old language\n- Fixed: the limiter character buttons now dim together with the rest when the limiter is off\n- Changed: new extension icon\n- Changed: cleaner sound at high boost, less grit on the peaks\n- Changed: rebuilt 8D, the sound circles more naturally and no longer dips mid rotation\n- Changed: stronger and cleaner bass\n- Changed: the store name and summary now come in 44 languages instead of 19",
       cl_440: "- Added: background glow with its own color palette, separate from the extension color\n- Added: glow strength slider and a button to restore the default look\n- Changed: new extension icon\n- Changed: refreshed popup look, black background with an azure accent\n- Changed: more visible Reset and Settings buttons at the bottom of the popup\n- Changed: removed a duplicate color theme, 7 left\n- Changed: the About section is now called Features\n- Changed: removed the floating support button in settings\n- Changed: the changelog shows the 3 latest versions, full history is on the website\n- Fixed: the background no longer shifts when the Mix panel opens\n- Fixed: the glow strength slider now saves every time\n- Fixed: the icon corners are no longer clipped\n- Fixed: the scrolling text in settings no longer has a gap\n- Fixed: the background text in settings no longer jumps when you switch tabs",
       cl_431: "- Fixed: tempo (Sped Up etc.) no longer gets lost when the song changes\n- Fixed: tempo repairs itself when YouTube plays at normal speed despite an active mix\n- Fixed: presets no longer wipe your bass boost, and Reset clears everything to zero\n- Fixed: turning a tab off in the list also stops the tempo, turning it back on restores it\n- Changed: gentler bass boost, music no longer goes quiet on bass hits\n- Changed: smooth engine on and off, no popping sound\n- Added: a button to clear the whole auto-skip list",
       cl_430: "- Added: auto-skip artists on YouTube, YouTube Music, Spotify and SoundCloud\n- Added: skip specific tracks (one click in the popup or by pasting a link)\n- Added: 2 new extension colors (Fire, Magenta)\n- Added: clear all extension data with one button\n- Changed: refreshed glass look for the popup\n- Changed: more distinct bass flavors and a stronger Vocal slider",
@@ -581,6 +587,8 @@
       wlc_step3_d: "Drag the volume slider up to 700% or open the Mix panel and pick a preset.",
       wlc_step4_t: "Enjoy",
       wlc_step4_d: "That's it. Boost it, remix it, skip what you hate and have fun with your sound.",
+      wlc_hp_h: "Best with headphones",
+      wlc_hp_d: "The extension works on the stereo image, so bass, space and voice lift come through fullest on headphones. Laptop speakers simply cannot reproduce part of what it does.",
       wlc_links_h: "Enjoying it? This helps the most",
       wlc_rate_t: "Rate the extension",
       wlc_rate_d: "A good rating on the Chrome Web Store helps others find it.",
@@ -622,6 +630,8 @@
 
   const store = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local ? chrome.storage.local : null;
 
+  let selfLang = null;
+
   function setLang(l) {
     return new Promise((res) => {
       if (!store) {
@@ -630,10 +640,12 @@
         res();
         return;
       }
+      selfLang = l;
       store.set({ lang: l }, () => {
         resolveLang(l);
         apply();
         res();
+        location.reload();
       });
     });
   }
@@ -648,6 +660,12 @@
 
   if (store) {
     store.get("lang", (d) => boot(d.lang));
+    chrome.storage.onChanged.addListener((ch, area) => {
+      if (area !== "local" || !ch.lang) return;
+      const next = ch.lang.newValue;
+      if (next === selfLang || next === LANG) return;
+      location.reload();
+    });
   } else {
     boot("en");
   }

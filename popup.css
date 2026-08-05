@@ -767,6 +767,11 @@ input[type="range"]:disabled {
   background: var(--card);
 }
 
+.mix-lim.off {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .mix-lim-btns {
   display: flex;
   gap: 4px;

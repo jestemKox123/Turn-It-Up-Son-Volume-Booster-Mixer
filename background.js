@@ -203,7 +203,9 @@ async function ensureEngine() {
       });
     } catch (e) {}
   }
-  await engineReady();
+  const ready = await engineReady();
+  if (ready) await pushLimiter();
+  return ready;
 }
 
 function sendToEngine(message) {
@@ -896,7 +898,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   syncSkip();
 });
 
-chrome.runtime.setUninstallURL("https://jestemkox123.github.io/Turn-It-Up-Son-Volume-Booster-Mixer/uninstall.html");
+chrome.runtime.setUninstallURL("https://letmecook.pl/uninstall");
 
 syncYt();
 syncSkip();

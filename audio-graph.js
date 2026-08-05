@@ -295,10 +295,11 @@
     on.gain.setTargetAtTime(cfg.max * v, t, 0.05);
   }
 
-  function applyBass(engine, on, mode) {
+  function applyBass(engine, on, mode, scale) {
     const m = BASS_MODES[mode] || BASS_MODES.classic;
     const t = engine.ctx.currentTime;
-    const v = on === true ? 0.75 : clamp01(on);
+    const s = typeof scale === "number" && scale > 0 ? Math.min(1.3, scale) : 1;
+    const v = (on === true ? 0.75 : clamp01(on)) * s;
     setSlot(engine.slot1, m.f1, v, t);
     setSlot(engine.slot2, m.f2, v, t);
     engine.harmGain.gain.setTargetAtTime(m.harm * v, t, 0.05);
@@ -375,7 +376,7 @@
 
   function applyAll(engine, settings) {
     applyMono(engine, settings.monoFix);
-    applyBass(engine, settings.bassBoost, settings.bassMode);
+    applyBass(engine, settings.bassBoost, settings.bassMode, settings.bassScale);
     applyTreble(engine, settings.treble);
     applyMuffle(engine, settings.muffle);
     applyVocal(engine, settings.vocal);
@@ -414,13 +415,20 @@
     const bassTrim = ctx.createGain();
     bassTrim.gain.value = 1;
 
-    const subLP = ctx.createBiquadFilter();
-    subLP.type = "lowpass";
-    subLP.frequency.value = 130;
-    subLP.Q.value = 0.7;
+    const mkHarmFilter = (type, freq) => {
+      const f = ctx.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      f.Q.value = 0.7;
+      return f;
+    };
+    const subLP = mkHarmFilter("lowpass", 75);
+    const subLP2 = mkHarmFilter("lowpass", 75);
     const shaper = ctx.createWaveShaper();
     shaper.curve = getHarmCurve();
     shaper.oversample = "4x";
+    const harmHP = mkHarmFilter("highpass", 140);
+    const harmHP2 = mkHarmFilter("highpass", 140);
     const harmGain = ctx.createGain();
     harmGain.gain.value = 0;
 
@@ -522,8 +530,11 @@
     b2pk.connect(bassTrim);
     bassTrim.connect(treble);
     merger.connect(subLP);
-    subLP.connect(shaper);
-    shaper.connect(harmGain);
+    subLP.connect(subLP2);
+    subLP2.connect(shaper);
+    shaper.connect(harmHP);
+    harmHP.connect(harmHP2);
+    harmHP2.connect(harmGain);
     harmGain.connect(treble);
     treble.connect(muffle);
     muffle.connect(vocal);
