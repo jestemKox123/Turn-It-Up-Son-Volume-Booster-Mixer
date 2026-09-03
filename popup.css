@@ -1350,3 +1350,68 @@ body.hasban .tabs-list {
   line-height: 1;
   flex-shrink: 0;
 }
+
+.guard {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 7px 9px;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--muted);
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.guard-ico {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  fill: currentColor;
+  opacity: 0.9;
+}
+
+.guard-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.guard-db {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.guard.safe {
+  color: var(--ok);
+  background: var(--ok-soft);
+  border-color: color-mix(in srgb, var(--ok) 26%, transparent);
+}
+
+.guard.risk {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: color-mix(in srgb, var(--danger) 26%, transparent);
+}
+
+.guard-btn {
+  flex: 0 0 auto;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.guard-btn:hover {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+.guard:not(.risk) .guard-btn {
+  display: none;
+}

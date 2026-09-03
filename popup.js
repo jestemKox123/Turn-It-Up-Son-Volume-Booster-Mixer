@@ -150,6 +150,77 @@ if (donateLink) {
   });
 }
 
+const guardEl = document.getElementById("guard");
+const guardTextEl = document.getElementById("guardText");
+const guardDbEl = document.getElementById("guardDb");
+const guardBtnEl = document.getElementById("guardBtn");
+const GUARD_FROM = 250;
+let limiterOn = true;
+let guardTimer = null;
+let guardPeak = 0;
+
+if (guardBtnEl) {
+  guardBtnEl.addEventListener("click", () => {
+    chrome.storage.local.set({ vbLimiterOn: true }, () => {
+      void chrome.runtime.lastError;
+    });
+  });
+}
+
+function paintGuard(red) {
+  if (!guardEl) return;
+  const pct = Math.round(settings.volume * 100);
+  if (!anyActive() || pct < GUARD_FROM) {
+    guardEl.hidden = true;
+    return;
+  }
+  const holding = limiterOn && red >= 0.1;
+  guardEl.hidden = false;
+  guardEl.classList.toggle("risk", !limiterOn);
+  guardEl.classList.toggle("safe", holding);
+  if (!limiterOn) {
+    guardTextEl.textContent = VBI18N.t("guard_off");
+    guardDbEl.textContent = "";
+    return;
+  }
+  guardTextEl.textContent = VBI18N.t(holding ? "guard_hold" : "guard_ready");
+  guardDbEl.textContent = holding ? "-" + red.toFixed(1) + " dB" : "";
+}
+
+function guardTick() {
+  chrome.runtime.sendMessage({ type: "vb-meter-any" }, (r) => {
+    if (chrome.runtime.lastError || !r || !r.playing) {
+      guardPeak = 0;
+      paintGuard(0);
+      return;
+    }
+    const teraz = Math.max(-(Number(r.main) || 0), -(Number(r.bass) || 0), 0);
+    guardPeak = Math.max(teraz, guardPeak - 0.7);
+    paintGuard(guardPeak);
+  });
+}
+
+function syncGuard() {
+  const pct = Math.round(settings.volume * 100);
+  const chce = anyActive() && pct >= GUARD_FROM;
+  if (chce && !guardTimer) {
+    guardTimer = setInterval(guardTick, 200);
+    guardTick();
+  }
+  if (!chce && guardTimer) {
+    clearInterval(guardTimer);
+    guardTimer = null;
+    guardPeak = 0;
+  }
+  paintGuard(guardPeak);
+}
+
+chrome.storage.local.get("vbLimiterOn", (d) => {
+  void chrome.runtime.lastError;
+  if (d) limiterOn = d.vbLimiterOn !== false;
+  syncGuard();
+});
+
 function paintReadout(pct) {
   readoutEl.classList.remove("warn", "danger");
   if (pct >= 500) readoutEl.classList.add("danger");
@@ -164,6 +235,7 @@ function renderUI() {
   monoFixEl.checked = settings.monoFix;
   bassBoostEl.checked = settings.bassBoost;
   renderPower();
+  syncGuard();
 }
 
 function anyActive() {
@@ -194,6 +266,7 @@ function renderStatus() {
   } else {
     setStatus("idle", VBI18N.t("status_off"));
   }
+  syncGuard();
 }
 
 function activate() {
@@ -324,6 +397,10 @@ chrome.storage.onChanged.addListener((ch, area) => {
   if (ch.skipArtists) skipArtistCount = Array.isArray(ch.skipArtists.newValue) ? ch.skipArtists.newValue.length : 0;
   if (ch.skipSongs) skipSongCount = Array.isArray(ch.skipSongs.newValue) ? ch.skipSongs.newValue.length : 0;
   if (ch.skipEnabled) skipToggleEl.checked = !!ch.skipEnabled.newValue;
+  if (ch.vbLimiterOn) {
+    limiterOn = ch.vbLimiterOn.newValue !== false;
+    syncGuard();
+  }
 });
 
 skipToggleEl.addEventListener("change", async () => {
