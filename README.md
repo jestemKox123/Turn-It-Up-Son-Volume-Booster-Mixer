@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icons/icon128.png" width="96" alt="Turn It Up, Son!">
+  <img src="https://letmecook.pl/img/icon128.png" width="96" alt="Turn It Up, Son!">
 </p>
 
 <h1 align="center">Turn It Up, Son!</h1>
@@ -15,11 +15,16 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.5.0-4a90ff" alt="Version 4.5.0">
+  <img src="https://img.shields.io/badge/version-4.6.0-4a90ff" alt="Version 4.6.0">
   <img src="https://img.shields.io/badge/Manifest-V3-5c6bc0" alt="Manifest V3">
-  <img src="https://img.shields.io/badge/Chrome-109%2B-4a90ff" alt="Chrome 109 or newer">
+  <img src="https://img.shields.io/badge/Chrome-116%2B-4a90ff" alt="Chrome 116 or newer">
   <img src="https://img.shields.io/badge/languages-44-2ea44f" alt="44 languages">
   <img src="https://img.shields.io/badge/tracking-none-2ea44f" alt="No tracking">
+</p>
+
+<p align="center">
+  <img src="https://letmecook.pl/img/popup-main.webp" width="240" alt="The popup with the volume slider and the effect switches">
+  <img src="https://letmecook.pl/img/popup-mix.webp" width="240" alt="The Mix panel with presets and sliders">
 </p>
 
 ---
@@ -52,6 +57,7 @@
 | --- | --- |
 | Lookahead limiter | Runs in an audio worklet with a 5 ms lookahead and a separate band for the bass, so a heavy kick does not duck the whole mix. |
 | Limiter controls | Volume ceiling, bass ceiling and a cap on how much the limiter may take, plus a live reduction meter. |
+| Limiter in the popup | Past 250 percent the popup shows whether the limiter is holding the peaks and by how much, and offers to switch it back on if it is off. |
 | Voice lift | Optional phase shift around 150 Hz, the same trick radio stations use on the microphone chain. It boosts nothing and cuts nothing, but speech sits more evenly. Off by default. |
 
 ### Convenience
@@ -94,7 +100,7 @@ No data is collected, stored remotely, transmitted or sold. No servers, no analy
 
 1. Open `chrome://extensions` (Edge: `edge://extensions`).
 2. Turn on Developer mode.
-3. Click "Load unpacked" and point it at this folder.
+3. Click "Load unpacked" and point it at the `extension` folder.
 
 When you move from an older version, remove the extension first and load it again, so the browser does not keep permissions from before.
 
@@ -102,7 +108,7 @@ When you move from an older version, remove the extension first and load it agai
 
 1. Open a tab with sound and click the extension icon.
 2. Drag the slider or hit the switch. The volume fades in smoothly.
-3. A green ON badge on the icon means that tab is boosted.
+3. The icon badge shows the boost of that tab as a number. It turns amber above 300 percent.
 4. "Mix and effects" opens the panel with presets and sliders.
 
 Past a certain point the slider turns red. That is the range where the source itself may start to break up. The limiter softens it, but the cleanest sound is below that mark.
@@ -113,6 +119,14 @@ Past a certain point the slider turns red. That is the range where the source it
 - [Changelog](https://letmecook.pl/changelog)
 - [Buy me a coffee](https://buymeacoffee.com/romanzbudowy)
 - Bugs and ideas: the extension settings have a "Got a bug or an idea?" form. It sends anonymously, no account needed.
+
+## What is in this repository
+
+| Where | What |
+| --- | --- |
+| `extension/` | The extension source. This is the folder to load unpacked. |
+| the root | The website behind [letmecook.pl](https://letmecook.pl), published with GitHub Pages. |
+| `blog/`, `img/`, `fonts/` | Parts of that website. |
 
 ## License
 
