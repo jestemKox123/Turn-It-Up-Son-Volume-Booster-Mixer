@@ -1415,3 +1415,37 @@ body.hasban .tabs-list {
 .guard:not(.risk) .guard-btn {
   display: none;
 }
+
+.rate.ask {
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 10px;
+  padding: 7px 9px;
+  margin-top: 8px;
+  gap: 8px;
+}
+
+.rate.ask .rate-label {
+  color: var(--text);
+}
+
+.rate-no {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rate.ask .rate-no {
+  display: inline-flex;
+}
+
+.rate-no:hover {
+  color: var(--text);
+  background: var(--card-2);
+}

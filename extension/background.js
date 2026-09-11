@@ -157,6 +157,17 @@ function wait(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
+function noteUseDay() {
+  chrome.storage.local.get(["vbUseDays", "vbRateOff"], (d) => {
+    if (chrome.runtime.lastError || !d || d.vbRateOff) return;
+    const days = Array.isArray(d.vbUseDays) ? d.vbUseDays : [];
+    if (days.length >= 4) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (days.indexOf(today) >= 0) return;
+    chrome.storage.local.set({ vbUseDays: days.concat(today) }, () => void chrome.runtime.lastError);
+  });
+}
+
 function setBadge(tabId, on, settings) {
   const swallow = () => void chrome.runtime.lastError;
   if (on) {
@@ -222,13 +233,14 @@ async function enginePresent() {
 }
 
 async function pushLimiter() {
-  const { vbLimiterOn, vbLimiterCeiling, vbLimiterBass, vbLimiterMaxRed, vbPhaseRot } = await chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed", "vbPhaseRot"]);
+  const { vbLimiterOn, vbLimiterCeiling, vbLimiterBass, vbLimiterMaxRed, vbPhaseRot, vbGuardOn } = await chrome.storage.local.get(["vbLimiterOn", "vbLimiterCeiling", "vbLimiterBass", "vbLimiterMaxRed", "vbPhaseRot", "vbGuardOn"]);
   const payload = {
     on: vbLimiterOn !== false,
     ceiling: typeof vbLimiterCeiling === "number" ? vbLimiterCeiling : 0,
     bass: typeof vbLimiterBass === "number" ? vbLimiterBass : 0,
     maxred: typeof vbLimiterMaxRed === "number" ? Math.max(1, Math.min(8, vbLimiterMaxRed)) : 6,
     rot: vbPhaseRot === true,
+    guard: vbGuardOn === true,
   };
   if (!(await enginePresent())) return;
   await sendToEngine({ type: "vb-limiter", ...payload });
@@ -265,6 +277,7 @@ async function startCapture(tabId, streamId, settings) {
   cachedActiveIds = resp.tabIds || cachedActiveIds;
   setBadge(tabId, true, settings);
   pushLimiter();
+  noteUseDay();
   cacheWindowFor(tabId);
   return { active: true };
 }
@@ -806,8 +819,17 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   })();
 });
 
+function tabWokeUp(info) {
+  return (
+    info.status === "complete" ||
+    info.frozen === false ||
+    info.discarded === false ||
+    info.audible === true
+  );
+}
+
 chrome.tabs.onUpdated.addListener((tabId, info) => {
-  if (info.status !== "complete") return;
+  if (!tabWokeUp(info)) return;
   (async () => {
     const d = await chrome.storage.session.get(keyFor(tabId));
     const s = d[keyFor(tabId)];
@@ -881,7 +903,7 @@ async function finishPendingMix() {
 }
 
 chrome.storage.onChanged.addListener((ch, area) => {
-  if (area === "local" && (ch.vbLimiterOn || ch.vbLimiterCeiling || ch.vbLimiterBass || ch.vbLimiterMaxRed || ch.vbPhaseRot)) pushLimiter();
+  if (area === "local" && (ch.vbLimiterOn || ch.vbLimiterCeiling || ch.vbLimiterBass || ch.vbLimiterMaxRed || ch.vbPhaseRot || ch.vbGuardOn)) pushLimiter();
 });
 
 const VER_SHOWS = 5;

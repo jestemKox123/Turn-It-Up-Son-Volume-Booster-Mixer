@@ -12,6 +12,15 @@ const REL_QUICK = 0.02;
 const TH_TC = 0.01;
 const SOFT_KB = 0.55;
 const SOFT_KM = 0.55;
+const G_SHORT = 0.3;
+const G_LONG = 5;
+const G_ALLOW = 8;
+const G_MAX = 12;
+const G_SILENT = -45;
+const G_LOUD = -30;
+const G_ATK = 0.05;
+const G_REL = 1.5;
+const G_GRACE = 1.5;
 
 class VBLimiter extends AudioWorkletProcessor {
   static get parameterDescriptors() {
@@ -20,6 +29,7 @@ class VBLimiter extends AudioWorkletProcessor {
       { name: "bass", defaultValue: -1, minValue: -24, maxValue: 0, automationRate: "k-rate" },
       { name: "enabled", defaultValue: 1, minValue: 0, maxValue: 1, automationRate: "k-rate" },
       { name: "maxred", defaultValue: 6, minValue: 1, maxValue: 8, automationRate: "k-rate" },
+      { name: "guard", defaultValue: 0, minValue: 0, maxValue: 1, automationRate: "k-rate" },
     ];
   }
 
@@ -46,6 +56,14 @@ class VBLimiter extends AudioWorkletProcessor {
     this.count = 0;
     this.every = Math.max(128, Math.round(sampleRate / 15));
     this.holdC = Math.exp(-1 / (0.2 * sampleRate));
+    this.rS = 0;
+    this.lDb = -120;
+    this.settle = 0;
+    this.gJ = 1;
+    this.minJ = 1;
+    this.eS = Math.exp(-1 / (G_SHORT * sampleRate));
+    this.aJ = Math.exp(-1 / (G_ATK * sampleRate));
+    this.rJ = Math.exp(-1 / (G_REL * sampleRate));
 
     const w0 = (2 * Math.PI * XOVER) / sampleRate;
     const cw = Math.cos(w0), sw = Math.sin(w0);
@@ -110,10 +128,42 @@ class VBLimiter extends AudioWorkletProcessor {
     this.gfSm += (gfTarget - this.gfSm) * 0.05;
     const gFloor = this.gfSm;
 
+    let jT = 1;
+    const sDb = 10 * Math.log10(this.rS > 1e-12 ? this.rS : 1e-12);
+    if (params.guard[0] >= 0.5) {
+      if (sDb < G_SILENT) {
+        this.settle = 0;
+        this.lDb = sDb;
+      } else {
+        this.settle += n / sampleRate;
+        if (this.settle < G_GRACE) {
+          this.lDb = sDb;
+        } else {
+          if (sDb > G_LOUD) {
+            let duck = sDb - this.lDb - G_ALLOW;
+            if (duck > 0) {
+              if (duck > G_MAX) duck = G_MAX;
+              jT = Math.pow(10, -duck / 20);
+            }
+          }
+          this.lDb = sDb + (this.lDb - sDb) * Math.exp(-n / (G_LONG * sampleRate));
+        }
+      }
+    } else {
+      this.settle = 0;
+      this.lDb = sDb;
+    }
+
     for (let i = 0; i < n; i++) {
-      let pLo = 0, pHi = 0;
+      this.gJ = jT + (this.gJ - jT) * (jT < this.gJ ? this.aJ : this.rJ);
+      const gj = this.gJ;
+      if (gj < this.minJ) this.minJ = gj;
+
+      let pLo = 0, pHi = 0, sq = 0;
       for (let c = 0; c < ch; c++) {
-        const x = inp[c][i];
+        const raw = inp[c][i];
+        sq += raw * raw;
+        const x = raw * gj;
         const lo = this.bq(this.sL2[c], this.bq(this.sL1[c], x, this.lb0, this.lb1, this.lb2), this.lb0, this.lb1, this.lb2);
         const hi = x - lo;
         this.loRing[c][this.idx] = lo;
@@ -123,6 +173,8 @@ class VBLimiter extends AudioWorkletProcessor {
         if (al > pLo) pLo = al;
         if (ah > pHi) pHi = ah;
       }
+      sq /= ch;
+      this.rS = sq + (this.rS - sq) * this.eS;
 
       let tB = on ? this.target(pLo, cbDb, cb, kbS, kbE) : 1;
       if (tB < gFloor) tB = gFloor * Math.pow(tB / gFloor, SOFT_KB);
@@ -177,9 +229,11 @@ class VBLimiter extends AudioWorkletProcessor {
       this.port.postMessage({
         b: 20 * Math.log10(this.minB > 1e-6 ? this.minB : 1e-6),
         m: 20 * Math.log10(this.minM > 1e-6 ? this.minM : 1e-6),
+        j: 20 * Math.log10(this.minJ > 1e-6 ? this.minJ : 1e-6),
       });
       this.minB = 1;
       this.minM = 1;
+      this.minJ = 1;
       this.count = 0;
     }
     return true;

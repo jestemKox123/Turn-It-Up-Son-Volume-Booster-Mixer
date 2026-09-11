@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.6.0-4a90ff" alt="Version 4.6.0">
+  <img src="https://img.shields.io/badge/version-4.7.0-4a90ff" alt="Version 4.7.0">
   <img src="https://img.shields.io/badge/Manifest-V3-5c6bc0" alt="Manifest V3">
   <img src="https://img.shields.io/badge/Chrome-116%2B-4a90ff" alt="Chrome 116 or newer">
   <img src="https://img.shields.io/badge/languages-44-2ea44f" alt="44 languages">

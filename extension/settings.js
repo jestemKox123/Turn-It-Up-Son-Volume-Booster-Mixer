@@ -64,6 +64,17 @@ if (phaseRotToggle && HAS_STORAGE) {
   });
 }
 
+const guardToggle = document.getElementById("guardToggle");
+if (guardToggle && HAS_STORAGE) {
+  chrome.storage.local.get("vbGuardOn", (d) => {
+    if (chrome.runtime.lastError || !d) return;
+    guardToggle.checked = d.vbGuardOn === true;
+  });
+  guardToggle.addEventListener("change", () => {
+    chrome.storage.local.set({ vbGuardOn: guardToggle.checked }, () => void chrome.runtime.lastError);
+  });
+}
+
 const limiterToggle = document.getElementById("limiterToggle");
 const limiterCeiling = document.getElementById("limiterCeiling");
 const limiterBass = document.getElementById("limiterBass");
@@ -632,27 +643,97 @@ if (wipeBtn && HAS_STORAGE) {
 
 const clList = document.getElementById("clList");
 const clFull = document.getElementById("clFull");
+function clItem(txt) {
+  const li = document.createElement("li");
+  const mark = document.createElement("span");
+  mark.className = "cl-ic";
+  let body = txt;
+  const m = txt.match(/^([^:]{1,20}):\s*([\s\S]*)$/);
+  if (m) {
+    const word = m[1].toLowerCase();
+    body = m[2];
+    if (word === "dodano" || word === "added") { mark.classList.add("ic-add"); mark.textContent = "+"; }
+    else if (word === "naprawiono" || word === "fixed") { mark.classList.add("ic-fix"); mark.textContent = "!"; }
+    else { mark.classList.add("ic-chg"); mark.textContent = "~"; }
+  } else {
+    mark.classList.add("ic-chg");
+    mark.textContent = "~";
+  }
+  const text = document.createElement("span");
+  text.textContent = body;
+  li.appendChild(mark);
+  li.appendChild(text);
+  return li;
+}
+
+function clText(key) {
+  const v = VBI18N.t(key);
+  return v && v !== key ? v : null;
+}
+
 if (clList && window.VBCHANGELOG) {
   VBI18N.ready(() => {
     clList.innerHTML = "";
-    VBCHANGELOG.list.slice(0, VBCHANGELOG.max).forEach((ver) => {
+    const card = document.createElement("div");
+    card.className = "card cl-card";
+    VBCHANGELOG.list.slice(0, VBCHANGELOG.max).forEach((ver, idx) => {
       const txt = VBI18N.t(VBCHANGELOG.key(ver));
       if (!txt) return;
-      const card = document.createElement("div");
-      card.className = "card clcard";
-      const wrap = document.createElement("div");
-      wrap.className = "featl";
-      const t = document.createElement("div");
-      t.className = "t";
-      t.textContent = ver;
-      const d = document.createElement("div");
-      d.className = "d";
-      d.textContent = txt;
-      wrap.appendChild(t);
-      wrap.appendChild(d);
-      card.appendChild(wrap);
-      clList.appendChild(card);
+      const items = txt.split("\n- ").map((x) => x.replace(/^- /, "")).filter(Boolean);
+      const short = ver.replace(/\./g, "");
+      const rel = document.createElement("div");
+      rel.className = "cl-rel";
+
+      const meta = document.createElement("div");
+      meta.className = "cl-meta";
+      const num = document.createElement("span");
+      num.className = "cl-v";
+      num.textContent = ver;
+      meta.appendChild(num);
+      if (idx === 0) {
+        const tag = document.createElement("span");
+        tag.className = "cl-new";
+        tag.textContent = VBI18N.t("cl_newest");
+        meta.appendChild(tag);
+      }
+      rel.appendChild(meta);
+
+      const head = clText("clh_" + short);
+      if (head) {
+        const el = document.createElement("div");
+        el.className = "cl-h";
+        el.textContent = head;
+        rel.appendChild(el);
+      }
+      const lead = clText("cls_" + short);
+      if (lead) {
+        const el = document.createElement("div");
+        el.className = "cl-s";
+        el.textContent = lead;
+        rel.appendChild(el);
+      }
+
+      const top = document.createElement("ul");
+      top.className = "cl-top";
+      items.slice(0, 3).forEach((x) => top.appendChild(clItem(x)));
+      rel.appendChild(top);
+
+      const rest = items.slice(3);
+      if (rest.length) {
+        const det = document.createElement("details");
+        det.className = "cl-more";
+        const sum = document.createElement("summary");
+        sum.textContent = VBI18N.t("cl_rest", { n: rest.length });
+        det.appendChild(sum);
+        const ul = document.createElement("ul");
+        ul.className = "cl-rest";
+        rest.forEach((x) => ul.appendChild(clItem(x)));
+        det.appendChild(ul);
+        rel.appendChild(det);
+      }
+      card.appendChild(rel);
     });
+    clList.appendChild(card);
   });
 }
 if (clFull && window.VBCHANGELOG) {

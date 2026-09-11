@@ -184,8 +184,9 @@
       rotDry.gain.setTargetAtTime(m.rotOn ? 0 : 1, t, 0.02);
     };
 
-    m.applyLimiter = function (on, ceilMain, ceilBass, maxRed) {
+    m.applyLimiter = function (on, ceilMain, ceilBass, maxRed, guard) {
       m.limOn = on !== false;
+      m.guardOn = guard === true;
       m.limMain = limCeil(ceilMain);
       m.limBass = limCeil(ceilBass);
       m.limMaxRed = typeof maxRed === "number" ? Math.max(1, Math.min(8, maxRed)) : 6;
@@ -198,6 +199,7 @@
         m.limWL.parameters.get("ceiling").value = m.limMain;
         m.limWL.parameters.get("bass").value = m.limBass;
         m.limWL.parameters.get("maxred").value = m.limMaxRed;
+        m.limWL.parameters.get("guard").value = m.guardOn ? 1 : 0;
         return;
       }
       mainComp.threshold.setTargetAtTime(m.limOn ? m.limMain : 0, t, 0.05);
@@ -221,6 +223,7 @@
         m.limWL.port.onmessage = (e) => {
           m.redBass = e.data.b;
           m.redMain = e.data.m;
+          m.redJump = e.data.j;
         };
         HEAD.connect(m.limWL);
         m.limWL.connect(MASTER_OUT);
@@ -240,6 +243,7 @@
       return {
         bass: m.useWL ? m.redBass : bassComp.reduction,
         main: m.useWL ? m.redMain : mainComp.reduction,
+        jump: m.useWL ? m.redJump || 0 : 0,
         hq: m.useWL,
       };
     };

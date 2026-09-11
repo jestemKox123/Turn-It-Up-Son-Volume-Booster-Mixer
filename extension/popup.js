@@ -135,6 +135,7 @@ if (rateStars) {
   stars.forEach((s) => {
     s.addEventListener("mouseenter", () => paintStars(Number(s.dataset.v)));
     s.addEventListener("click", () => {
+      closeRate();
       chrome.tabs.create({
         url: "https://chrome.google.com/webstore/detail/" + chrome.runtime.id + "/reviews",
       });
@@ -142,6 +143,33 @@ if (rateStars) {
   });
   rateStars.addEventListener("mouseleave", () => paintStars(0));
 }
+
+const rateRowEl = document.querySelector(".rate");
+const rateLabelEl = document.querySelector(".rate-label");
+const rateNoEl = document.getElementById("rateNo");
+
+function closeRate() {
+  chrome.storage.local.set({ vbRateOff: true }, () => void chrome.runtime.lastError);
+  if (rateRowEl) rateRowEl.classList.remove("ask");
+  if (rateLabelEl) rateLabelEl.textContent = VBI18N.t("rate_ext");
+}
+
+function offerRate() {
+  if (!rateRowEl || !rateLabelEl) return;
+  chrome.storage.local.get(["vbUseDays", "vbRateOff"], (d) => {
+    if (chrome.runtime.lastError || !d || d.vbRateOff) return;
+    const dni = Array.isArray(d.vbUseDays) ? d.vbUseDays : [];
+    if (dni.length < 3) return;
+    rateRowEl.classList.add("ask");
+    rateLabelEl.textContent = VBI18N.t("rate_ask");
+  });
+}
+
+if (rateNoEl) rateNoEl.addEventListener("click", closeRate);
+VBI18N.ready(() => {
+  if (rateNoEl) rateNoEl.setAttribute("aria-label", VBI18N.t("rate_no"));
+  offerRate();
+});
 
 const donateLink = document.getElementById("donateLink");
 if (donateLink) {

@@ -127,7 +127,7 @@
         #mark3d { animation: none; }
         #mark3d.mk-smooth { transition: none; }
       }
-      .wrap { max-width: 640px; margin: 0 auto; }
+      .wrap { max-width: 820px; margin: 0 auto; }
 
       .head {
         display: flex;
@@ -166,7 +166,7 @@
       .row select { flex-shrink: 0; }
 
       .row.sep { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-      .mini-d { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.45; max-width: 400px; }
+      .mini-d { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.45; max-width: 560px; }
 
       .dsum {
         display: flex;
@@ -339,7 +339,6 @@
       .skip-chip button:hover { color: var(--danger); }
       .skip-empty { font-size: 12.5px; color: var(--xdim); margin-top: 12px; }
       .card.hl { border-color: var(--accent); animation: bugin 0.25s ease; }
-      .clcard .featl .d { white-space: pre-line; }
 
       .access-list-title {
         font-size: 11px;
@@ -533,6 +532,112 @@
       .rate-pill:hover .rp-stars i:nth-child(4) { transition-delay: 0.15s; }
       .rate-pill:hover .rp-stars i:nth-child(5) { transition-delay: 0.2s; }
 
+
+      .feat-intro {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--muted);
+        max-width: 620px;
+        margin: 0 0 20px;
+      }
+      .feat-grp { margin-bottom: 20px; }
+      .feat-grp-h {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        margin: 0 0 9px 3px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .feat-grp-h svg {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .feat-list {
+        column-width: 290px;
+        column-gap: 26px;
+      }
+      .feat-list .featl {
+        padding: 0;
+        border: none;
+        break-inside: avoid;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 16px;
+      }
+      .feat-list .featl:last-child { margin-bottom: 0; }
+      .feat-list .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+      .feat-list .featl .d { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+      .cl-card { padding: 0; overflow: hidden; }
+      .cl-rel { padding: 16px 20px 15px; border-bottom: 1px solid var(--border); }
+      .cl-rel:last-child { border-bottom: none; padding-bottom: 18px; }
+      .cl-meta { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
+      .cl-v { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); }
+      .cl-new {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--bg);
+        background: var(--accent);
+        padding: 2.5px 7px;
+        border-radius: 999px;
+      }
+      .cl-h { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px; }
+      .cl-s { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin-bottom: 12px; }
+      .cl-top { list-style: none; padding: 0; margin: 0; }
+      .cl-top li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 13px; line-height: 1.55; }
+      .cl-ic {
+        flex: 0 0 auto;
+        width: 16px;
+        height: 16px;
+        margin-top: 1px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .ic-add { background: rgba(69, 224, 160, 0.16); color: var(--ok); }
+      .ic-fix { background: rgba(255, 77, 94, 0.16); color: var(--danger); }
+      .ic-chg { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+      .cl-more { margin-top: 6px; }
+      .cl-more summary {
+        list-style: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--muted);
+        padding: 7px 0;
+      }
+      .cl-more summary::-webkit-details-marker { display: none; }
+      .cl-more summary::after {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        transform: rotate(45deg) translateY(-2px);
+        transition: transform 0.18s ease;
+      }
+      .cl-more[open] summary::after { transform: rotate(-135deg) translateY(1px); }
+      .cl-more summary:hover { color: var(--text); }
+      .cl-rest { list-style: none; padding: 0; margin: 2px 0 0; }
+      .cl-rest li { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
     </style>
   </head>
   <body>
@@ -604,7 +709,10 @@
           <input type="checkbox" class="switch" id="glowToggle" />
         </div>
         <div class="row sep" id="glowStrengthRow">
-          <h2 style="margin:0;font-size:13.5px" data-i18n="glow_strength_h">Siła poświaty</h2>
+          <div>
+            <h2 style="margin:0;font-size:13.5px" data-i18n="glow_strength_h">Siła poświaty</h2>
+            <p class="mini-d" data-i18n="glow_strength_d">Jak mocno widać poświatę w tle. Zejdź niżej, jeśli rozprasza.</p>
+          </div>
           <div style="display:flex;align-items:center;gap:12px">
             <span id="glowVal" class="glow-val">13</span>
             <input type="range" class="glow-range" id="glowStrength" min="4" max="26" step="1" />
@@ -636,7 +744,10 @@
 
       <div class="card">
         <div class="row">
-          <h2 style="margin:0" data-i18n="lang_h">Język / Language</h2>
+          <div>
+            <h2 style="margin:0" data-i18n="lang_h">Język / Language</h2>
+            <p class="mini-d" data-i18n="lang_d">Język całej wtyczki: okienka, ustawień i powiadomień.</p>
+          </div>
           <select id="langSelect" class="btn" style="margin:0">
             <option value="en">English</option>
             <option value="pl">Polski</option>
@@ -652,6 +763,13 @@
             <option value="500">500%</option>
             <option value="700" selected>700%</option>
           </select>
+        </div>
+        <div class="row sep">
+          <div>
+            <h2 style="margin:0" data-i18n="guardset_h">Ochrona przed skokami</h2>
+            <p class="mini-d" data-i18n="guardset_d">Kiedy dźwięk nagle robi się dużo głośniejszy, na przykład wchodzi reklama albo głośniej zmasterowany utwór, wtyczka przytrzymuje różnicę przez chwilę, zamiast pozwolić jej uderzyć. Zwykłej dynamiki muzyki nie rusza, budzi się dopiero przy naprawdę dużym skoku.</p>
+          </div>
+          <input type="checkbox" class="switch" id="guardToggle" />
         </div>
         <div class="row sep">
           <div>
@@ -801,6 +919,7 @@
         <div class="saved" id="skipSaved"></div>
       </div>
 
+
       </div>
 
       <div class="tabpane" data-pane="privacy">
@@ -830,77 +949,100 @@
 
       <div class="sec-h" data-i18n="sec_about">Funkcje</div>
 
-      <details class="card">
-        <summary class="dsum"><span data-i18n="feats_h">Wszystkie funkcje</span><span class="chev">›</span></summary>
-        <div class="featl">
-          <div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div>
-          <div class="d" data-i18n="featl_vol_d">Zwykły suwak strony kończy się na 100%. Wtyczka przepuszcza dźwięk karty przez własny wzmacniacz, więc może grać do siedmiu razy głośniej. Każda karta ma osobny poziom.</div>
+      <p class="feat-intro" data-i18n="feats_intro">Wtyczka bierze dźwięk karty wbudowanym mechanizmem przeglądarki i przepuszcza go przez własny silnik audio, w całości na twoim komputerze.</p>
+
+      <div class="feat-grp">
+        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.6a5 5 0 0 1 0 6.8"/><path d="M19.6 5.8a9 9 0 0 1 0 12.4"/></svg><span data-i18n="featg_loud">grupa</span></div>
+        <div class="card feat-list">
+          <div class="featl">
+            <div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div>
+            <div class="d" data-i18n="featl_vol_d">Zwykły suwak strony kończy się na 100%. Wtyczka przepuszcza dźwięk karty przez własny wzmacniacz, więc może grać do siedmiu razy głośniej. Każda karta ma osobny poziom.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_limiter_t">Limiter</div>
+            <div class="d" data-i18n="featl_limiter_d">Automatyczny strażnik na wyjściu: przy mocnym podbiciu dociska szczyty, żeby dźwięk nie trzeszczał. Działa sam, nic nie trzeba włączać.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_mono_t">Naprawa dźwięku na jedno ucho</div>
+            <div class="d" data-i18n="featl_mono_d">Część nagrań ma dźwięk tylko w lewym albo prawym kanale. Ta opcja miksuje oba kanały do środka, więc słychać w obu słuchawkach.</div>
+          </div>
         </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_mix_t">Miks: sped up, nightcore, slowed</div>
-          <div class="d" data-i18n="featl_mix_d">Nightcore to sposób przerabiania piosenek: utwór przyspiesza się o jakieś 10-30%, przez co wokal robi się wyraźnie wyższy. Nazwa wzięła się od norweskiego duetu Nightcore, który tak remiksował utwory na początku lat 2000. Sped up to nowsza odmiana tego samego pomysłu, znana głównie z TikToka, a slowed + reverb to jej przeciwieństwo: wolniej i z pogłosem. Suwak prędkości działa w zakresie 0.5x-1.6x.</div>
+      </div>
+
+      <div class="feat-grp">
+        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21v-6M5 11V3M12 21v-9M12 8V3M19 21v-4M19 13V3"/><path d="M2.5 15h5M9.5 8h5M16.5 17h5"/></svg><span data-i18n="featg_mix">grupa</span></div>
+        <div class="card feat-list">
+          <div class="featl">
+            <div class="t" data-i18n="featl_mix_t">Miks: sped up, nightcore, slowed</div>
+            <div class="d" data-i18n="featl_mix_d">Nightcore to sposób przerabiania piosenek: utwór przyspiesza się o jakieś 10-30%, przez co wokal robi się wyraźnie wyższy. Nazwa wzięła się od norweskiego duetu Nightcore, który tak remiksował utwory na początku lat 2000. Sped up to nowsza odmiana tego samego pomysłu, znana głównie z TikToka, a slowed + reverb to jej przeciwieństwo: wolniej i z pogłosem. Suwak prędkości działa w zakresie 0.5x-1.6x.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_drill_t">Drill / Rap i Chill Drill</div>
+            <div class="d" data-i18n="featl_drill_d">Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki sub-bas, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_styles_t">Phonk i NY Drill</div>
+            <div class="d" data-i18n="featl_styles_d">Dwa style prosto z remixów. Phonk gra w pełnym tempie: agresywny, kopiący bas, ostra, chrupiąca góra pasma i kompresor dociskający całość jak w memphis rapie lat 90. NY Drill to brzmienie nowojorskiego drillu: bardzo głęboki, ślizgający się sub-bas, ciemny pogłos i wokal, który mimo tego basu nie ginie.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_full_t">Pełny mikser</div>
+            <div class="d" data-i18n="featl_full_d">Przełącznik w panelu Miks, który odsłania wszystkie suwaki naraz: prędkość, pogłos, jasność, bas i krążenie. Do kręcenia własnych wersji.</div>
+          </div>
         </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_drill_t">Drill / Rap i Chill Drill</div>
-          <div class="d" data-i18n="featl_drill_d">Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki sub-bas, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.</div>
+      </div>
+
+      <div class="feat-grp">
+        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3.2l2.6-7.5L12 20l3-12.5 2 4.5h5"/></svg><span data-i18n="featg_fx">grupa</span></div>
+        <div class="card feat-list">
+          <div class="featl">
+            <div class="t" data-i18n="featl_bass_t">Podbicie basów</div>
+            <div class="d" data-i18n="featl_bass_d">Wzmacnia najniższe tony, czyli dół pasma, w którym siedzi bas i stopa perkusji. Muzyka brzmi pełniej, zwłaszcza na małych głośnikach laptopa.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_treble_t">Jasność</div>
+            <div class="d" data-i18n="featl_treble_d">Podbija wysokie tony, dźwięk robi się ostrzejszy i bardziej klarowny. Suwak znajdziesz w panelu Miks.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_reverb_t">Reverb (pogłos)</div>
+            <div class="d" data-i18n="featl_reverb_d">Pogłos to odbicia dźwięku od ścian, które wybrzmiewają chwilę po oryginale. Efekt dodaje je do utworu, więc brzmi on, jakby grał w dużej sali.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_muffle_t">Tłumik</div>
+            <div class="d" data-i18n="featl_muffle_d">Ścisza wysokie tony jak przegroda z betonu: zostaje bas i zarys melodii, jakby muzyka grała w pokoju obok. Suwak znajdziesz w panelu Miks (pełny mikser).</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_vocal_t">Wokal i Moc</div>
+            <div class="d" data-i18n="featl_vocal_d">Wokal podbija środek pasma, w którym siedzi głos, więc raper czy wokalista nie ginie pod ciężkim basem i pogłosem. Moc to kompresor: ścisza szczyty i podnosi całość, przez co muzyka brzmi głośniej i gęściej, jak w radiu. Oba suwaki znajdziesz w pełnym mikserze.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_8d_t">8D Audio i krążenie</div>
+            <div class="d" data-i18n="featl_8d_d">Dźwięk płynnie krąży wokół głowy (najlepiej w słuchawkach). Suwak Krążenie ustawia szybkość obrotu, a 0% wyłącza efekt.</div>
+          </div>
         </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_8d_t">8D Audio i krążenie</div>
-          <div class="d" data-i18n="featl_8d_d">Dźwięk płynnie krąży wokół głowy (najlepiej w słuchawkach). Suwak Krążenie ustawia szybkość obrotu, a 0% wyłącza efekt.</div>
+      </div>
+
+      <div class="feat-grp">
+        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5 4.5 14H11l-1 7.5L19 10h-6.5l.5-7.5z"/></svg><span data-i18n="featg_easy">grupa</span></div>
+        <div class="card feat-list">
+          <div class="featl">
+            <div class="t" data-i18n="featl_tabs_t">Lista grających kart</div>
+            <div class="d" data-i18n="featl_tabs_d">W okienku widzisz wszystkie karty z dźwiękiem (wstrzymane też, jeśli są podgłośnione) i każdą włączasz lub wyłączasz jednym kliknięciem.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_resume_t">Auto-wznawianie</div>
+            <div class="d" data-i18n="featl_resume_d">Po odświeżeniu strony podgłośnienie i efekty wracają same, bez ponownego klikania.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
+            <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
+          </div>
+          <div class="featl">
+            <div class="t" data-i18n="featl_skip_t">Auto-pomijanie artystów</div>
+            <div class="d" data-i18n="featl_skip_d">Twoja lista artystów do pomijania na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać ktoś z listy, wtyczka od razu przeskakuje do następnego utworu.</div>
+          </div>
         </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_full_t">Pełny mikser</div>
-          <div class="d" data-i18n="featl_full_d">Przełącznik w panelu Miks, który odsłania wszystkie suwaki naraz: prędkość, pogłos, jasność, bas i krążenie. Do kręcenia własnych wersji.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_bass_t">Podbicie basów</div>
-          <div class="d" data-i18n="featl_bass_d">Wzmacnia najniższe tony, czyli dół pasma, w którym siedzi bas i stopa perkusji. Muzyka brzmi pełniej, zwłaszcza na małych głośnikach laptopa.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_treble_t">Jasność</div>
-          <div class="d" data-i18n="featl_treble_d">Podbija wysokie tony, dźwięk robi się ostrzejszy i bardziej klarowny. Suwak znajdziesz w panelu Miks.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_reverb_t">Reverb (pogłos)</div>
-          <div class="d" data-i18n="featl_reverb_d">Pogłos to odbicia dźwięku od ścian, które wybrzmiewają chwilę po oryginale. Efekt dodaje je do utworu, więc brzmi on, jakby grał w dużej sali.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_styles_t">Phonk i NY Drill</div>
-          <div class="d" data-i18n="featl_styles_d">Dwa style prosto z remixów. Phonk gra w pełnym tempie: agresywny, kopiący bas, ostra, chrupiąca góra pasma i kompresor dociskający całość jak w memphis rapie lat 90. NY Drill to brzmienie nowojorskiego drillu: bardzo głęboki, ślizgający się sub-bas, ciemny pogłos i wokal, który mimo tego basu nie ginie.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_muffle_t">Tłumik</div>
-          <div class="d" data-i18n="featl_muffle_d">Ścisza wysokie tony jak przegroda z betonu: zostaje bas i zarys melodii, jakby muzyka grała w pokoju obok. Suwak znajdziesz w panelu Miks (pełny mikser).</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_vocal_t">Wokal i Moc</div>
-          <div class="d" data-i18n="featl_vocal_d">Wokal podbija środek pasma, w którym siedzi głos, więc raper czy wokalista nie ginie pod ciężkim basem i pogłosem. Moc to kompresor: ścisza szczyty i podnosi całość, przez co muzyka brzmi głośniej i gęściej, jak w radiu. Oba suwaki znajdziesz w pełnym mikserze.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_mono_t">Naprawa dźwięku na jedno ucho</div>
-          <div class="d" data-i18n="featl_mono_d">Część nagrań ma dźwięk tylko w lewym albo prawym kanale. Ta opcja miksuje oba kanały do środka, więc słychać w obu słuchawkach.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_limiter_t">Limiter</div>
-          <div class="d" data-i18n="featl_limiter_d">Automatyczny strażnik na wyjściu: przy mocnym podbiciu dociska szczyty, żeby dźwięk nie trzeszczał. Działa sam, nic nie trzeba włączać.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_tabs_t">Lista grających kart</div>
-          <div class="d" data-i18n="featl_tabs_d">W okienku widzisz wszystkie karty z dźwiękiem (wstrzymane też, jeśli są podgłośnione) i każdą włączasz lub wyłączasz jednym kliknięciem.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_resume_t">Auto-wznawianie</div>
-          <div class="d" data-i18n="featl_resume_d">Po odświeżeniu strony podgłośnienie i efekty wracają same, bez ponownego klikania.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
-          <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
-        </div>
-        <div class="featl">
-          <div class="t" data-i18n="featl_skip_t">Auto-pomijanie artystów</div>
-          <div class="d" data-i18n="featl_skip_d">Twoja lista artystów do pomijania na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać ktoś z listy, wtyczka od razu przeskakuje do następnego utworu.</div>
-        </div>
-      </details>
+      </div>
+
 
       </div>
 

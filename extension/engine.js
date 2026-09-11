@@ -123,7 +123,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === "vb-limiter") {
     MASTER.applyRotator(msg.rot === true);
-    MASTER.applyLimiter(msg.on !== false, msg.ceiling, msg.bass, msg.maxred);
+    MASTER.applyLimiter(msg.on !== false, msg.ceiling, msg.bass, msg.maxred, msg.guard === true);
     sendResponse({ ok: true });
     return false;
   }
