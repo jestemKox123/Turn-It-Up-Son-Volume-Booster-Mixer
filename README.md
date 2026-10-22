@@ -125,8 +125,7 @@ Past a certain point the slider turns red. That is the range where the source it
 | Where | What |
 | --- | --- |
 | `extension/` | The extension source. This is the folder to load unpacked. |
-| the root | The website behind [letmecook.pl](https://letmecook.pl), published with GitHub Pages. |
-| `blog/`, `img/`, `fonts/` | Parts of that website. |
+| `CNAME` | Sends old GitHub Pages links on to [letmecook.pl](https://letmecook.pl). The website itself is not part of this repository. |
 
 ## License
 

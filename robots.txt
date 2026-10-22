@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://letmecook.pl/sitemap.xml
