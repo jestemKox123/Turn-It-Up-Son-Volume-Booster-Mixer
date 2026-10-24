@@ -30,6 +30,9 @@ function teardown(tabId) {
   engines.delete(tabId);
   engine.stop(() => {
     try { engine.stream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    if (engines.size === 0 && starting.size === 0 && CTX.state === "running") {
+      try { CTX.suspend(); } catch (e) {}
+    }
   });
   if (engines.size === 0) armIdle();
 }
@@ -98,17 +101,24 @@ function activeTabIds() {
   return Array.from(engines.keys());
 }
 
+function cleanSettings(s) {
+  const out = Object.assign({}, s);
+  out.volume = Math.max(0, Math.min(7, Number(out.volume) || 0));
+  return out;
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || msg.target !== "engine") return;
+  if (!sender || sender.id !== chrome.runtime.id || sender.tab || typeof sender.url !== "string" || !sender.url.startsWith(chrome.runtime.getURL(""))) return;
   if (msg.type === "vb-start") {
-    start(msg.tabId, msg.streamId, msg.settings).then((ok) =>
+    start(msg.tabId, msg.streamId, cleanSettings(msg.settings)).then((ok) =>
       sendResponse({ ok, tabIds: activeTabIds() })
     );
     return true;
   }
   if (msg.type === "vb-update") {
     const engine = engines.get(msg.tabId);
-    if (engine) engine.apply(msg.settings);
+    if (engine) engine.apply(cleanSettings(msg.settings));
     sendResponse({ ok: !!engine, tabIds: activeTabIds() });
     return false;
   }

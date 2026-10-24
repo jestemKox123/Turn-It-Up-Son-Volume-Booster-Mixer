@@ -8,386 +8,232 @@
     <link rel="icon" href="icons/icon48.png" />
     <title>Turn It Up, Son!</title>
     <style>
-      :root {
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-cyrillic-ext.woff2) format("woff2"); unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-cyrillic.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-vietnamese.woff2) format("woff2"); unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-latin-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+      @font-face { font-family: "Geist Mono"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-mono-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+2212; }
 
+      :root {
         color-scheme: dark;
-        --bg: #05060b;
-        --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-        --panel-2: rgba(255, 255, 255, 0.05);
-        --border: rgba(255, 255, 255, 0.10);
-        --border-strong: rgba(255, 255, 255, 0.20);
-        --text: #ffffff;
-        --muted: rgba(255, 255, 255, 0.62);
-        --xdim: rgba(255, 255, 255, 0.40);
-        --accent: #3d8bff;
-        --accent-2: #7fb2ff;
-        --ok: #45e0a0;
-        --danger: #ff4d5e;
+        --bg: #000;
+        --line: rgba(255, 255, 255, 0.09);
+        --line-2: rgba(255, 255, 255, 0.14);
+        --text: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --xdim: rgba(255, 255, 255, 0.38);
+        --accent: #f4f4f5;
+        --accent-2: #a1a1aa;
+        --on-accent: #09090b;
+        --ok: #3ee08f;
+        --warm: #ffb238;
+        --font: "Geist", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+        --mono: "Geist Mono", ui-monospace, Consolas, monospace;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
       * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: system-ui, "Segoe UI", sans-serif;
-        background:
-          radial-gradient(900px 420px at 50% -180px, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
-          var(--bg);
-        color: var(--text);
-        line-height: 1.55;
-        padding: 48px 20px 56px;
-      }
+      html { background: var(--bg); }
+      body { margin: 0; font-family: var(--font); font-size: 15px; line-height: 1.55; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+      select { font: inherit; color: inherit; }
+      a { color: inherit; }
 
-      .bg-topline {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-2) 70%, transparent);
-        opacity: 0.85;
-        pointer-events: none;
-        z-index: 1;
-      }
+      .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(900px 420px at 50% -200px, var(--glow-tint, transparent), transparent 72%); }
+      .bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .main { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; padding: 0 32px 64px; }
 
-      .bg-mq {
-        position: fixed;
-        left: 0;
-        right: 0;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: -1;
-        white-space: nowrap;
+      .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; }
+      .brand { display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 700; letter-spacing: -0.01em; }
+      .brand img { width: 26px; height: 26px; border-radius: 7px; }
+      .lang { display: flex; align-items: center; gap: 9px; color: var(--muted); }
+      .lang svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .pick {
+        -webkit-appearance: none;
+        appearance: none;
+        min-width: 120px;
+        padding: 8px 34px 8px 14px;
+        border: 1px solid var(--line-2);
+        border-radius: 999px;
+        background: #18181b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 13px center;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
       }
-      .bg-mq .tr {
-        display: inline-block;
-        font-size: 120px;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        line-height: 1;
-        color: transparent;
-        -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 28%, transparent);
-        animation: mq 80s linear infinite;
+      .pick:hover { border-color: rgba(255, 255, 255, 0.3); }
+      .pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .pick option { background: #18181b; color: #fff; }
+
+      .hero { display: flex; align-items: center; gap: 28px; padding: 44px 0 12px; }
+      .hero > img { flex: none; width: 92px; height: 92px; border-radius: 23px; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 20px 50px rgba(0, 0, 0, 0.6); }
+      .eyebrow { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+      .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+      .eyebrow .v { color: var(--xdim); text-transform: none; }
+      .eyebrow .v:not(:empty)::before { content: "· "; }
+      .hero h1 { margin: 0; font-size: 50px; font-weight: 700; letter-spacing: -0.045em; line-height: 1.02; }
+      .hero .sub { max-width: 560px; margin: 14px 0 0; font-size: 17px; line-height: 1.55; color: var(--muted); }
+
+
+      .sec-h { margin: 0 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--xdim); }
+      .sec { margin-top: 44px; }
+
+      .card { position: relative; border: 1px solid var(--line); border-radius: 18px; background: rgba(18, 18, 21, 0.95); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+
+      .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: st; }
+      .steps li { counter-increment: st; padding: 22px 22px 24px; }
+      .steps li::before { content: counter(st); display: grid; place-items: center; width: 30px; height: 30px; margin: 0 0 16px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-size: 14px; font-weight: 700; }
+      .t { font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; }
+      .d { margin-top: 4px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
+      .ii { display: inline-grid; place-items: center; width: 22px; height: 22px; margin: 0 2px; vertical-align: -6px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: var(--text); }
+      .ii img { border-radius: 3px; }
+      .ii svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+      .ico { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+      .ico svg { width: 19px; height: 19px; fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .ico .gh { fill: rgba(255, 255, 255, 0.85); stroke: none; }
+      .ico .cup { stroke: var(--warm); }
+
+      .list { padding: 4px 22px; }
+      .row { display: flex; align-items: center; gap: 16px; padding: 15px 0; color: var(--text); text-decoration: none; }
+      .row + .row { border-top: 1px solid var(--line); }
+      .txt { flex: 1; min-width: 0; }
+      .txt > span { display: block; }
+      a.row { margin: 0 -22px; padding-left: 22px; padding-right: 18px; transition: background 0.2s ease; }
+      a.row:last-child { border-radius: 0 0 17px 17px; }
+      a.row:hover { background: rgba(255, 255, 255, 0.04); }
+      a.row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+      .chev { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--xdim); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s var(--ease), stroke 0.2s ease; }
+      a:hover .chev { stroke: var(--text); transform: translateX(2px); }
+
+      .links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .link { display: flex; align-items: center; gap: 14px; padding: 16px 16px 16px 18px; text-decoration: none; }
+      .link:hover { border-color: rgba(255, 255, 255, 0.24); background: rgba(30, 30, 34, 0.96); }
+      .link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .link .t { font-size: 14.5px; }
+      .link .d { margin: 0; font-size: 12.5px; }
+      .link.rate:hover .star { fill: #f5b301; stroke: #f5b301; }
+
+      .rise { animation: rise 0.7s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + 60ms); }
+      @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+      .steps li.rise::before { animation: pop 0.5s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + 260ms); }
+      @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
+      .nudge svg { animation: nudge 0.9s ease-in-out 1.5s 2 both; transform-origin: 50% 80%; }
+      @keyframes nudge { 0%, 100% { transform: none; } 35% { transform: translateY(-2px) rotate(-14deg); } 65% { transform: translateY(1px) rotate(4deg); } }
+      .link { transition: border-color 0.2s ease, background 0.2s ease, transform 0.25s var(--ease); }
+      .link:hover { transform: translateY(-2px); }
+
+      .priv { display: flex; align-items: center; justify-content: center; gap: 9px; margin: 44px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+      .priv i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+      .foot { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--xdim); text-align: center; }
+      .foot a { color: var(--muted); text-decoration: none; }
+      .foot a:hover { color: var(--text); }
+
+      @media (max-width: 860px) {
+        .steps, .links { grid-template-columns: minmax(0, 1fr); }
       }
-      .bg-mq.a { top: 40px; }
-      .bg-mq.b { bottom: 36px; }
-      .bg-mq.b .tr {
-        -webkit-text-stroke-color: color-mix(in srgb, var(--accent-2) 20%, transparent);
-        animation: mqr 110s linear infinite;
-      }
-      @keyframes mq {
-        from { transform: translateX(0); }
-        to { transform: translateX(-50%); }
-      }
-      @keyframes mqr {
-        from { transform: translateX(-50%); }
-        to { transform: translateX(0); }
+      @media (max-width: 620px) {
+        .main { padding: 0 16px 48px; }
+        .hero h1 { font-size: 40px; }
+        .hero .sub { font-size: 15.5px; }
+        .hero { flex-direction: column; align-items: flex-start; gap: 20px; padding-top: 20px; }
+        .hero > img { width: 68px; height: 68px; border-radius: 17px; }
+        .list { padding: 4px 16px; }
+        a.row { margin: 0 -16px; padding-left: 16px; padding-right: 14px; }
       }
       @media (prefers-reduced-motion: reduce) {
-        .bg-mq .tr { animation: none; }
-        .hero img { animation: none; }
-        .rise { animation: none; opacity: 1; }
+        *, *::before, *::after { animation: none !important; transition: none !important; }
       }
-
-      .wrap { max-width: 640px; margin: 0 auto; }
-
-      .rise {
-        opacity: 0;
-        animation: rise 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
-      }
-      @keyframes rise {
-        from { opacity: 0; transform: translateY(16px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      .hero { text-align: center; padding: 18px 0 30px; }
-      .hero img {
-        width: 96px;
-        height: 96px;
-        border-radius: 22px;
-        box-shadow:
-          0 0 34px color-mix(in srgb, var(--accent) 55%, transparent),
-          0 0 90px color-mix(in srgb, var(--accent) 30%, transparent);
-        animation: pulse 4s ease-in-out infinite;
-      }
-      @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 90px color-mix(in srgb, var(--accent) 30%, transparent); }
-        50% { box-shadow: 0 0 46px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 120px color-mix(in srgb, var(--accent) 45%, transparent); }
-      }
-      .hero h1 {
-        font-size: 34px;
-        letter-spacing: -0.5px;
-        margin: 20px 0 0;
-        background: linear-gradient(100deg, #fff 30%, var(--accent-2) 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-      .hero .brand {
-        margin: 6px 0 0;
-        font-size: 15px;
-        font-weight: 700;
-        color: var(--accent);
-        letter-spacing: 0.2px;
-      }
-      .hero .brand .ver { color: var(--xdim); font-weight: 600; margin-left: 6px; }
-      .hero .sub { color: var(--muted); font-size: 15px; margin: 12px auto 0; max-width: 440px; }
-
-      .topnote {
-        max-width: 520px;
-        margin: 0 auto 8px;
-        text-align: center;
-        font-size: 12.5px;
-        color: var(--muted);
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 11px;
-        padding: 10px 16px;
-        line-height: 1.45;
-      }
-      .topnote strong { color: var(--text); font-weight: 700; margin-right: 5px; }
-
-      .sec-h {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 1.6px;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin: 26px 0 10px;
-      }
-      .card {
-        background-color: #0a0b12;
-        background-image: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 18px 20px;
-        margin-bottom: 12px;
-      }
-
-      .steps { list-style: none; margin: 0; padding: 0; counter-reset: st; }
-      .steps li {
-        counter-increment: st;
-        display: flex;
-        align-items: flex-start;
-        gap: 14px;
-        padding: 11px 0;
-      }
-      .steps li + li { border-top: 1px solid var(--border); }
-      .steps li::before {
-        content: counter(st);
-        flex-shrink: 0;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 13px;
-        font-weight: 700;
-        color: #fff;
-        background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
-        margin-top: 1px;
-      }
-      .steps .t { font-size: 14px; }
-      .steps .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
-
-      .lang-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .lang-row h2 { font-size: 14px; font-weight: 600; margin: 0; }
-      .lang-row select {
-        appearance: none;
-        -webkit-appearance: none;
-        padding: 7px 28px 7px 10px;
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        background-color: #0a0b12;
-        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-opacity='0.6' stroke-width='1.6' stroke-linecap='round'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        color: var(--text);
-        font-size: 13px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        color-scheme: dark;
-      }
-      .lang-row select:hover { border-color: var(--accent); }
-      .lang-row select option { background: #0c0d10; color: var(--text); }
-
-      a.linkcard {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        background-color: #0a0b12;
-        background-image: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 15px 18px;
-        margin-bottom: 10px;
-        color: var(--text);
-        text-decoration: none;
-        transition: border-color 0.15s ease, transform 0.15s ease;
-      }
-      a.linkcard:hover { border-color: var(--accent); transform: translateY(-1px); }
-      .lc-ico {
-        flex-shrink: 0;
-        width: 42px;
-        height: 42px;
-        border-radius: 11px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-      }
-      .lc-ico svg { width: 22px; height: 22px; fill: var(--text); }
-      a.linkcard.gold .lc-ico {
-        background: linear-gradient(135deg, #ffd60a, #ff9f0a);
-        border-color: transparent;
-      }
-      a.linkcard.stars .lc-ico {
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        border-color: transparent;
-      }
-      .lc-txt { flex: 1; min-width: 0; }
-      .lc-txt .t { display: block; font-size: 14.5px; font-weight: 700; }
-      .lc-txt .d { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
-      .lc-arrow { color: var(--xdim); font-size: 18px; flex-shrink: 0; }
-
-      .priv {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 12.5px;
-        color: var(--muted);
-        margin: 20px 0 0;
-        text-align: center;
-      }
-      .priv .dot { color: var(--ok); font-size: 15px; }
-
-      .foot {
-        text-align: center;
-        font-size: 12px;
-        color: var(--xdim);
-        margin-top: 30px;
-        padding-top: 18px;
-        border-top: 1px solid var(--border);
-      }
-      .foot a { color: var(--muted); }
     </style>
   </head>
   <body>
-    <div class="bg-topline"></div>
-    <div class="bg-mq a" aria-hidden="true">
-      <span class="tr">TURN IT UP, SON! &nbsp; VOLUME BOOSTER &amp; MIXER &nbsp; TURN IT UP, SON! &nbsp; VOLUME BOOSTER &amp; MIXER &nbsp; </span>
-    </div>
-    <div class="bg-mq b" aria-hidden="true">
-      <span class="tr">SPED UP &nbsp; NIGHTCORE &nbsp; SLOWED + REVERB &nbsp; 8D AUDIO &nbsp; BASS BOOST &nbsp; PHONK &nbsp; SPED UP &nbsp; NIGHTCORE &nbsp; SLOWED + REVERB &nbsp; 8D AUDIO &nbsp; BASS BOOST &nbsp; PHONK &nbsp; </span>
-    </div>
+    <div class="bg" aria-hidden="true"><canvas id="bgGrille"></canvas></div>
 
-    <div class="wrap">
-      <div class="hero rise" style="animation-delay: 0s">
-        <img src="icons/icon128.png" alt="" />
-        <h1 data-i18n="wlc_hi">Dzięki za instalację!</h1>
-        <p class="brand">Turn It Up, Son!<span class="ver" id="ver"></span></p>
-      </div>
+    <main class="main">
+      <header class="top">
+        <div class="brand"><img src="icons/icon128.png" alt="" />Turn It Up, Son!</div>
+        <label class="lang" title="Language / Język">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
+          <select id="langSelect" class="pick" aria-label="Language / Język">
+            <option value="en">English</option>
+            <option value="pl">Polski</option>
+          </select>
+        </label>
+      </header>
 
-      <div class="topnote rise" style="animation-delay: 0.05s">
-        <strong data-i18n="wlc_bug_h">Błąd albo pomysł?</strong>
-        <span data-i18n="wlc_bug_d">Wtyczka jest młoda i często aktualizowana. Znalazłeś błąd albo masz pomysł? Napisz w Ustawieniach, w sekcji Zgłoś błąd lub pomysł. Czytamy każdą wiadomość.</span>
-      </div>
+      <section class="hero">
+        <img class="rise" style="--i: 0" src="icons/icon128.png" alt="" />
+        <div class="rise" style="--i: 1">
+          <p class="eyebrow"><i aria-hidden="true"></i><span data-i18n="wlc_eyebrow">Zainstalowano</span><span class="v" id="ver"></span></p>
+          <h1 data-i18n="wlc_hi">Dzięki za instalację!</h1>
+          <p class="sub" data-i18n="wlc_sub">Zacznij od trzech kroków poniżej. Zajmie to pół minuty.</p>
+        </div>
+      </section>
 
-      <div class="topnote rise" style="animation-delay: 0.07s">
-        <strong>&#127911; <span data-i18n="wlc_hp_h">Najlepiej w słuchawkach</span></strong>
-        <span data-i18n="wlc_hp_d">Wtyczka pracuje na scenie stereo, więc bas, przestrzeń i podbicie głosu słychać najpełniej w słuchawkach. Na głośnikach laptopa część efektów po prostu nie ma jak wybrzmieć.</span>
-      </div>
+      <section class="sec rise" style="--i: 2">
+        <p class="sec-h" data-i18n="wlc_start_h">Zacznij w 3 krokach</p>
+        <ol class="steps">
+          <li class="card rise" style="--i: 3">
+            <div class="t" data-i18n="wlc_step1_t">Przypnij wtyczkę</div>
+            <div class="d"><span data-i18n="wlc_pin_a">Kliknij</span> <span class="ii" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 4.5h3.5v2a1.75 1.75 0 1 0 3.5 0v-2h3.5V9h-2a1.75 1.75 0 1 0 0 3.5h2V19.5H9v-2a1.75 1.75 0 1 0-3.5 0v2H4.5V9h4.5z"/></svg></span> <span data-i18n="wlc_pin_b">obok paska adresu, potem</span> <span class="ii nudge" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3.5h6M10 3.5v6l-3 3.5h10l-3-3.5v-6M12 13v7.5"/></svg></span> <span data-i18n="wlc_pin_c">przy Turn It Up, Son!</span></div>
+          </li>
+          <li class="card rise" style="--i: 4">
+            <div class="t" data-i18n="wlc_step2_t">Puść coś z dźwiękiem</div>
+            <div class="d" data-i18n="wlc_step2_d"></div>
+          </li>
+          <li class="card rise" style="--i: 5">
+            <div class="t" data-i18n="wlc_step3_t">Kliknij i podkręć</div>
+            <div class="d"><span data-i18n="wlc_click_a">Kliknij</span> <span class="ii" aria-hidden="true"><img src="icons/icon48.png" alt="" width="14" height="14" /></span> <span data-i18n="wlc_click_b">i przesuń suwak. Do 100% dźwięk jest nietknięty.</span></div>
+          </li>
+        </ol>
+      </section>
 
-      <div class="rise" style="animation-delay: 0.1s">
-        <div class="card">
-          <div class="lang-row">
-            <h2>&#127760; <span data-i18n="lang_h">Język / Language</span></h2>
-            <select id="langSelect" aria-label="Language">
-              <option value="en">English</option>
-              <option value="pl">Polski</option>
-            </select>
+      <section class="sec rise" style="--i: 6">
+        <p class="sec-h" data-i18n="wlc_tips_h">Dobrze wiedzieć</p>
+        <div class="card list">
+          <div class="row">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2"/><rect x="3.5" y="13.5" width="4" height="6.5" rx="1.6"/><rect x="16.5" y="13.5" width="4" height="6.5" rx="1.6"/></svg></span>
+            <div class="txt"><div class="t" data-i18n="wlc_hp_h">Najlepiej w słuchawkach</div><div class="d" data-i18n="wlc_hp_d"></div></div>
           </div>
+          <div class="row">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2.2"/><path d="M8.5 20.5h7M12 17v3.5"/><path d="M9.5 11.5 12 9l2.5 2.5M12 9v5"/></svg></span>
+            <div class="txt"><div class="t" data-i18n="wlc_share_h">Ikonka udostępniania przy karcie to normalne</div><div class="d" data-i18n="wlc_share_d"></div></div>
+          </div>
+          <div class="row">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="12" rx="2"/><path d="M7.5 7V5.5A1.5 1.5 0 0 1 9 4h10.5A1.5 1.5 0 0 1 21 5.5v9a1.5 1.5 0 0 1-1.5 1.5H16"/></svg></span>
+            <div class="txt"><div class="t" data-i18n="wlc_tabs_h">Każda karta osobno</div><div class="d" data-i18n="wlc_tabs_d"></div></div>
+          </div>
+          <a class="row" id="bugLink" href="settings.html#bug">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v10.5H10l-5.5 4z"/><path d="M8.5 9.5h7M8.5 12.5h4"/></svg></span>
+            <span class="txt"><span class="t" data-i18n="wlc_bug_h">Błąd albo pomysł?</span><span class="d" data-i18n="wlc_bug_d"></span></span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </a>
         </div>
+      </section>
 
-        <p class="sec-h" data-i18n="wlc_start_h">Szybki start</p>
-        <div class="card">
-          <ol class="steps">
-            <li>
-              <div>
-                <div class="t" data-i18n="wlc_step1_t">Przypnij wtyczkę do paska</div>
-                <div class="d" data-i18n="wlc_step1_d">Kliknij ikonę puzzla obok paska adresu i pinezkę przy Turn It Up, Son!</div>
-              </div>
-            </li>
-            <li>
-              <div>
-                <div class="t" data-i18n="wlc_step2_t">Włącz coś z dźwiękiem</div>
-                <div class="d" data-i18n="wlc_step2_d">YouTube, Spotify, film, cokolwiek gra w karcie.</div>
-              </div>
-            </li>
-            <li>
-              <div>
-                <div class="t" data-i18n="wlc_step3_t">Kliknij ikonę wtyczki</div>
-                <div class="d" data-i18n="wlc_step3_d">Przesuń suwak głośności do 700% albo otwórz panel Miks i wybierz preset.</div>
-              </div>
-            </li>
-            <li>
-              <div>
-                <div class="t" data-i18n="wlc_step4_t">Ciesz się</div>
-                <div class="d" data-i18n="wlc_step4_d">To wszystko. Podkręć, zremiksuj, pomiń czego nie lubisz i baw się dźwiękiem.</div>
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-
-      <div class="rise" style="animation-delay: 0.2s">
+      <section class="sec rise" style="--i: 7">
         <p class="sec-h" data-i18n="wlc_links_h">Podoba się? To pomaga najbardziej</p>
+        <div class="links">
+          <a class="card link rate" id="rateLink" href="#" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="star" d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg></span>
+            <span class="txt"><span class="t" data-i18n="wlc_rate_t">Oceń wtyczkę</span><span class="d" data-i18n="wlc_rate_s">Pomaga innym ją znaleźć</span></span>
+          </a>
+          <a class="card link" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true"><svg class="gh" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></span>
+            <span class="txt"><span class="t">GitHub</span><span class="d" data-i18n="wlc_gh_s">Zostaw gwiazdkę</span></span>
+          </a>
+          <a class="card link" href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path class="cup" d="M4.5 9h12v5.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path class="cup" d="M16.5 10.5h1.2a2.6 2.6 0 0 1 0 5.2h-1.6"/><path class="cup" d="M9 2.8c-.9 1 .9 1.8 0 3M12.5 2.8c-.9 1 .9 1.8 0 3"/></svg></span>
+            <span class="txt"><span class="t" data-i18n="engine_donate">Wesprzyj mnie</span><span class="d" data-i18n="wlc_bmac_s">Postaw kawę</span></span>
+          </a>
+        </div>
+      </section>
 
-        <a class="linkcard stars" id="rateLink" href="#" target="_blank" rel="noopener">
-          <span class="lc-ico">★</span>
-          <span class="lc-txt">
-            <span class="t" data-i18n="wlc_rate_t">Oceń wtyczkę</span>
-            <span class="d" data-i18n="wlc_rate_d">Dobra ocena w Chrome Web Store pomaga innym ją znaleźć.</span>
-          </span>
-          <span class="lc-arrow">&#8250;</span>
-        </a>
-
-        <a class="linkcard" href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">
-          <span class="lc-ico">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-          </span>
-          <span class="lc-txt">
-            <span class="t">GitHub</span>
-            <span class="d" data-i18n="wlc_gh_d">Kod jest publiczny. Zostaw gwiazdkę na repozytorium!</span>
-          </span>
-          <span class="lc-arrow">&#8250;</span>
-        </a>
-
-        <a class="linkcard gold" href="https://buymeacoffee.com/romanzbudowy" target="_blank" rel="noopener">
-          <span class="lc-ico">☕</span>
-          <span class="lc-txt">
-            <span class="t">Buy Me a Coffee</span>
-            <span class="d" data-i18n="wlc_bmac_d">Wtyczka jest w 100% darmowa. Jeśli się przyda, możesz postawić kawę.</span>
-          </span>
-          <span class="lc-arrow">&#8250;</span>
-        </a>
-      </div>
-
-      <div class="rise" style="animation-delay: 0.3s">
-        <p class="priv"><span class="dot">&#9679;</span><span data-i18n="wlc_priv">Zero analityki, zero kont, zero serwerów. Cały dźwięk przetwarzany lokalnie w przeglądarce.</span></p>
-        <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="settings.html" data-i18n="wlc_settings">Ustawienia</a></p>
-      </div>
-    </div>
+      <p class="priv rise" style="--i: 8"><i aria-hidden="true"></i><span data-i18n="wlc_priv"></span></p>
+      <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="settings.html" data-i18n="wlc_settings">Ustawienia</a></p>
+    </main>
 
     <script src="i18n.js"></script>
     <script src="welcome.js"></script>
+    <script src="settings-bg.js"></script>
   </body>
 </html>

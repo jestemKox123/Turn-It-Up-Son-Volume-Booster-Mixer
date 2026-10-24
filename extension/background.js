@@ -3,6 +3,8 @@
 
 const PER_TAB_DEFAULTS = { volume: 1, monoFix: false, bassBoost: false, bassMode: "classic", reverb: 0, treble: 0, muffle: 0, vocal: 0, power: 0, spin: false, spinSpeed: 0.5 };
 const YT_SCRIPT_ID = "yt-continue";
+const YT_ORIGIN = "*://*.youtube.com/*";
+const YT_PAGES = ["*://www.youtube.com/*", "*://m.youtube.com/*", "*://music.youtube.com/*"];
 
 let cachedActiveIds = [];
 const endedRestartAt = new Map();
@@ -308,19 +310,19 @@ async function registerYt() {
     await chrome.scripting.registerContentScripts([
       {
         id: YT_SCRIPT_ID,
-        matches: ["*://*.youtube.com/*"],
+        matches: YT_PAGES,
         js: ["content.js"],
         runAt: "document_idle",
-        allFrames: true,
+        allFrames: false,
       },
     ]);
   } catch (e) {}
   try {
-    const tabs = await chrome.tabs.query({ url: "*://*.youtube.com/*" });
+    const tabs = await chrome.tabs.query({ url: YT_PAGES });
     for (const t of tabs) {
       try {
         await chrome.scripting.executeScript({
-          target: { tabId: t.id, allFrames: true },
+          target: { tabId: t.id },
           files: ["content.js"],
         });
       } catch (e) {}
@@ -339,7 +341,7 @@ async function syncYt() {
   const { ytAutoContinue } = await chrome.storage.local.get("ytAutoContinue");
   const has = await chrome.permissions.contains({
     permissions: ["scripting"],
-    origins: ["*://*.youtube.com/*"],
+    origins: [YT_ORIGIN],
   });
   if (ytAutoContinue && has) await registerYt();
   else await unregisterYt();
@@ -348,7 +350,6 @@ async function syncYt() {
 const SKIP_MAIN_ID = "vb-skip-main";
 const SKIP_ID = "vb-skip";
 const SKIP_ORIGINS = ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"];
-const SKIP_HOST_RX = /youtube\.com|open\.spotify\.com|soundcloud\.com/;
 
 async function unregisterSkip() {
   if (!chrome.scripting) return;
@@ -445,6 +446,7 @@ async function releaseUnusedAccess() {
 }
 
 const MIX_SCRIPT_ID = "vb-mix";
+const MIX_MAIN_ID = "vb-mix-main";
 
 function mixKey(tabId) {
   return "vb_mix_" + tabId;
@@ -477,19 +479,30 @@ async function syncMixScript() {
       if (await chrome.permissions.contains({ origins: [o] })) allowed.push(o);
     } catch (e) {}
   }
-  try {
-    await chrome.scripting.unregisterContentScripts({ ids: [MIX_SCRIPT_ID] });
-  } catch (e) {}
+  for (const id of [MIX_SCRIPT_ID, MIX_MAIN_ID]) {
+    try {
+      await chrome.scripting.unregisterContentScripts({ ids: [id] });
+    } catch (e) {}
+  }
   if (!allowed.length) return;
   try {
     await chrome.scripting.registerContentScripts([
+      { id: MIX_MAIN_ID, matches: allowed, js: ["mix-main.js"], runAt: "document_start", allFrames: true, world: "MAIN" },
       { id: MIX_SCRIPT_ID, matches: allowed, js: ["mix.js"], runAt: "document_start", allFrames: true },
     ]);
   } catch (e) {}
 }
 
+async function injectMixMain(tabId) {
+  if (!chrome.scripting) return;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["mix-main.js"], world: "MAIN" });
+  } catch (e) {}
+}
+
 async function injectMix(tabId) {
   if (!chrome.scripting) return;
+  await injectMixMain(tabId);
   try {
     await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["mix.js"] });
   } catch (e) {}
@@ -500,14 +513,16 @@ async function maybeRevokeOrigin(origin) {
   const tabs = await activeMixTabs();
   if (tabs.some((t) => t.origin === origin)) return;
   const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
-  if (ytAutoContinue && /youtube\.com/.test(origin)) return;
-  if (skipEnabled && SKIP_HOST_RX.test(origin)) return;
+  if (ytAutoContinue && origin === YT_ORIGIN) return;
+  if (skipEnabled && SKIP_ORIGINS.includes(origin)) return;
   try {
     await chrome.permissions.remove({ origins: [origin] });
   } catch (e) {}
 }
 
 async function setMix(tabId, rate, origin) {
+  rate = Number(rate);
+  if (rate && rate !== 1) rate = Math.max(0.25, Math.min(4, rate));
   if (!rate || rate === 1) {
     const prev = await getMixState(tabId);
     await chrome.storage.session.remove(mixKey(tabId));
@@ -529,6 +544,7 @@ async function setMix(tabId, rate, origin) {
   const o = origin || (prev && prev.origin) || null;
   await chrome.storage.session.set({ [mixKey(tabId)]: { rate, pitchOff: true, origin: o } });
   if (!prev || prev.origin !== o) await syncMixScript();
+  await injectMixMain(tabId);
   const delivered = await new Promise((resolve) => {
     try {
       chrome.tabs.sendMessage(tabId, { type: "vb-mix-apply", rate, pitchOff: true }, (r) => {
@@ -550,10 +566,17 @@ async function setMix(tabId, rate, origin) {
 }
 
 async function clearAllMix() {
+  await clearMixWhere(() => true);
+}
+
+async function clearMixWhere(match) {
   const sess = await chrome.storage.session.get(null);
   const tabs = [];
   for (const k in sess) {
-    if (k.indexOf("vb_mix_") === 0) tabs.push({ tabId: Number(k.slice(7)), ...sess[k] });
+    if (k.indexOf("vb_mix_") === 0) {
+      const t = { tabId: Number(k.slice(7)), ...sess[k] };
+      if (match(t)) tabs.push(t);
+    }
   }
   if (!tabs.length) return;
   await chrome.storage.session.remove(tabs.map((t) => mixKey(t.tabId)));
@@ -577,8 +600,15 @@ async function clearAllMix() {
   for (const o of origins) await maybeRevokeOrigin(o);
 }
 
+const PAGE_MESSAGES = new Set(["vb-mix-get", "vb-skip-allowed"]);
+
+function fromExtensionPage(sender) {
+  return !!(sender && sender.id === chrome.runtime.id && typeof sender.url === "string" && sender.url.startsWith(chrome.runtime.getURL("")));
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg && msg.target === "engine") return false;
+  if (!msg || typeof msg !== "object" || msg.target === "engine") return false;
+  if (!fromExtensionPage(sender) && !(sender && sender.id === chrome.runtime.id && sender.tab && PAGE_MESSAGES.has(msg.type))) return false;
 
   if (msg.type === "vb-get") {
     (async () => {
@@ -663,14 +693,41 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
 
+  if (msg.type === "vb-access-revoke-one") {
+    (async () => {
+      const origin = String(msg.origin || "");
+      await clearMixWhere((t) => t.origin === origin);
+      try {
+        await chrome.permissions.remove({ origins: [origin] });
+      } catch (e) {}
+      if (origin === YT_ORIGIN) await chrome.storage.local.set({ ytAutoContinue: false });
+      if (SKIP_ORIGINS.includes(origin)) {
+        let left = false;
+        for (const o of SKIP_ORIGINS) {
+          if (o === origin) continue;
+          try {
+            if (await chrome.permissions.contains({ origins: [o] })) left = true;
+          } catch (e) {}
+        }
+        if (!left) await chrome.storage.local.set({ skipEnabled: false });
+      }
+      await syncMixScript();
+      await syncYt();
+      await syncSkip();
+      sendResponse({ ok: true });
+    })();
+    return true;
+  }
+
   if (msg.type === "vb-access-revoke-all") {
     (async () => {
       await clearAllMix();
       const all = await chrome.permissions.getAll();
       const origins = (all && all.origins) || [];
-      if (origins.length) {
+      const perms = ((all && all.permissions) || []).filter((p) => p === "scripting");
+      if (origins.length || perms.length) {
         try {
-          await chrome.permissions.remove({ origins });
+          await chrome.permissions.remove({ origins, permissions: perms });
         } catch (e) {}
       }
       await chrome.storage.local.set({ ytAutoContinue: false, skipEnabled: false });
@@ -726,9 +783,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       await unregisterYt();
       await unregisterSkip();
       if (chrome.scripting) {
-        try {
-          await chrome.scripting.unregisterContentScripts({ ids: [MIX_SCRIPT_ID] });
-        } catch (e) {}
+        for (const id of [MIX_SCRIPT_ID, MIX_MAIN_ID]) {
+          try {
+            await chrome.scripting.unregisterContentScripts({ ids: [id] });
+          } catch (e) {}
+        }
       }
       try {
         const all = await chrome.permissions.getAll();
@@ -918,12 +977,33 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
   syncYt();
   syncSkip();
+  syncMixScript();
+});
+
+async function releaseStaleAccess() {
+  const keep = new Set((await activeMixTabs()).map((t) => t.origin).filter(Boolean));
+  const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
+  if (ytAutoContinue) keep.add(YT_ORIGIN);
+  if (skipEnabled) SKIP_ORIGINS.forEach((o) => keep.add(o));
+  const all = await chrome.permissions.getAll();
+  const drop = ((all && all.origins) || []).filter((o) => !keep.has(o));
+  if (drop.length) {
+    try {
+      await chrome.permissions.remove({ origins: drop });
+    } catch (e) {}
+  }
+}
+
+chrome.runtime.onStartup.addListener(() => {
+  (async () => {
+    await syncMixScript();
+    await releaseStaleAccess();
+    await syncYt();
+    await syncSkip();
+  })();
 });
 
 chrome.runtime.setUninstallURL("https://letmecook.pl/uninstall");
-
-syncYt();
-syncSkip();
 (async () => {
   const ids = await getActiveTabIds();
   for (const id of ids) {

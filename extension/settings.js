@@ -195,6 +195,7 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
       if (limiterMode) limiterMode.textContent = note || "";
     };
     const tick = () => {
+      if (!document.querySelector('.tabpane.on[data-pane="limiter"]')) return;
       try {
         chrome.runtime.sendMessage({ type: "vb-meter-any" }, (r) => {
           if (chrome.runtime.lastError || !r) {
@@ -268,24 +269,6 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
   }
 }
 
-const mark3d = document.getElementById("mark3d");
-if (mark3d) {
-  let markRaf = null;
-  const updateMark = () => {
-    markRaf = null;
-    const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    const p = Math.min(1, window.scrollY / max);
-    const rx = 50 * (1 - p);
-    const tz = 30 * p;
-    mark3d.style.transform = "rotateX(" + rx + "deg) translateZ(" + tz + "px)";
-  };
-  window.addEventListener("scroll", () => {
-    if (!markRaf) markRaf = requestAnimationFrame(updateMark);
-  }, { passive: true });
-  updateMark();
-}
-
-
 
 const themeRow = document.getElementById("themeRow");
 const themeSaved = document.getElementById("themeSaved");
@@ -293,7 +276,7 @@ const themeSaved = document.getElementById("themeSaved");
 if (themeRow && HAS_STORAGE && window.VBTHEME) {
   VBI18N.ready(() => {
     chrome.storage.local.get("vbTheme", (d) => {
-      const current = VBTHEME.THEMES[d.vbTheme] ? d.vbTheme : "neon";
+      const current = VBTHEME.THEMES[d.vbTheme] ? d.vbTheme : "white";
       themeRow.innerHTML = "";
       Object.keys(VBTHEME.THEMES).forEach((name) => {
         const [c1, c2] = VBTHEME.THEMES[name];
@@ -413,9 +396,9 @@ const lookReset = document.getElementById("lookReset");
 const lookResetSaved = document.getElementById("lookResetSaved");
 if (lookReset && HAS_STORAGE) {
   lookReset.addEventListener("click", () => {
-    chrome.storage.local.set({ vbTheme: "neon", vbGlowOn: true, vbGlowStrength: 13, vbGlowColor: "theme" }, () => {
+    chrome.storage.local.set({ vbTheme: "white", vbGlowOn: true, vbGlowStrength: 13, vbGlowColor: "theme" }, () => {
       if (window.VBTHEME) {
-        VBTHEME.applyTheme("neon");
+        VBTHEME.applyTheme("white");
         VBTHEME.applyGlow({ vbGlowOn: true, vbGlowStrength: 13, vbGlowColor: "theme" });
       }
       if (glowToggle) glowToggle.checked = true;
@@ -491,9 +474,9 @@ if (presetNamesWrap && HAS_STORAGE) {
   });
 }
 
-const YT_ACCESS = { permissions: ["scripting"], origins: ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"] };
+const YT_ORIGIN = "*://*.youtube.com/*";
+const MUSIC_ORIGINS = ["*://*.youtube.com/*", "*://open.spotify.com/*", "*://*.soundcloud.com/*"];
 const accessList = document.getElementById("accessList");
-const grantYt = document.getElementById("grantYt");
 const revokeAll = document.getElementById("revokeAll");
 const accessSaved = document.getElementById("accessSaved");
 
@@ -511,34 +494,70 @@ function flashAccess(key) {
   setTimeout(() => (accessSaved.textContent = ""), 1600);
 }
 
+function accessUses(origin, local, sess) {
+  const uses = [];
+  const mix = Object.keys(sess).some((k) => k.indexOf("vb_mix_") === 0 && sess[k] && sess[k].rate && sess[k].rate !== 1 && sess[k].origin === origin);
+  if (mix) uses.push("access_use_tempo");
+  if (local.ytAutoContinue && origin === YT_ORIGIN) uses.push("access_use_yt");
+  if (local.skipEnabled && MUSIC_ORIGINS.includes(origin)) uses.push("access_use_skip");
+  return uses;
+}
+
+function accessRow(origin, uses) {
+  const li = document.createElement("li");
+  li.className = "acc-row";
+  const txt = document.createElement("div");
+  txt.className = "acc-t";
+  const site = document.createElement("b");
+  site.textContent = fmtOrigin(origin);
+  const use = document.createElement("span");
+  use.textContent = uses.length ? uses.map((k) => VBI18N.t(k)).join(" · ") : VBI18N.t("access_use_none");
+  if (!uses.length) use.className = "idle";
+  txt.appendChild(site);
+  txt.appendChild(use);
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "btn small";
+  btn.textContent = VBI18N.t("access_revoke_one");
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    chrome.runtime.sendMessage({ type: "vb-access-revoke-one", origin }, () => {
+      void chrome.runtime.lastError;
+      flashAccess("access_revoked");
+      renderAccessList();
+    });
+  });
+  li.appendChild(txt);
+  li.appendChild(btn);
+  return li;
+}
+
 function renderAccessList() {
   if (!accessList) return;
   chrome.permissions.getAll((p) => {
     const origins = (p && p.origins) || [];
-    accessList.innerHTML = "";
-    if (!origins.length) {
-      const li = document.createElement("li");
-      li.className = "muted";
-      li.textContent = VBI18N.t("access_none");
-      accessList.appendChild(li);
-      return;
-    }
-    origins.forEach((o) => {
-      const li = document.createElement("li");
-      li.textContent = fmtOrigin(o);
-      accessList.appendChild(li);
+    chrome.storage.local.get(["ytAutoContinue", "skipEnabled"], (local) => {
+      const draw = (sess) => {
+        accessList.innerHTML = "";
+        if (revokeAll) revokeAll.hidden = !origins.length;
+        if (!origins.length) {
+          const li = document.createElement("li");
+          li.className = "muted";
+          li.textContent = VBI18N.t("access_none");
+          accessList.appendChild(li);
+          return;
+        }
+        origins.forEach((o) => accessList.appendChild(accessRow(o, accessUses(o, local || {}, sess || {}))));
+      };
+      try {
+        chrome.storage.session.get(null, (sess) => {
+          void chrome.runtime.lastError;
+          draw(sess);
+        });
+      } catch (e) {
+        draw({});
+      }
     });
-  });
-}
-
-if (grantYt) {
-  grantYt.addEventListener("click", async () => {
-    let granted = false;
-    try {
-      granted = await chrome.permissions.request(YT_ACCESS);
-    } catch (e) {}
-    if (granted) flashAccess("access_granted");
-    renderAccessList();
   });
 }
 
@@ -552,8 +571,19 @@ if (revokeAll) {
   });
 }
 
-if (HAS_PERMISSIONS && chrome.permissions.onAdded) chrome.permissions.onAdded.addListener(renderAccessList);
-if (HAS_PERMISSIONS && chrome.permissions.onRemoved) chrome.permissions.onRemoved.addListener(renderAccessList);
+let accessTimer = null;
+function renderAccessSoon() {
+  clearTimeout(accessTimer);
+  accessTimer = setTimeout(renderAccessList, 120);
+}
+if (HAS_PERMISSIONS && chrome.permissions.onAdded) chrome.permissions.onAdded.addListener(renderAccessSoon);
+if (HAS_PERMISSIONS && chrome.permissions.onRemoved) chrome.permissions.onRemoved.addListener(renderAccessSoon);
+if (HAS_STORAGE) {
+  chrome.storage.onChanged.addListener((ch, area) => {
+    if (area === "local" && (ch.ytAutoContinue || ch.skipEnabled)) renderAccessSoon();
+    if (area === "session" && Object.keys(ch).some((k) => k.indexOf("vb_mix_") === 0)) renderAccessSoon();
+  });
+}
 
 if (HAS_PERMISSIONS) VBI18N.ready(renderAccessList);
 
@@ -614,6 +644,7 @@ if (bugText && bugSend) {
       });
     } catch (e) {}
     if (bugSent) bugSent.hidden = false;
+    bugCloseTimer = setTimeout(() => setBugOpen(false), 2500);
   });
 }
 
@@ -674,65 +705,55 @@ function clText(key) {
 if (clList && window.VBCHANGELOG) {
   VBI18N.ready(() => {
     clList.innerHTML = "";
+    const ver = VBCHANGELOG.list[0];
+    const txt = ver ? VBI18N.t(VBCHANGELOG.key(ver)) : "";
+    if (!txt) return;
+    const items = txt.split("\n- ").map((x) => x.replace(/^- /, "")).filter(Boolean);
+    const short = ver.replace(/\./g, "");
     const card = document.createElement("div");
     card.className = "card cl-card";
-    VBCHANGELOG.list.slice(0, VBCHANGELOG.max).forEach((ver, idx) => {
-      const txt = VBI18N.t(VBCHANGELOG.key(ver));
-      if (!txt) return;
-      const items = txt.split("\n- ").map((x) => x.replace(/^- /, "")).filter(Boolean);
-      const short = ver.replace(/\./g, "");
-      const rel = document.createElement("div");
-      rel.className = "cl-rel";
+    const rel = document.createElement("div");
+    rel.className = "cl-rel";
+    if (VBCHANGELOG.viz) {
+      const media = document.createElement("div");
+      media.className = "cl-media";
+      media.setAttribute("aria-hidden", "true");
+      rel.appendChild(media);
+      if (window.VBCLVIZ) window.VBCLVIZ(media, VBCHANGELOG.viz);
+    }
 
-      const meta = document.createElement("div");
-      meta.className = "cl-meta";
-      const num = document.createElement("span");
-      num.className = "cl-v";
-      num.textContent = ver;
-      meta.appendChild(num);
-      if (idx === 0) {
-        const tag = document.createElement("span");
-        tag.className = "cl-new";
-        tag.textContent = VBI18N.t("cl_newest");
-        meta.appendChild(tag);
-      }
-      rel.appendChild(meta);
+    const meta = document.createElement("div");
+    meta.className = "cl-meta";
+    const num = document.createElement("span");
+    num.className = "cl-v";
+    num.textContent = ver;
+    meta.appendChild(num);
+    const tag = document.createElement("span");
+    tag.className = "cl-new";
+    tag.textContent = VBI18N.t("cl_newest");
+    meta.appendChild(tag);
+    rel.appendChild(meta);
 
-      const head = clText("clh_" + short);
-      if (head) {
-        const el = document.createElement("div");
-        el.className = "cl-h";
-        el.textContent = head;
-        rel.appendChild(el);
-      }
-      const lead = clText("cls_" + short);
-      if (lead) {
-        const el = document.createElement("div");
-        el.className = "cl-s";
-        el.textContent = lead;
-        rel.appendChild(el);
-      }
+    const head = clText("clh_" + short);
+    if (head) {
+      const el = document.createElement("div");
+      el.className = "cl-h";
+      el.textContent = head;
+      rel.appendChild(el);
+    }
+    const lead = clText("cls_" + short);
+    if (lead) {
+      const el = document.createElement("div");
+      el.className = "cl-s";
+      el.textContent = lead;
+      rel.appendChild(el);
+    }
 
-      const top = document.createElement("ul");
-      top.className = "cl-top";
-      items.slice(0, 3).forEach((x) => top.appendChild(clItem(x)));
-      rel.appendChild(top);
-
-      const rest = items.slice(3);
-      if (rest.length) {
-        const det = document.createElement("details");
-        det.className = "cl-more";
-        const sum = document.createElement("summary");
-        sum.textContent = VBI18N.t("cl_rest", { n: rest.length });
-        det.appendChild(sum);
-        const ul = document.createElement("ul");
-        ul.className = "cl-rest";
-        rest.forEach((x) => ul.appendChild(clItem(x)));
-        det.appendChild(ul);
-        rel.appendChild(det);
-      }
-      card.appendChild(rel);
-    });
+    const list = document.createElement("ul");
+    list.className = "cl-top";
+    items.forEach((x) => list.appendChild(clItem(x)));
+    rel.appendChild(list);
+    card.appendChild(rel);
     clList.appendChild(card);
   });
 }
@@ -742,17 +763,21 @@ if (clFull && window.VBCHANGELOG) {
 
 const tabButtons = document.querySelectorAll(".tab");
 const tabPanes = document.querySelectorAll(".tabpane");
-let markSmoothT = null;
+const mainActs = document.querySelector(".main-acts");
+function placeActs() {
+  const top = document.querySelector(".tabpane.on .pane-top");
+  if (!top) return;
+  if (mainActs && mainActs.parentNode !== top) top.appendChild(mainActs);
+  const card = document.getElementById("bugCard");
+  if (card && top.nextElementSibling !== card) top.after(card);
+}
 function showPane(name) {
   tabButtons.forEach((b) => b.classList.toggle("on", b.dataset.pane === name));
   tabPanes.forEach((p) => p.classList.toggle("on", p.dataset.pane === name));
-  if (mark3d) {
-    mark3d.classList.add("mk-smooth");
-    clearTimeout(markSmoothT);
-    markSmoothT = setTimeout(() => mark3d.classList.remove("mk-smooth"), 600);
-  }
+  placeActs();
   window.scrollTo(0, 0);
 }
+placeActs();
 tabButtons.forEach((b) => b.addEventListener("click", () => showPane(b.dataset.pane)));
 
 if (window.location.hash === "#changelog") {
@@ -761,14 +786,30 @@ if (window.location.hash === "#changelog") {
 
 const bugPill = document.getElementById("bugPill");
 const bugCard = document.getElementById("bugCard");
+let bugCloseTimer = null;
+function setBugOpen(open) {
+  if (!bugPill || !bugCard) return;
+  clearTimeout(bugCloseTimer);
+  bugCard.hidden = !open;
+  bugPill.setAttribute("aria-expanded", String(open));
+  bugPill.classList.toggle("on", open);
+  if (open && bugText && !bugText.disabled) bugText.focus();
+  if (!open && bugText && bugText.disabled) {
+    bugText.value = "";
+    bugText.disabled = false;
+    if (bugSend) bugSend.disabled = false;
+    if (bugSent) bugSent.hidden = true;
+  }
+}
 if (bugPill && bugCard) {
-  bugPill.addEventListener("click", () => {
-    bugCard.hidden = !bugCard.hidden;
-    if (!bugCard.hidden) {
-      window.scrollTo(0, 0);
-      if (bugText) bugText.focus();
-    }
+  bugPill.setAttribute("aria-expanded", "false");
+  bugPill.addEventListener("click", () => setBugOpen(bugCard.hidden));
+  const bugClose = document.getElementById("bugClose");
+  if (bugClose) bugClose.addEventListener("click", () => setBugOpen(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !bugCard.hidden) setBugOpen(false);
   });
+  if (window.location.hash === "#bug") VBI18N.ready(() => setBugOpen(true));
 }
 
 const SKIP_ACCESS = {
@@ -1059,7 +1100,7 @@ if (skipToggle && HAS_STORAGE) {
 
   if (window.location.hash === "#autoskip") {
     VBI18N.ready(() => {
-      showPane("general");
+      showPane("skip");
       const card = document.getElementById("skipCard");
       if (card) {
         card.classList.add("hl");

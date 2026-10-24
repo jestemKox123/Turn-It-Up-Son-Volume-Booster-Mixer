@@ -8,1086 +8,887 @@
     <link rel="icon" href="icons/icon48.png" />
     <title>Turn It Up, Son! - Settings</title>
     <style>
-      :root {
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-cyrillic-ext.woff2) format("woff2"); unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-cyrillic.woff2) format("woff2"); unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-vietnamese.woff2) format("woff2"); unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-latin-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+      @font-face { font-family: "Geist"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+      @font-face { font-family: "Geist Mono"; font-weight: 100 900; font-display: swap; src: url(fonts/geist-mono-latin.woff2) format("woff2"); unicode-range: U+0000-00FF, U+2000-206F, U+2212; }
 
+      :root {
         color-scheme: dark;
-        --bg: #05060b;
-        --panel: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-        --panel-2: rgba(255, 255, 255, 0.05);
-        --border: rgba(255, 255, 255, 0.10);
-        --border-strong: rgba(255, 255, 255, 0.20);
-        --text: #ffffff;
-        --muted: rgba(255, 255, 255, 0.62);
-        --xdim: rgba(255, 255, 255, 0.40);
-        --accent: #3d8bff;
-        --accent-2: #7fb2ff;
-        --ok: #45e0a0;
+        --bg: #000;
+        --bg-1: #0a0a0b;
+        --bg-2: #18181b;
+        --line: rgba(255, 255, 255, 0.08);
+        --line-2: rgba(255, 255, 255, 0.14);
+        --text: #fff;
+        --muted: rgba(255, 255, 255, 0.6);
+        --xdim: rgba(255, 255, 255, 0.38);
+        --accent: #f4f4f5;
+        --accent-2: #a1a1aa;
+        --on-accent: #09090b;
+        --ok: #3ee08f;
         --danger: #ff4d5e;
+        --font: "Geist", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+        --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
       }
       * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      html { background: var(--bg); }
       body {
         margin: 0;
-        font-family: system-ui, "Segoe UI", sans-serif;
-        background:
-          radial-gradient(760px 320px at 50% -160px, color-mix(in srgb, var(--accent) 15%, transparent), transparent 70%),
-          var(--bg);
-        color: var(--text);
+        font-family: var(--font);
+        font-size: 15px;
         line-height: 1.55;
-        padding: 40px 20px 56px;
+        color: var(--text);
+        background: var(--bg);
+        -webkit-font-smoothing: antialiased;
       }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      a { color: inherit; }
 
-      .bg-topline {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-2) 70%, transparent);
-        opacity: 0.85;
-        pointer-events: none;
-        z-index: 1;
-      }
-
-      .bg-mq {
-        position: fixed;
-        left: 0;
-        right: 0;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: -1;
-      }
-      .bg-mq .tr {
-        display: flex;
-        width: max-content;
-        animation: mq 80s linear infinite;
-        will-change: transform;
-      }
-      .bg-mq .tr > span {
-        flex: 0 0 auto;
-        white-space: nowrap;
-        padding-right: 0.35em;
-        font-size: 120px;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        line-height: 1;
-        color: transparent;
-        -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent) 28%, transparent);
-      }
-      .bg-mq.a { top: 40px; }
-      .bg-mq.b { bottom: 36px; }
-      .bg-mq.b .tr { animation: mqr 110s linear infinite; }
-      .bg-mq.b .tr > span {
-        -webkit-text-stroke-color: color-mix(in srgb, var(--accent-2) 20%, transparent);
-      }
-      @keyframes mq {
-        from { transform: translate3d(0, 0, 0); }
-        to { transform: translate3d(-50%, 0, 0); }
-      }
-      @keyframes mqr {
-        from { transform: translate3d(-50%, 0, 0); }
-        to { transform: translate3d(0, 0, 0); }
-      }
-
-      .mark3d-wrap {
+      .bg {
         position: fixed;
         inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background: radial-gradient(900px 420px at 40% -200px, var(--glow-tint, transparent), transparent 72%);
+      }
+      .bg canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+      .shell {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 252px;
+        gap: 56px;
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+
+      .side {
+        order: 2;
+        position: sticky;
+        top: 0;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        padding: 36px 0 24px;
+      }
+      .side-foot { display: flex; flex-direction: column; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--line); }
+      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand img { width: 36px; height: 36px; flex: none; }
+      .brand b { display: block; font-size: 16px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+      .ver { font-family: var(--mono); font-size: 12px; color: var(--xdim); }
+
+      .tabs { display: flex; flex-direction: column; gap: 2px; margin: 30px 0 0; }
+      .tab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 9px 12px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 14.5px;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.2s var(--ease), color 0.2s var(--ease);
+      }
+      .tab svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .tab:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+      .tab.on { color: var(--text); background: rgba(255, 255, 255, 0.08); }
+      .tab.on::before {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 3px;
+        height: 18px;
+        margin-top: -9px;
+        border-radius: 3px 0 0 3px;
+        background: var(--accent);
+      }
+
+      .side-links { display: flex; flex-direction: column; gap: 2px; }
+      .lang { display: flex; align-items: center; gap: 10px; margin: 0; padding: 0 0 0 12px; color: var(--muted); }
+      .lang svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .lang .pick { flex: 1; min-width: 0; }
+      .sl {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--muted);
+        font-size: 13.5px;
+        font-weight: 500;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.2s var(--ease), color 0.2s var(--ease);
+      }
+      .sl:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+      .sl svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .sl .gh { fill: currentColor; stroke: none; }
+      .support-pill {
         display: flex;
         align-items: center;
         justify-content: center;
-        perspective: 800px;
-        overflow: hidden;
-        opacity: 0.8;
-        pointer-events: none;
-        z-index: -1;
-      }
-      #mark3d {
-        display: inline-block;
-        white-space: nowrap;
-        font-size: min(10vw, 126px);
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        line-height: 1;
-        color: #fff;
-        text-shadow:
-          0 0 16px rgba(255, 255, 255, 0.30),
-          0 0 60px color-mix(in srgb, var(--accent) 60%, transparent),
-          0 0 140px color-mix(in srgb, var(--accent) 35%, transparent);
-        transform: rotateX(50deg);
-        animation: markglow 4.5s ease-in-out infinite;
-        will-change: transform;
-      }
-      #mark3d.mk-smooth { transition: transform 0.45s ease-out; }
-      @keyframes markglow {
-        0%, 100% { opacity: 0.9; }
-        50% { opacity: 1; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .bg-mq .tr { animation: none; }
-        #mark3d { animation: none; }
-        #mark3d.mk-smooth { transition: none; }
-      }
-      .wrap { max-width: 820px; margin: 0 auto; }
-
-      .head {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 22px;
-      }
-      .head img { width: 40px; height: 40px; }
-      .head .txt { flex: 1; min-width: 0; }
-      h1 { font-size: 19px; margin: 0; letter-spacing: -0.2px; }
-      .head .sub { font-size: 13px; color: var(--muted); margin: 1px 0 0; }
-      .head .ver { font-size: 12px; color: var(--accent); font-weight: 600; flex-shrink: 0; }
-
-      .sec-h {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 1.6px;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin: 26px 0 10px;
-      }
-      .sec-h:first-of-type { margin-top: 0; }
-      .card {
-
-        background-color: #0a0b12;
-        background-image: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 18px 20px;
-        margin-bottom: 12px;
-      }
-      .card h2 { font-size: 14px; font-weight: 600; margin: 0 0 12px; }
-      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .row select { flex-shrink: 0; }
-
-      .row.sep { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-      .mini-d { font-size: 12px; color: var(--muted); margin: 4px 0 0; line-height: 1.45; max-width: 560px; }
-
-      .dsum {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        cursor: pointer;
+        gap: 10px;
+        width: 100%;
+        margin: 14px 0 12px;
+        padding: 11px 16px;
+        border: 0;
+        border-radius: 999px;
+        background: #fff;
+        color: #000;
         font-size: 14px;
         font-weight: 600;
-        list-style: none;
-        user-select: none;
+        cursor: pointer;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 30px rgba(255, 255, 255, 0.08);
+        transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
       }
-      .dsum::-webkit-details-marker { display: none; }
-      .dsum .chev { font-size: 19px; color: var(--muted); transition: transform 0.15s ease, color 0.15s ease; }
-      details[open] .dsum .chev { transform: rotate(90deg); }
-      .dsum:hover .chev { color: var(--accent); }
-      .muted { color: var(--muted); }
-      ul { margin: 6px 0 0; padding-left: 20px; }
-      li { margin-bottom: 6px; font-size: 13.5px; }
+      .support-pill:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 10px 36px rgba(255, 255, 255, 0.16); }
+      .support-pill svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .support-pill .steam { animation: steam 2.4s ease-in-out infinite; }
+      @keyframes steam { 0%, 100% { opacity: 0.25; transform: translateY(1px); } 50% { opacity: 1; transform: translateY(-1px); } }
 
-      .note {
-        font-size: 12.5px;
-        color: var(--muted);
-        border-top: 1px solid var(--border);
-        margin-top: 14px;
-        padding-top: 12px;
+      .main { position: relative; min-width: 0; max-width: 800px; padding: 40px 0 72px; }
+      .pane-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 12px; margin: 0 0 28px; }
+      .pane-top .pane-h { margin: 0; }
+      .main-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-left: auto; }
+      .main-acts .support-pill { width: auto; margin: 0; padding: 9px 16px; font-size: 13.5px; }
+      .act-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(28, 28, 32, 0.6); color: var(--text); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; }
+      .act-btn:hover { border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.08); }
+      .act-btn svg { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: fill 0.2s ease, stroke 0.2s ease, transform 0.3s var(--ease); }
+      .act-btn.rate:hover svg { fill: #f5b301; stroke: #f5b301; transform: rotate(-12deg) scale(1.1); }
+      .act-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .pane-h {
+        margin: 0 0 28px;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.55));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
       }
-      .saved { font-size: 12px; color: var(--ok); height: 16px; margin-top: 4px; }
+      .tabpane { display: none; }
+      .tabpane.on { display: block; animation: paneIn 0.45s var(--ease); }
+      @keyframes paneIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+      .sec-h {
+        margin: 34px 0 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--xdim);
+      }
+
+      .card {
+        position: relative;
+        background: rgba(18, 18, 21, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 18px;
+        padding: 6px 22px;
+        margin-bottom: 14px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+      .card.pad { padding: 20px 22px; }
+      .card.hl { border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent); }
+      .card h2 { margin: 0 0 4px; font-size: 15.5px; font-weight: 600; letter-spacing: -0.01em; }
+
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 16px 0; }
+      .row.sep, .card > .sep { border-top: 1px solid var(--line); }
+      .rt { min-width: 0; }
+      .rt h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+      .mini-d { margin: 3px 0 0; max-width: 520px; font-size: 13.5px; line-height: 1.45; color: var(--muted); }
+      .off { opacity: 0.35; pointer-events: none; transition: opacity 0.25s ease; }
 
       .switch {
         -webkit-appearance: none;
         appearance: none;
-        width: 42px;
-        height: 24px;
-        border-radius: 999px;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
         position: relative;
+        flex: none;
+        width: 44px;
+        height: 26px;
+        margin: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
         cursor: pointer;
-        flex-shrink: 0;
+        transition: background 0.25s var(--ease);
       }
       .switch::after {
         content: "";
         position: absolute;
-        top: 2px;
-        left: 2px;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s var(--ease);
+      }
+      .switch:checked { background: var(--accent); }
+      .switch:checked::after { background: var(--on-accent); }
+      .switch:checked::after { transform: translateX(18px); }
+      .switch:focus-visible, .btn:focus-visible, .pick:focus-visible, .tab:focus-visible, .sl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+      .pick {
+        flex: none;
+        -webkit-appearance: none;
+        appearance: none;
+        min-width: 112px;
+        padding: 9px 36px 9px 14px;
+        border: 1px solid var(--line-2);
+        border-radius: 999px;
+        background: var(--bg-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+      }
+      .pick:hover { border-color: rgba(255, 255, 255, 0.3); }
+      .pick option { background: #111113; color: #fff; }
+      @supports (appearance: base-select) {
+        .pick, .pick::picker(select) { appearance: base-select; }
+        .pick { display: inline-flex; align-items: center; justify-content: space-between; gap: 12px; padding-right: 14px; background-image: none; }
+        .pick::picker-icon {
+          content: "";
+          width: 12px;
+          height: 12px;
+          background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='.6' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat center / 12px;
+          transition: rotate 0.3s var(--ease);
+        }
+        .pick:open::picker-icon { rotate: 180deg; }
+        .pick:open { border-color: color-mix(in srgb, var(--accent) 60%, #fff); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+        .pick::picker(select) {
+          min-width: anchor-size(width);
+          margin: 8px 0;
+          padding: 6px;
+          border: 1px solid var(--line-2);
+          border-radius: 14px;
+          background: rgba(17, 17, 19, 0.94);
+          -webkit-backdrop-filter: blur(16px);
+          backdrop-filter: blur(16px);
+          box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+          color: var(--text);
+          opacity: 0;
+          translate: 0 -4px;
+          transition: opacity 0.2s var(--ease), translate 0.25s var(--ease), display 0.25s allow-discrete, overlay 0.25s allow-discrete;
+        }
+        .pick:open::picker(select) { opacity: 1; translate: 0 0; }
+        @starting-style { .pick:open::picker(select) { opacity: 0; translate: 0 -4px; } }
+        .pick option { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 9px; background: transparent; color: var(--muted); font-size: 13.5px; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+        .pick option:hover, .pick option:focus-visible { background: rgba(255, 255, 255, 0.07); color: var(--text); outline: none; }
+        .pick option:checked { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--text); font-weight: 600; }
+        .pick option::checkmark { order: 1; margin-left: auto; color: var(--accent); }
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border: 1px solid var(--line-2);
+        border-radius: 999px;
+        background: transparent;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      }
+      .btn:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.3); }
+      .btn.primary { background: #fff; border-color: #fff; color: #000; font-weight: 600; }
+      .btn.primary:hover { background: rgba(255, 255, 255, 0.86); }
+      .btn.danger:hover { border-color: var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+      .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 16px 0; border-top: 1px solid var(--line); }
+      .saved { font-size: 12.5px; color: var(--ok); }
+      .saved:not(:empty) { padding: 0 0 14px; }
+
+      .ctl { display: flex; align-items: center; gap: 14px; flex: none; }
+      .val { min-width: 44px; font-family: var(--mono); font-size: 12.5px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+      .range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 160px;
+        height: 4px;
+        margin: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        outline: none;
+        cursor: pointer;
+      }
+      .range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
         width: 18px;
         height: 18px;
         border-radius: 50%;
         background: #fff;
-        transition: transform 0.18s;
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 1px 4px rgba(0, 0, 0, 0.5);
+        transition: box-shadow 0.2s ease;
       }
-      .switch:checked { background: var(--accent); border-color: transparent; }
-      .switch:checked::after { transform: translateX(18px); }
+      .range:hover::-webkit-slider-thumb { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 36%, transparent), 0 1px 4px rgba(0, 0, 0, 0.5); }
 
-      .btn {
-        margin-top: 12px;
-        padding: 9px 14px;
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        background: var(--panel-2);
-        color: var(--text);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn:hover { border-color: var(--accent); color: var(--accent); }
-      .lim-chars { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-      .lim-chars .btn { margin-top: 0; padding: 8px 11px; font-size: 12.5px; }
-      .lim-chars .btn.on { border-color: var(--accent); color: var(--accent); background: rgba(74, 144, 255, 0.12); }
-      #clFull { font-size: 14.5px; padding: 12px 20px; border-radius: 11px; }
-      .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
-      select.btn { cursor: pointer; }
-      select.btn option { background: #0c0d10; color: var(--text); }
+      .ico { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+      .ico svg { width: 19px; height: 19px; fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .row .lead-in { display: flex; align-items: center; gap: 16px; min-width: 0; }
+      .row:has(.switch:checked) .ico { background: color-mix(in srgb, var(--accent) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+      .row:has(.switch:checked) .ico svg { stroke: color-mix(in srgb, var(--accent) 60%, #fff); }
+      .lim-chars { display: inline-flex; flex: none; padding: 3px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg-2); }
+      .lim-chars .btn { padding: 7px 15px; border: 0; font-size: 13px; color: var(--muted); }
+      .lim-chars .btn:hover { background: rgba(255, 255, 255, 0.06); color: var(--text); }
+      .lim-chars .btn.on { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+      .adv-in > summary { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-top: 1px solid var(--line); font-size: 14px; font-weight: 500; color: var(--muted); list-style: none; cursor: pointer; user-select: none; }
+      .adv-in > summary::-webkit-details-marker { display: none; }
+      .adv-in > summary:hover { color: var(--text); }
+      .adv-in .row { padding-left: 54px; }
+      .lim-meters { display: flex; flex-direction: column; gap: 10px; flex: none; width: 250px; }
+      .lim-m { display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: var(--muted); }
+      .lim-m .lbl { min-width: 60px; }
+      .lim-bar { flex: 1; height: 6px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, 0.1); }
+      .lim-bar i { display: block; width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.09s linear; }
+      .lim-m .num { min-width: 56px; font-family: var(--mono); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+      .lim-mode { margin: 2px 0 0; font-family: var(--mono); font-size: 11.5px; color: var(--xdim); text-align: right; }
 
-      .tabs {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin: 0 0 22px;
-      }
-      .tab {
-        padding: 9px 18px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: var(--panel-2);
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-      }
-      .tab:hover { border-color: var(--border-strong); color: var(--text); }
-      .tab.on {
-        border-color: transparent;
-        background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
-        color: #fff;
-      }
-      .tabpane { display: none; }
-      .tabpane.on { display: block; }
+      .adv { padding: 0 22px; }
+      .adv > summary { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; font-size: 15px; font-weight: 600; list-style: none; cursor: pointer; user-select: none; }
+      .adv > summary::-webkit-details-marker { display: none; }
+      .chev { width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s var(--ease); }
+      details[open] > summary .chev { transform: rotate(90deg); }
 
-      .bugcard {
-        border-color: var(--accent);
-        margin-bottom: 22px;
-        animation: bugin 0.25s ease;
-      }
-      @keyframes bugin {
-        from { opacity: 0; transform: translateY(-8px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
 
-      .bugbox {
-        width: 100%;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        color: var(--text);
-        font-family: inherit;
-        font-size: 13px;
-        line-height: 1.5;
-        padding: 10px 12px;
-        resize: vertical;
-        min-height: 72px;
-      }
-      .bugbox:focus { outline: none; border-color: var(--accent); }
-
-      .skip-add-row { display: flex; gap: 8px; margin-top: 14px; }
-      .skip-add-row input {
-        flex: 1;
-        min-width: 0;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        color: var(--text);
-        font-size: 13px;
-        font-family: inherit;
-        padding: 9px 12px;
-        outline: none;
-      }
-      .skip-add-row input:focus { border-color: var(--accent); }
-      .skip-add-row input::placeholder { color: var(--xdim); }
-      .skip-add-row .btn { margin-top: 0; flex-shrink: 0; }
-      .skip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-      .skip-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 8px 6px 13px;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        font-size: 13px;
-        max-width: 100%;
-      }
-      .skip-chip > span:first-child {
-        max-width: 320px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .skip-chip button {
-        background: none;
-        border: none;
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 15px;
-        line-height: 1;
-        padding: 2px 5px;
-      }
-      .skip-chip button:hover { color: var(--danger); }
-      .skip-empty { font-size: 12.5px; color: var(--xdim); margin-top: 12px; }
-      .card.hl { border-color: var(--accent); animation: bugin 0.25s ease; }
-
-      .access-list-title {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        color: var(--muted);
-        margin-bottom: 6px;
-      }
-      .access-list {
-        list-style: none;
-        margin: 0 0 12px;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        max-height: 160px;
-        overflow-y: auto;
-      }
-      .access-list li {
-        margin: 0;
-        padding: 7px 10px;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: 13px;
-        word-break: break-all;
-      }
-      .access-list li.muted { background: transparent; border: none; padding: 0; }
-      .access-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-      .access-btns .btn { margin-top: 0; }
-      .access-note { font-size: 12px; color: var(--muted); margin: 10px 0 0; line-height: 1.45; }
-      .access-note + .access-note { margin-top: 6px; }
-
-      .featl { padding: 12px 0; border-bottom: 1px solid var(--border); }
-      .featl:first-of-type { padding-top: 2px; }
-      .featl:last-of-type { border-bottom: none; padding-bottom: 0; }
-      .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 3px; }
-      .featl .d { font-size: 12.5px; color: var(--muted); }
-
-      .support-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 9px;
-        margin-top: 12px;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #ffd60a, #ff9f0a);
-        color: #241a00;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 4px 18px rgba(255, 159, 10, 0.35);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-      }
-      .support-pill:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.06);
-        box-shadow: 0 6px 26px rgba(255, 159, 10, 0.5);
-      }
-
-      .themes { display: flex; gap: 16px; flex-wrap: wrap; }
-      .glow-range {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 150px;
-        height: 6px;
-        border-radius: 999px;
-        background: var(--border-strong);
-        outline: none;
-        flex-shrink: 0;
-      }
-      .glow-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: var(--accent);
-        cursor: pointer;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-      }
-      #glowStrengthRow.off, #glowColorRow.off, #limiterCeilingRow.off, #limiterBassRow.off, #limiterMaxRow.off, #limiterCharRow.off, #limiterMixRow.off { opacity: 0.4; pointer-events: none; }
-      .glow-val { font-size: 12.5px; color: var(--muted); min-width: 20px; text-align: right; font-variant-numeric: tabular-nums; }
-      .lim-meters { display: flex; flex-direction: column; gap: 8px; min-width: 230px; }
-      .lim-m { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
-      .lim-m .lbl { min-width: 58px; }
-      .lim-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--border-strong); overflow: hidden; }
-      .lim-bar i { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.09s linear; }
-      .lim-m .num { min-width: 52px; text-align: right; font-variant-numeric: tabular-nums; }
-      .lim-mode { font-size: 12px; color: var(--xdim); margin: 10px 0 0; }
-      .glow-col { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-      .glow-col .th-dot { width: 34px; height: 34px; }
-      .glow-col .themes { gap: 13px; }
-      .th-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 7px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: var(--muted);
-        font-size: 11.5px;
-        font-weight: 600;
-        font-family: inherit;
-      }
-      .th-dot {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        box-shadow: 0 0 0 2px var(--border);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      }
+      .look-grid { display: grid; grid-template-columns: minmax(0, 1fr) 336px; gap: 14px; align-items: start; }
+      .prev { position: sticky; top: 24px; padding: 18px; }
+      .prev-h { margin: 0 0 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--xdim); }
+      .prev-h::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 20%, transparent); vertical-align: 1px; animation: blink 1.6s ease-in-out infinite; }
+      @keyframes blink { 50% { opacity: 0.35; } }
+      .prev iframe { display: block; width: 300px; height: 520px; margin: 0 auto; border: 0; border-radius: 14px; background: #060606; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 60px rgba(0, 0, 0, 0.6); }
+      .themes { display: flex; flex-wrap: wrap; gap: 12px; padding: 6px 0 16px; }
+      .th-btn { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 0; border: 0; background: none; color: var(--muted); font-size: 12px; font-weight: 500; cursor: pointer; }
+      .th-dot { width: 38px; height: 38px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease); }
       .th-btn:hover .th-dot { transform: scale(1.08); }
-      .th-btn.sel .th-dot { box-shadow: 0 0 0 2.5px #fff; }
       .th-btn.sel { color: var(--text); }
+      .th-btn.sel .th-dot { box-shadow: 0 0 0 3px var(--bg-1), 0 0 0 5px #fff; }
+      #themeRow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 6px; justify-items: center; }
+      .look-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 4px; }
+      .look-foot .saved:not(:empty) { padding: 0; }
+      .glow-col { padding: 16px 0 0; border-top: 1px solid var(--line); }
+      .glow-col .th-dot { width: 30px; height: 30px; }
+      .glow-col .themes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px 6px; justify-items: center; }
 
-      .pnames {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px 12px;
-        margin-bottom: 12px;
-      }
-      .pname-row { display: flex; flex-direction: column; gap: 3px; }
-      .pname-row .pl {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--muted);
-      }
-      .pname-row input {
+      .pnames { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; padding: 0 0 16px; }
+      .pname-row { display: flex; flex-direction: column; gap: 5px; }
+      .pname-row .pl { font-family: var(--mono); font-size: 11.5px; color: var(--xdim); }
+      .pname-row input, .skip-add-row input, .bugbox {
         width: 100%;
-        background: var(--panel-2);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text);
-        font-size: 13px;
-        font-family: inherit;
-        padding: 7px 10px;
+        padding: 10px 14px;
+        border: 1px solid var(--line-2);
+        border-radius: 12px;
+        background: var(--bg-2);
+        font-size: 14px;
         outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
       }
-      .pname-row input:focus { border-color: var(--accent); }
-      .pname-row input::placeholder { color: var(--xdim); }
+      .pname-row input:focus, .skip-add-row input:focus, .bugbox:focus { border-color: color-mix(in srgb, var(--accent) 70%, #fff); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+      .pname-row input::placeholder, .skip-add-row input::placeholder, .bugbox::placeholder { color: var(--xdim); }
 
-      .foot { text-align: center; color: var(--xdim); font-size: 12px; margin-top: 26px; }
+      .bugcard { margin: -10px 0 22px; padding: 20px 22px; border-color: var(--line-2); animation: paneIn 0.35s var(--ease); }
+      .bug-x { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+      .bug-x:hover { background: rgba(255, 255, 255, 0.08); color: var(--text); }
+      .bug-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .bug-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+      .act-btn.on { border-color: rgba(255, 255, 255, 0.34); background: rgba(255, 255, 255, 0.1); }
+      .bugbox { display: block; min-height: 96px; margin: 14px 0 12px; line-height: 1.5; resize: vertical; }
+      .bug-act { display: flex; align-items: center; gap: 14px; }
+      .bug-act .saved:not(:empty) { padding: 0; }
+
+      .skip-add-row { display: flex; gap: 10px; padding: 18px 0 4px; border-top: 1px solid var(--line); }
+      .skip-add-row input { flex: 1; min-width: 0; }
+      .skip-add-row .btn { flex: none; }
+      .skip-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0 16px; }
+      .skip-list:empty { display: none; }
+      .skip-chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; padding: 5px 6px 5px 14px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg-2); font-size: 13.5px; }
+      .skip-chip > span:first-child { max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .skip-chip button { width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); font-size: 15px; line-height: 1; cursor: pointer; }
+      .skip-chip button:hover { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+      .skip-empty { margin: 0; padding: 0; font-size: 13.5px; color: var(--xdim); }
+      #skipClearAll { margin: 0 0 16px; }
+      .hint { margin: 0; padding: 0 0 18px; font-size: 13px; color: var(--xdim); }
+
+      .priv-big { margin: 6px 0 18px; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; }
+      .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px; margin: 0 0 18px; padding: 0; list-style: none; }
+      .checks li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, 0.85); }
+      .checks svg { flex: none; width: 18px; height: 18px; margin-top: 1px; fill: none; stroke: var(--ok); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+      .priv-note { max-width: none; margin-top: 8px; }
+      .access-list { display: flex; flex-direction: column; gap: 6px; margin: 14px 0 16px; padding: 0; list-style: none; }
+      .access-list li.muted { font-size: 13.5px; color: var(--muted); }
+      .acc-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 9px 9px 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255, 255, 255, 0.03); }
+      .acc-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+      .acc-t b { overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .acc-t span { font-size: 12.5px; color: var(--muted); }
+      .acc-t span.idle { color: var(--xdim); }
+      .btn.small { flex: none; padding: 6px 13px; font-size: 12.5px; }
+      .btn.small:hover { border-color: var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+      .perm .lead-in { flex: 1; }
+      .tag { flex: none; padding: 3px 9px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 11.5px; color: var(--muted); }
+      .access-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+      .muted { color: var(--muted); }
+
+      .feat-intro { max-width: 620px; margin: 0 0 6px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+      .feat-grp { margin-top: 30px; }
+      .feat-grp-h { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--xdim); }
+      .feat-grp-h svg { width: 16px; height: 16px; flex: none; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .feat-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 28px; padding: 6px 22px; }
+      .featl { padding: 16px 0; border-bottom: 1px solid var(--line); }
+      .featl:nth-last-child(1), .featl:nth-last-child(2):nth-child(odd) { border-bottom: 0; }
+      .featl .t { margin: 0 0 5px; font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+      .featl .d { font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+
+      .cl-card { padding: 0; }
+      .cl-rel { padding: 20px 22px; border-bottom: 1px solid var(--line); }
+      .cl-rel:last-child { border-bottom: 0; }
+      .cl-media {
+        position: relative;
+        height: 180px;
+        margin: 0 0 18px;
+        overflow: hidden;
+        border: 1px solid var(--line-2);
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.07) 1px, transparent 1.5px) 0 0 / 18px 18px,
+          linear-gradient(180deg, #0b0b0d, #050505);
+      }
+      .clv { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 0 20px; text-align: center; }
+      .clv > * { animation: clvIn 0.6s var(--ease) both; }
+      .clv-k { margin: 0 0 10px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--xdim); }
+      .clv-t { margin: 0; font-size: 27px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; animation-delay: 0.08s; }
+      .clv-s { margin: 8px 0 16px; font-size: 13.5px; color: var(--muted); animation-delay: 0.16s; }
+      .clv-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; margin: 0; padding: 0; list-style: none; animation: none; }
+      .clv-list li { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; animation: clvIn 0.5s var(--ease) both; animation-delay: calc(0.3s + var(--i) * 0.14s); }
+      .clv-list svg { width: 16px; height: 16px; fill: none; stroke: var(--ok); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+      @keyframes clvIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .cl-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+      .cl-v { font-family: var(--mono); font-size: 12px; color: var(--xdim); }
+      .cl-new { padding: 2px 8px; border-radius: 999px; background: #fff; color: #000; font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+      .cl-h { margin-bottom: 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+      .cl-s { margin-bottom: 12px; font-size: 13.5px; line-height: 1.6; color: var(--muted); }
+      .cl-top { margin: 0; padding: 0; list-style: none; }
+      .cl-top li { display: flex; align-items: flex-start; gap: 12px; padding: 6px 0; font-size: 14px; line-height: 1.55; }
+      .cl-ic { flex: none; display: flex; align-items: center; justify-content: center; width: 18px; height: 18px; margin-top: 2px; border-radius: 6px; font-family: var(--mono); font-size: 11px; font-weight: 700; }
+      .ic-add { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+      .ic-fix { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
+      .ic-chg { background: rgba(255, 255, 255, 0.1); color: #fff; }
+      .cl-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 18px; }
+      .cl-foot p { margin: 0; font-size: 13px; color: var(--muted); }
+
+      .foot { margin: 56px 0 0; padding-top: 22px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--xdim); }
       .foot a { color: var(--muted); text-decoration: none; }
-      .foot a:hover { color: var(--accent-2); }
+      .foot a:hover { color: var(--text); }
 
-      .gh-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 12px;
-        margin-left: 8px;
-        padding: 10px 18px;
-        border: 1px solid var(--border-strong);
-        border-radius: 999px;
-        background: var(--panel-2);
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: border-color 0.15s ease, color 0.15s ease;
+      @media (max-width: 980px) {
+        .look-grid { grid-template-columns: minmax(0, 1fr); }
+        .prev { position: static; }
       }
-      .gh-pill:hover { border-color: var(--accent); color: var(--accent); }
-      .gh-pill svg { flex-shrink: 0; }
-
-      .rate-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 12px;
-        margin-left: 8px;
-        padding: 10px 18px;
-        border: 1px solid var(--border-strong);
-        border-radius: 999px;
-        background: var(--panel-2);
-        color: rgba(255, 255, 255, 0.85);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: border-color 0.15s ease, color 0.15s ease;
+      @media (max-width: 880px) {
+        .shell { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 18px; }
+        .side { order: 0; position: static; height: auto; overflow: visible; padding: 24px 0 0; }
+        .side-foot { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; padding-top: 0; border-top: 0; }
+        .tabs { flex-direction: row; gap: 4px; margin: 20px -18px 0; padding: 0 18px 4px; overflow-x: auto; scrollbar-width: none; }
+        .tab { width: auto; flex: none; padding: 8px 14px; }
+        .tab.on::before { display: none; }
+        .side-links { flex-direction: row; flex-wrap: wrap; align-items: center; }
+        .lang { margin: 0 6px 0 0; padding: 0; }
+        .sl { width: auto; }
+        .main { padding-top: 28px; }
+        .pane-h { font-size: 32px; }
+        .row { flex-wrap: wrap; gap: 14px 24px; }
+        .rt { flex: 1 1 260px; }
+        .checks { grid-template-columns: minmax(0, 1fr); }
+        .feat-list { grid-template-columns: minmax(0, 1fr); }
+        .featl:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--line); }
+        .pnames { grid-template-columns: minmax(0, 1fr); }
+        .lim-meters { max-width: 100%; }
+        .adv-in .row { padding-left: 0; }
       }
-      .rate-pill:hover { border-color: #f5b301; color: var(--text); }
-      .rp-stars { display: inline-flex; gap: 1px; font-size: 13px; line-height: 1; }
-      .rp-stars i { font-style: normal; color: color-mix(in srgb, #f5b301 45%, transparent); transition: color 0.12s ease; }
-      .rate-pill:hover .rp-stars i { color: #f5b301; }
-      .rate-pill:hover .rp-stars i:nth-child(2) { transition-delay: 0.05s; }
-      .rate-pill:hover .rp-stars i:nth-child(3) { transition-delay: 0.1s; }
-      .rate-pill:hover .rp-stars i:nth-child(4) { transition-delay: 0.15s; }
-      .rate-pill:hover .rp-stars i:nth-child(5) { transition-delay: 0.2s; }
-
-
-      .feat-intro {
-        font-size: 13px;
-        line-height: 1.6;
-        color: var(--muted);
-        max-width: 620px;
-        margin: 0 0 20px;
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
       }
-      .feat-grp { margin-bottom: 20px; }
-      .feat-grp-h {
-        display: flex;
-        align-items: center;
-        gap: 9px;
-        margin: 0 0 9px 3px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: var(--accent);
-      }
-      .feat-grp-h svg {
-        width: 15px;
-        height: 15px;
-        flex: 0 0 auto;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 1.9;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .feat-list {
-        column-width: 290px;
-        column-gap: 26px;
-      }
-      .feat-list .featl {
-        padding: 0;
-        border: none;
-        break-inside: avoid;
-        display: inline-block;
-        width: 100%;
-        margin-bottom: 16px;
-      }
-      .feat-list .featl:last-child { margin-bottom: 0; }
-      .feat-list .featl .t { font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
-      .feat-list .featl .d { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
-
-      .cl-card { padding: 0; overflow: hidden; }
-      .cl-rel { padding: 16px 20px 15px; border-bottom: 1px solid var(--border); }
-      .cl-rel:last-child { border-bottom: none; padding-bottom: 18px; }
-      .cl-meta { display: flex; align-items: center; gap: 9px; margin-bottom: 7px; }
-      .cl-v { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; color: var(--muted); }
-      .cl-new {
-        font-size: 9.5px;
-        font-weight: 800;
-        letter-spacing: 0.09em;
-        text-transform: uppercase;
-        color: var(--bg);
-        background: var(--accent);
-        padding: 2.5px 7px;
-        border-radius: 999px;
-      }
-      .cl-h { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin-bottom: 6px; }
-      .cl-s { font-size: 12.5px; line-height: 1.6; color: var(--muted); margin-bottom: 12px; }
-      .cl-top { list-style: none; padding: 0; margin: 0; }
-      .cl-top li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: 13px; line-height: 1.55; }
-      .cl-ic {
-        flex: 0 0 auto;
-        width: 16px;
-        height: 16px;
-        margin-top: 1px;
-        border-radius: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 800;
-      }
-      .ic-add { background: rgba(69, 224, 160, 0.16); color: var(--ok); }
-      .ic-fix { background: rgba(255, 77, 94, 0.16); color: var(--danger); }
-      .ic-chg { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
-      .cl-more { margin-top: 6px; }
-      .cl-more summary {
-        list-style: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11.5px;
-        font-weight: 700;
-        color: var(--muted);
-        padding: 7px 0;
-      }
-      .cl-more summary::-webkit-details-marker { display: none; }
-      .cl-more summary::after {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-right: 2px solid currentColor;
-        border-bottom: 2px solid currentColor;
-        transform: rotate(45deg) translateY(-2px);
-        transition: transform 0.18s ease;
-      }
-      .cl-more[open] summary::after { transform: rotate(-135deg) translateY(1px); }
-      .cl-more summary:hover { color: var(--text); }
-      .cl-rest { list-style: none; padding: 0; margin: 2px 0 0; }
-      .cl-rest li { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
     </style>
   </head>
   <body>
-    <div class="bg-topline" aria-hidden="true"></div>
-    <div class="bg-mq a" aria-hidden="true"><span class="tr"><span>TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦</span><span>TURN IT UP, SON! ✦ 700% ✦ NIGHTCORE ✦ SPED UP ✦ PHONK ✦ 8D AUDIO ✦ DRILL ✦ SLOWED + REVERB ✦</span></span></div>
-    <div class="bg-mq b" aria-hidden="true"><span class="tr"><span>BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦</span><span>BASS BOOST ✦ 808 ✦ RUMBLE ✦ YOUR MIXES ✦ FULL MIXER ✦ NO TRACKING ✦</span></span></div>
-    <div class="mark3d-wrap" aria-hidden="true"><span id="mark3d">Turn it up, son!</span></div>
-    <div class="wrap">
-      <div class="head">
-        <img src="icons/icon128.png" alt="" />
-        <div class="txt">
-          <h1>Turn It Up, Son!</h1>
-          <p class="sub" data-i18n="app_tagline">Podgłaśniacz dźwięku dla każdej karty. YouTube, Spotify i cała reszta.</p>
-          <button id="supportTop" class="support-pill">
-            <span aria-hidden="true">☕</span>
-            <span data-i18n="engine_donate">Wesprzyj mnie</span>
+    <div class="bg" aria-hidden="true"><canvas id="bgGrille"></canvas></div>
+    <div class="shell">
+      <aside class="side">
+        <div class="brand">
+          <img src="icons/icon128.png" alt="" />
+          <div>
+            <b>Turn It Up, Son!</b>
+            <span class="ver" id="ver"></span>
+          </div>
+        </div>
+
+        <nav class="tabs" id="tabs">
+          <button type="button" class="tab on" data-pane="sound"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.6a5 5 0 0 1 0 6.8"/><path d="M19.6 5.8a9 9 0 0 1 0 12.4"/></svg><span data-i18n="tab_sound">Dźwięk</span></button>
+          <button type="button" class="tab" data-pane="limiter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18"/><path d="M5 20v-6M9 20V9M13 20v-9M17 20V8M21 20v-5" stroke-dasharray="0"/></svg><span data-i18n="sec_limiter">Limiter</span></button>
+          <button type="button" class="tab" data-pane="skip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg><span data-i18n="skip_sec">Auto-pomijanie</span></button>
+          <button type="button" class="tab" data-pane="look"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-1 1.4-2-.4-1.1.4-2.3 1.6-2.3H18a3 3 0 0 0 3-3C21 7.1 17 3 12 3Z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15.5" cy="8" r="1"/></svg><span data-i18n="sec_look">Wygląd</span></button>
+          <button type="button" class="tab" data-pane="privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg><span data-i18n="tab_privacy">Prywatność i dostęp</span></button>
+          <button type="button" class="tab" data-pane="about"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10v4M9 6v12M13 8v8M17 4v16M21 10v4"/></svg><span data-i18n="sec_about">Funkcje</span></button>
+          <button type="button" class="tab" data-pane="changelog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5"/><path d="M12 7.5V12l3 2"/></svg><span data-i18n="tab_changelog">Changelog</span></button>
+        </nav>
+
+        <div class="side-foot">
+          <div class="side-links">
+            <button id="githubPill" class="sl" type="button">
+              <svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span>GitHub</span>
+            </button>
+          </div>
+          <label class="lang" title="Language / Język">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
+            <select id="langSelect" class="pick" aria-label="Language / Język">
+              <option value="en">English</option>
+              <option value="pl">Polski</option>
+            </select>
+          </label>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="main-acts">
+          <button id="bugPill" class="act-btn" type="button" data-i18n-title="bug_sec">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5h15v10.5H10l-5.5 4z"/><path d="M8.5 9.5h7M8.5 12.5h4"/></svg>
+            <span data-i18n="bug_short">Zgłoś błąd</span>
           </button>
-          <button id="ratePill" class="rate-pill">
-            <span class="rp-stars" aria-hidden="true"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+          <button id="ratePill" class="act-btn rate" type="button">
+            <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 17l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>
             <span data-i18n="rate_ext">Oceń wtyczkę</span>
           </button>
-          <button id="githubPill" class="gh-pill">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            <span>GitHub</span>
-          </button>
-          <button id="bugPill" class="gh-pill">
-            <span aria-hidden="true">&#128027;</span>
-            <span data-i18n="bug_sec">Zgłoś błąd lub pomysł</span>
+          <button id="supportTop" class="support-pill" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 9h12v5.5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z"/><path d="M16.5 10.5h1.2a2.6 2.6 0 0 1 0 5.2h-1.6"/><path class="steam" d="M9 2.8c-.9 1 .9 1.8 0 3M12.5 2.8c-.9 1 .9 1.8 0 3"/></svg>
+            <span data-i18n="engine_donate">Wesprzyj mnie</span>
           </button>
         </div>
-        <span class="ver" id="ver"></span>
-      </div>
+        <div class="card bugcard" id="bugCard" hidden>
+          <button type="button" class="bug-x" id="bugClose" data-i18n-title="bug_close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17"/></svg></button>
+          <h2 data-i18n="bug_h">Masz błąd albo pomysł?</h2>
+          <p class="mini-d" data-i18n="bug_s">Anonimowo, bez konta.</p>
+          <textarea id="bugText" class="bugbox" rows="3" maxlength="2000" data-i18n-ph="bug_ph" placeholder="Opisz błąd albo pomysł..."></textarea>
+          <div class="bug-act">
+            <button id="bugSend" class="btn primary" type="button" data-i18n="bug_send">Wyślij</button>
+            <span id="bugSent" class="saved" hidden data-i18n="bug_sent">Wysłane, dzięki!</span>
+          </div>
+        </div>
 
-      <div class="card bugcard" id="bugCard" hidden>
-        <h2 data-i18n="bug_h">Masz błąd albo pomysł?</h2>
-        <p class="mini-d" style="max-width:none;margin:0 0 12px" data-i18n="bug_d">Napisz, co nie działa i na jakiej stronie, albo podziel się pomysłem na nową funkcję. Wiadomość wysyła się anonimowo, bez konta i logowania.</p>
-        <textarea id="bugText" class="bugbox" rows="3" maxlength="2000" data-i18n-ph="bug_ph" placeholder="Opisz błąd albo pomysł..."></textarea>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button id="bugSend" class="btn" type="button" data-i18n="bug_send">Wyślij</button>
-          <span id="bugSent" class="saved" style="height:auto;margin:12px 0 0" hidden data-i18n="bug_sent">Wysłane, dzięki!</span>
-        </div>
-      </div>
-
-      <nav class="tabs" id="tabs">
-        <button type="button" class="tab on" data-pane="general" data-i18n="tab_general">Ogólne</button>
-        <button type="button" class="tab" data-pane="look" data-i18n="sec_look">Wygląd</button>
-        <button type="button" class="tab" data-pane="privacy" data-i18n="tab_privacy">Prywatność i dostęp</button>
-        <button type="button" class="tab" data-pane="about" data-i18n="sec_about">Funkcje</button>
-        <button type="button" class="tab" data-pane="changelog" data-i18n="tab_changelog">Changelog</button>
-      </nav>
-
-      <div class="tabpane" data-pane="look">
-
-      <div class="card">
-        <h2 data-i18n="theme_h">Kolor wtyczki</h2>
-        <p class="note" style="border:none;padding:0;margin:0 0 14px" data-i18n="theme_d">Wybierz akcent kolorystyczny całej wtyczki: okienka, panelu Miks i tej strony. Zmiana działa od razu.</p>
-        <div id="themeRow" class="themes"></div>
-        <div class="saved" id="themeSaved"></div>
-      </div>
-
-      <div class="card">
-        <div class="row">
-          <div>
-            <h2 style="margin:0" data-i18n="glow_h">Poświata tła</h2>
-            <p class="mini-d" data-i18n="glow_d">Miękka poświata w tle okienka. Wyłącz, żeby mieć czystą czerń, albo ustaw jej siłę suwakiem.</p>
-          </div>
-          <input type="checkbox" class="switch" id="glowToggle" />
-        </div>
-        <div class="row sep" id="glowStrengthRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="glow_strength_h">Siła poświaty</h2>
-            <p class="mini-d" data-i18n="glow_strength_d">Jak mocno widać poświatę w tle. Zejdź niżej, jeśli rozprasza.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span id="glowVal" class="glow-val">13</span>
-            <input type="range" class="glow-range" id="glowStrength" min="4" max="26" step="1" />
-          </div>
-        </div>
-        <div class="glow-col" id="glowColorRow">
-          <h2 style="margin:0;font-size:13.5px" data-i18n="glow_color_h">Kolor poświaty</h2>
-          <p class="mini-d" style="margin:2px 0 14px" data-i18n="glow_color_d">Kolor blasku w tle okienka, niezależny od koloru wtyczki. Motyw idzie za akcentem.</p>
-          <div id="glowSwatches" class="themes"></div>
-        </div>
-        <div class="saved" id="glowSaved"></div>
-        <button class="btn" id="lookReset" type="button" data-i18n="look_reset" style="margin-top:12px">Przywróć domyślny wygląd</button>
-        <div class="saved" id="lookResetSaved"></div>
-      </div>
-
-      <details class="card">
-        <summary class="dsum"><span data-i18n="preset_names_h">Własne nazwy presetów</span><span class="chev">›</span></summary>
-        <p class="note" style="border:none;padding:0;margin:12px 0" data-i18n="preset_names_d">Zmień nazwy wbudowanych presetów z panelu Miks na swoje. Puste pole = nazwa domyślna.</p>
-        <div id="presetNames" class="pnames"></div>
-        <button class="btn" id="presetNamesReset" data-i18n="preset_names_reset">Przywróć domyślne nazwy</button>
-        <div class="saved" id="presetNamesSaved"></div>
-      </details>
-
-      </div>
-
-      <div class="tabpane on" data-pane="general">
-
-      <div class="sec-h" data-i18n="sec_basics">Podstawowe</div>
-
-      <div class="card">
-        <div class="row">
-          <div>
-            <h2 style="margin:0" data-i18n="lang_h">Język / Language</h2>
-            <p class="mini-d" data-i18n="lang_d">Język całej wtyczki: okienka, ustawień i powiadomień.</p>
-          </div>
-          <select id="langSelect" class="btn" style="margin:0">
-            <option value="en">English</option>
-            <option value="pl">Polski</option>
-          </select>
-        </div>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0" data-i18n="maxvol_h">Maksymalna głośność</h2>
-            <p class="mini-d" data-i18n="maxvol_d">Górna granica suwaka głośności w okienku. Ustaw niżej, jeśli chcesz chronić słuch albo głośniki przed przypadkowym 700%.</p>
-          </div>
-          <select id="maxVolSelect" class="btn" style="margin:0">
-            <option value="300">300%</option>
-            <option value="500">500%</option>
-            <option value="700" selected>700%</option>
-          </select>
-        </div>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0" data-i18n="guardset_h">Ochrona przed skokami</h2>
-            <p class="mini-d" data-i18n="guardset_d">Kiedy dźwięk nagle robi się dużo głośniejszy, na przykład wchodzi reklama albo głośniej zmasterowany utwór, wtyczka przytrzymuje różnicę przez chwilę, zamiast pozwolić jej uderzyć. Zwykłej dynamiki muzyki nie rusza, budzi się dopiero przy naprawdę dużym skoku.</p>
-          </div>
-          <input type="checkbox" class="switch" id="guardToggle" />
-        </div>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0" data-i18n="defbass_h">Domyślny charakter basu</h2>
-            <p class="mini-d" data-i18n="defbass_d">Ten charakter basu włącza się na kartach, na których jeszcze go nie wybrano. Zawsze możesz go zmienić w panelu Miks.</p>
-          </div>
-          <select id="defBassSelect" class="btn" style="margin:0">
-            <option value="classic" selected data-i18n="bm_classic">Klasyk</option>
-            <option value="sub" data-i18n="bm_sub">Sub</option>
-            <option value="punch" data-i18n="bm_punch">Punch</option>
-            <option value="rumble" data-i18n="bm_rumble">Grzmot</option>
-            <option value="808" data-i18n="bm_808">808</option>
-            <option value="warm" data-i18n="bm_warm">Ciepły</option>
-          </select>
-        </div>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0" data-i18n="bassamt_h">Ile basu generujemy</h2>
-            <p class="mini-d" data-i18n="bassamt_d">Decyduje, ile znaczy pełny suwak basu. Na sto procent tryb Klasyk dokłada około trzynastu decybeli przy sześćdziesięciu hercach, co przy niektórych nagraniach jest po prostu za dużo. Niżej ustawiona wartość ścina wszystkie tryby i presety po równo, więc bas robi się mniej natarczywy, a reszta pasma zostaje bez zmian.</p>
-          </div>
-          <select id="bassAmtSelect" class="btn" style="margin:0">
-            <option value="130">130%</option>
-            <option value="120">120%</option>
-            <option value="110">110%</option>
-            <option value="100" selected>100%</option>
-            <option value="90">90%</option>
-            <option value="80">80%</option>
-            <option value="70">70%</option>
-            <option value="60">60%</option>
-          </select>
-        </div>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0" data-i18n="rot_h">Podbicie głosu</h2>
-            <p class="mini-d" data-i18n="rot_d">Ten sam zabieg z fazą, którego rozgłośnie radiowe używają na mowie. Nic nie podbija ani nie ścisza, ale głos układa się równiej i brzmi pełniej. Wyłączony znaczy, że przy 100 procent wtyczka oddaje dźwięk dokładnie taki, jaki dostała.</p>
-          </div>
-          <input type="checkbox" class="switch" id="phaseRotToggle" />
-        </div>
-        <div class="saved" id="saved"></div>
-      </div>
-
-      <div class="sec-h" data-i18n="sec_limiter">Limiter</div>
-
-      <div class="card">
-        <div class="row">
-          <div>
-            <h2 style="margin:0" data-i18n="limiter_h">Limiter</h2>
-            <p class="mini-d" data-i18n="limiter_d">Pilnuje, żeby dźwięk nie przesterował. Budzi się dopiero wtedy, gdy dźwięk dobija do sufitu, więc na cichym nagraniu nie robi nic. Kiedy to nastąpi, zależy od samego nagrania, od włączonych efektów i od liczby grających kart, a nie od procentu na suwaku. Bez niego głośny bas zaczyna brudzić już trochę powyżej 100%, a od 300% słychać to wyraźnie, bo szczyty ścina wtedy samo nasycenie.</p>
-          </div>
-          <input type="checkbox" class="switch" id="limiterToggle" checked />
-        </div>
-        <div class="row sep" id="limiterCeilingRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_ceil_h">Sufit głośności</h2>
-            <p class="mini-d" data-i18n="limiter_ceil_d">Poziom, do którego limiter sprowadza dźwięk. Dotyczy całego miksu, razem z basem. 0 dB to maksimum możliwe cyfrowo, czyli najgłośniej i najczyściej, bo limiter ma najmniej pracy. Niżej zostawiasz zapas: ciszej, ale bezpieczniej na słabszym sprzęcie.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span id="limiterVal" class="glow-val" style="min-width:42px">0 dB</span>
-            <input type="range" class="glow-range" id="limiterCeiling" min="-6" max="0" step="1" value="0" />
-          </div>
-        </div>
-        <div class="row sep" id="limiterBassRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_bass_h">Sufit basu</h2>
-            <p class="mini-d" data-i18n="limiter_bass_d">To samo, ale wyłącznie dla dołu (poniżej 150 Hz). Bas ma własny tor pomiarowy, więc możesz go przytrzymać, nie ściągając w dół całego miksu. Zejdź niżej, jeśli bas dudni albo się rozjeżdża.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span id="limiterBassVal" class="glow-val" style="min-width:42px">0 dB</span>
-            <input type="range" class="glow-range" id="limiterBass" min="-6" max="0" step="1" value="0" />
-          </div>
-        </div>
-        <div class="row sep" id="limiterMaxRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_maxred_h">Maksymalne dociskanie</h2>
-            <p class="mini-d" data-i18n="limiter_maxred_d">Do ilu decybeli limiter dociska pełną siłą. Powyżej tej wartości nie przestaje pracować, tylko zwalnia mniej więcej o połowę i coraz więcej roboty oddaje nasyceniu, które ścina szczyty. Dlatego miernik obok potrafi pokazać większą liczbę niż ta ustawiona tutaj. Niżej (1 dB) znaczy mocniejszy bas i gęstsze brzmienie, ale wyraźnie więcej zniekształcenia. Wyżej (8 dB) znaczy spokojniejszy, mocniej trzymany bas. Najczyściej jest w okolicach 5 i 6 dB, stąd taka wartość domyślna.</p>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <span id="limiterMaxVal" class="glow-val" style="min-width:42px">6 dB</span>
-            <input type="range" class="glow-range" id="limiterMax" min="1" max="8" step="1" value="6" />
-          </div>
-        </div>
-        <div class="row sep" id="limiterMeterRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limiter_meter_h">Redukcja na żywo</h2>
-            <p class="mini-d" data-i18n="limiter_meter_d">Ile limiter dociska w tej chwili. Zero znaczy, że śpi i w ogóle nie dotyka dźwięku. Paski ruszają się dopiero, gdy któraś karta gra i muzyka dobija do sufitu.</p>
-            <p class="lim-mode" id="limiterMode"></p>
-          </div>
-          <div class="lim-meters">
-            <div class="lim-m">
-              <span class="lbl" data-i18n="limiter_m_main">Głośność</span>
-              <span class="lim-bar"><i id="meterMainBar"></i></span>
-              <span class="num" id="meterMainVal">0.0 dB</span>
+        <section class="tabpane on" data-pane="sound">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="tab_sound">Dźwięk</h1></div>
+          <div class="card">
+            <div class="row">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h11"/><path d="M19 6.5v11"/><circle cx="10" cy="12" r="2.6"/></svg></span><div class="rt"><h3 data-i18n="maxvol_h">Maksymalna głośność</h3><p class="mini-d" data-i18n="maxvol_s">Gdzie kończy się suwak.</p></div></div>
+              <select id="maxVolSelect" class="pick">
+                <option value="300">300%</option>
+                <option value="500">500%</option>
+                <option value="700" selected>700%</option>
+              </select>
             </div>
-            <div class="lim-m">
-              <span class="lbl" data-i18n="limiter_m_bass">Bas</span>
-              <span class="lim-bar"><i id="meterBassBar"></i></span>
-              <span class="num" id="meterBassVal">0.0 dB</span>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg></span><div class="rt"><h3 data-i18n="guardset_h">Ochrona przed skokami</h3><p class="mini-d" data-i18n="guardset_s">Głośna reklama nie wystrzeli ci w uszy.</p></div></div>
+              <input type="checkbox" class="switch" id="guardToggle" />
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></svg></span><div class="rt"><h3 data-i18n="rot_h">Podbicie głosu</h3><p class="mini-d" data-i18n="rot_s">Głos brzmi równiej. Dobre do podcastów.</p></div></div>
+              <input type="checkbox" class="switch" id="phaseRotToggle" />
             </div>
           </div>
-        </div>
-        <div class="row sep" id="limiterCharRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limchar_h">Charakter</h2>
-            <p class="mini-d" data-i18n="limchar_d">Gotowe ustawienia dociskania. Czysto trzyma dźwięk najczystszy i tak zostaje domyślnie. Głośno pozwala limiterowi dociskać krócej, więc gra głośniej, ale szczyty ścina już nasycenie i przy mocnym podbiciu słychać brud. Przy jednej karcie, bez efektów i do 150 procent limiter prawie nie pracuje, więc różnicy nie usłyszysz. Bas, presety z Miksu i kolejne grające karty budzą go dużo wcześniej.</p>
+          <div class="sec-h" data-i18n="eff_bass">Podbicie basów</div>
+          <div class="card">
+            <div class="row">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8.5c3.5 0 4.5.5 6.5 4.5S13 18 16 18h5"/><path d="M3 21h18" opacity=".4"/></svg></span><div class="rt"><h3 data-i18n="defbass_t">Rodzaj basu</h3><p class="mini-d" data-i18n="defbass_s">Jak brzmi bas po włączeniu.</p></div></div>
+              <select id="defBassSelect" class="pick">
+                <option value="classic" selected data-i18n="bm_classic">Klasyk</option>
+                <option value="sub" data-i18n="bm_sub">Sub</option>
+                <option value="punch" data-i18n="bm_punch">Punch</option>
+                <option value="rumble" data-i18n="bm_rumble">Grzmot</option>
+                <option value="808" data-i18n="bm_808">808</option>
+                <option value="warm" data-i18n="bm_warm">Ciepły</option>
+              </select>
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.2"/></svg></span><div class="rt"><h3 data-i18n="bassamt_t">Siła basu</h3><p class="mini-d" data-i18n="bassamt_s">Dudni za mocno? Zmniejsz.</p></div></div>
+              <select id="bassAmtSelect" class="pick">
+                <option value="130">130%</option>
+                <option value="120">120%</option>
+                <option value="110">110%</option>
+                <option value="100" selected>100%</option>
+                <option value="90">90%</option>
+                <option value="80">80%</option>
+                <option value="70">70%</option>
+                <option value="60">60%</option>
+              </select>
+            </div>
           </div>
-          <div class="lim-chars">
-            <button class="btn" type="button" id="limCharClean" data-red="6" data-i18n="limchar_clean">Czysto</button>
-            <button class="btn" type="button" id="limCharMid" data-red="4" data-i18n="limchar_mid">Średnio</button>
-            <button class="btn" type="button" id="limCharLoud" data-red="2" data-i18n="limchar_loud">Głośno</button>
+          <div class="saved" id="saved"></div>
+        </section>
+
+        <section class="tabpane" data-pane="limiter">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="sec_limiter">Limiter</h1></div>
+          <div class="card">
+            <div class="row">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6.5h18"/><path d="M6 20v-8M10 20V9.5M14 20v-6M18 20V9.5"/></svg></span><div class="rt"><h3 data-i18n="limiter_h">Limiter</h3><p class="mini-d" data-i18n="limiter_s">Głośno, ale bez trzeszczenia. Zostaw włączony.</p></div></div>
+              <input type="checkbox" class="switch" id="limiterToggle" checked />
+            </div>
+            <div class="row sep" id="limiterCharRow">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12c2.2-6 4.3-6 6.5 0s4.3 6 6.5 0 4.3-6 6.5 0"/></svg></span><div class="rt"><h3 data-i18n="limchar_h">Charakter</h3><p class="mini-d" data-i18n="limchar_s">Jak mocno limiter dociska dźwięk.</p></div></div>
+              <div class="lim-chars">
+                <button class="btn" type="button" id="limCharClean" data-red="6" data-i18n="limchar_clean">Czysto</button>
+                <button class="btn" type="button" id="limCharMid" data-red="4" data-i18n="limchar_mid">Średnio</button>
+                <button class="btn" type="button" id="limCharLoud" data-red="2" data-i18n="limchar_loud">Głośno</button>
+              </div>
+            </div>
+            <div class="row sep" id="limiterMeterRow">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 16.5a7.5 7.5 0 1 1 15 0"/><path d="m12 16.5 3.5-4"/></svg></span><div class="rt">
+                <h3 data-i18n="limiter_meter_h">Redukcja na żywo</h3>
+                <p class="mini-d" data-i18n="limiter_meter_s">Ile limiter ścisza w tej chwili.</p>
+              </div></div>
+              <div class="lim-meters">
+                <div class="lim-m"><span class="lbl" data-i18n="limiter_m_main">Głośność</span><span class="lim-bar"><i id="meterMainBar"></i></span><span class="num" id="meterMainVal">0.0 dB</span></div>
+                <div class="lim-m"><span class="lbl" data-i18n="limiter_m_bass">Bas</span><span class="lim-bar"><i id="meterBassBar"></i></span><span class="num" id="meterBassVal">0.0 dB</span></div>
+                <p class="lim-mode" id="limiterMode"></p>
+              </div>
+            </div>
+            <div class="row sep" id="limiterMixRow">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20v-6M5 10V4M12 20v-8M12 8V4M19 20v-4M19 12V4"/><path d="M3 14h4M10 8h4M17 16h4"/></svg></span><div class="rt"><h3 data-i18n="limchar_mix_h">Pokaż charakter w panelu Miks</h3><p class="mini-d" data-i18n="limchar_mix_s">Te 3 przyciski także w okienku.</p></div></div>
+              <input type="checkbox" class="switch" id="limCharInMix" />
+            </div>
+            <details class="adv-in" open>
+              <summary><span data-i18n="adv_h">Zaawansowane</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+              <div class="row sep" id="limiterCeilingRow">
+                <div class="rt"><h3 data-i18n="limiter_ceil_h">Sufit głośności</h3><p class="mini-d" data-i18n="limiter_ceil_s">Niżej = ciszej, ale bezpieczniej.</p></div>
+                <div class="ctl"><span id="limiterVal" class="val">0 dB</span><input type="range" class="range" id="limiterCeiling" min="-6" max="0" step="1" value="0" /></div>
+              </div>
+              <div class="row sep" id="limiterBassRow">
+                <div class="rt"><h3 data-i18n="limiter_bass_h">Sufit basu</h3><p class="mini-d" data-i18n="limiter_bass_s">To samo, tylko dla basu.</p></div>
+                <div class="ctl"><span id="limiterBassVal" class="val">0 dB</span><input type="range" class="range" id="limiterBass" min="-6" max="0" step="1" value="0" /></div>
+              </div>
+              <div class="row sep" id="limiterMaxRow">
+                <div class="rt"><h3 data-i18n="limiter_maxred_h">Maksymalne dociskanie</h3><p class="mini-d" data-i18n="limiter_maxred_s">Mniej = gęściej, ale brudniej.</p></div>
+                <div class="ctl"><span id="limiterMaxVal" class="val">6 dB</span><input type="range" class="range" id="limiterMax" min="1" max="8" step="1" value="6" /></div>
+              </div>
+              <div class="actions">
+                <button class="btn" id="limiterReset" type="button" data-i18n="limiter_reset">Przywróć domyślny limiter</button>
+              </div>
+            </details>
           </div>
-        </div>
-        <div class="row sep" id="limiterMixRow">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="limchar_mix_h">Pokaż charakter w panelu Miks</h2>
-            <p class="mini-d" data-i18n="limchar_mix_d">Te same trzy przyciski pojawią się w okienku, w panelu Miks, pod przełącznikiem pełnego miksera. Dzięki temu zmienisz charakter w trakcie słuchania, bez wchodzenia w ustawienia.</p>
+          <div class="saved" id="limiterSaved"></div>
+        </section>
+
+        <section class="tabpane" data-pane="skip">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="skip_sec">Auto-pomijanie</h1></div>
+          <div class="card" id="skipCard">
+            <div class="row">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.5 5.5v13l9-6.5z"/><path d="M18.5 5.5v13"/></svg></span><div class="rt"><h3 data-i18n="skip_h">Auto-pomijanie artystów</h3><p class="mini-d" data-i18n="skip_s">Dodaj artystę, a jego utwory będą przeskakiwane.</p></div></div>
+              <input type="checkbox" class="switch" id="skipToggle" />
+            </div>
+            <div class="skip-add-row">
+              <input type="text" id="skipInput" maxlength="200" data-i18n-ph="skip_ph" placeholder="Artysta, kanał albo link do utworu..." />
+              <button class="btn primary" id="skipAdd" type="button" data-i18n="skip_add">Dodaj</button>
+            </div>
+            <div id="skipList" class="skip-list"></div>
+            <button class="btn danger" id="skipClearAll" type="button" data-i18n="skip_clear" hidden>Wyczyść całą listę</button>
+            <p class="hint" data-i18n="skip_hint_s">YouTube, Spotify i SoundCloud. Możesz też wkleić link do utworu.</p>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg></span><div class="rt"><h3 data-i18n="skip_all_h">Pomijaj wszędzie, nawet bez podgłośnienia</h3><p class="mini-d" data-i18n="skip_all_s">Także gdy nic nie podgłaśniasz.</p></div></div>
+              <input type="checkbox" class="switch" id="skipEverywhere" />
+            </div>
+            <div class="saved" id="skipSaved"></div>
           </div>
-          <input type="checkbox" class="switch" id="limCharInMix" />
-        </div>
-        <button class="btn" id="limiterReset" type="button" data-i18n="limiter_reset" style="margin-top:12px">Przywróć domyślny limiter</button>
-        <div class="saved" id="limiterSaved"></div>
-      </div>
+        </section>
 
-      <div class="sec-h" data-i18n="skip_sec">Auto-pomijanie</div>
+        <section class="tabpane" data-pane="look">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="sec_look">Wygląd</h1></div>
+          <div class="look-grid">
+            <div>
+              <div class="card pad">
+                <h2 data-i18n="theme_h">Kolor wtyczki</h2>
+                <div id="themeRow" class="themes"></div>
+                <div class="saved" id="themeSaved"></div>
+              </div>
 
-      <div class="card" id="skipCard">
-        <div class="row">
-          <div>
-            <h2 style="margin:0" data-i18n="skip_h">Auto-pomijanie artystów</h2>
-            <p class="mini-d" data-i18n="skip_d">Działa na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać utwór artysty z twojej listy, wtyczka sama przeskakuje do następnego. Wymaga zgody na te strony i oddaje ją przy wyłączeniu.</p>
+              <div class="card">
+                <div class="row">
+                  <div class="rt"><h3 data-i18n="glow_h">Poświata tła</h3></div>
+                  <input type="checkbox" class="switch" id="glowToggle" />
+                </div>
+                <div class="row sep" id="glowStrengthRow">
+                  <div class="rt"><h3 data-i18n="glow_strength_h">Siła poświaty</h3></div>
+                  <div class="ctl"><span id="glowVal" class="val">13</span><input type="range" class="range" id="glowStrength" min="4" max="26" step="1" /></div>
+                </div>
+                <div class="glow-col" id="glowColorRow">
+                  <div class="rt"><h3 data-i18n="glow_color_h">Kolor poświaty</h3></div>
+                  <div id="glowSwatches" class="themes"></div>
+                </div>
+                <div class="saved" id="glowSaved"></div>
+              </div>
+
+              <details class="card adv">
+                <summary><span data-i18n="preset_names_h">Własne nazwy presetów</span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></summary>
+                <p class="mini-d" style="margin:0 0 14px" data-i18n="preset_names_s">Puste pole = nazwa domyślna.</p>
+                <div id="presetNames" class="pnames"></div>
+                <div class="actions">
+                  <button class="btn" id="presetNamesReset" type="button" data-i18n="preset_names_reset">Przywróć domyślne nazwy</button>
+                </div>
+                <div class="saved" id="presetNamesSaved"></div>
+              </details>
+
+              <div class="look-foot">
+                <button class="btn" id="lookReset" type="button" data-i18n="look_reset">Przywróć domyślny wygląd</button>
+                <div class="saved" id="lookResetSaved"></div>
+              </div>
+            </div>
+
+            <div class="card prev">
+              <p class="prev-h" data-i18n="preview_h">Podgląd na żywo</p>
+              <iframe id="previewFrame" title="Preview"></iframe>
+            </div>
           </div>
-          <input type="checkbox" class="switch" id="skipToggle" />
-        </div>
-        <div class="skip-add-row">
-          <input type="text" id="skipInput" maxlength="200" data-i18n-ph="skip_ph" placeholder="Artysta, kanał albo link do utworu..." />
-          <button class="btn" id="skipAdd" type="button" data-i18n="skip_add">Dodaj</button>
-        </div>
-        <div id="skipList" class="skip-list"></div>
-        <button class="btn danger" id="skipClearAll" type="button" style="margin-top:12px" data-i18n="skip_clear" hidden>Wyczyść całą listę</button>
-        <div class="row sep">
-          <div>
-            <h2 style="margin:0;font-size:13.5px" data-i18n="skip_all_h">Pomijaj wszędzie, nawet bez podgłośnienia</h2>
-            <p class="mini-d" data-i18n="skip_all_d">Domyślnie auto-pomijanie działa tylko na kartach, na których wtyczka gra (włączone podgłośnienie). Włącz, żeby pomijało na całej stronie, nawet gdy nic nie podgłaśniasz.</p>
+        </section>
+
+        <section class="tabpane" data-pane="privacy">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="tab_privacy">Prywatność i dostęp</h1></div>
+          <div class="card pad">
+            <p class="priv-big" data-i18n="priv_big">Nic nie zbieramy. Nic nie wysyłamy.</p>
+            <ul class="checks">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span data-i18n="priv_s1">Dźwięk jest obrabiany tylko na twoim komputerze</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span data-i18n="priv_s2">Bez kont, reklam i analityki</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span data-i18n="priv_s3">Na stronie działa tylko tam, gdzie sam włączysz funkcję</span></li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg><span data-i18n="priv_s4">Ustawienia zostają na tym komputerze</span></li>
+            </ul>
+            <p class="mini-d priv-note" data-i18n="priv_send">Jedyne, co może wyjść z komputera, to zgłoszenie błędu, które sam napiszesz i wyślesz.</p>
+            <p class="mini-d priv-note" data-i18n="priv_bar">Pasek „ta karta jest udostępniana” to wymóg Chrome. Nie da się go ukryć.</p>
           </div>
-          <input type="checkbox" class="switch" id="skipEverywhere" />
-        </div>
-        <p class="access-note" data-i18n="skip_hint">Wtyczka porównuje nazwę artysty, nazwę kanału i tytuł utworu. Wielkość liter i polskie znaki nie mają znaczenia. Możesz też wkleić link do konkretnego utworu z YouTube, Spotify lub SoundCloud, żeby pomijać tylko ten jeden utwór.</p>
-        <div class="saved" id="skipSaved"></div>
-      </div>
 
-
-      </div>
-
-      <div class="tabpane" data-pane="privacy">
-
-      <div class="sec-h" data-i18n="access_h">Dostęp do stron</div>
-
-      <div class="card">
-        <p class="note" style="border:none;padding:0;margin:0 0 12px" data-i18n="access_d">
-          Wtyczka bierze dostęp do strony dopiero wtedy, gdy włączysz na niej Mix (albo auto-kontynuację YouTube), i oddaje go, gdy wyłączysz. Poniżej widzisz strony, które akurat mają dostęp.
-        </p>
-        <div class="access-list-title" data-i18n="access_current">Strony z dostępem</div>
-        <ul id="accessList" class="access-list">
-          <li class="muted" data-i18n="access_none">Żadna strona nie ma teraz dostępu.</li>
-        </ul>
-        <div class="access-btns">
-          <button class="btn" id="grantYt" data-i18n="access_grant_yt">Nadaj dostęp do serwisów muzycznych</button>
-          <button class="btn danger" id="revokeAll" data-i18n="access_revoke">Zabierz dostęp wszystkim stronom</button>
-        </div>
-        <p class="access-note" data-i18n="access_grant_yt_d"></p>
-        <p class="access-note" data-i18n="access_revoke_d"></p>
-        <div class="saved" id="accessSaved"></div>
-      </div>
-
-      </div>
-
-      <div class="tabpane" data-pane="about">
-
-      <div class="sec-h" data-i18n="sec_about">Funkcje</div>
-
-      <p class="feat-intro" data-i18n="feats_intro">Wtyczka bierze dźwięk karty wbudowanym mechanizmem przeglądarki i przepuszcza go przez własny silnik audio, w całości na twoim komputerze.</p>
-
-      <div class="feat-grp">
-        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.6a5 5 0 0 1 0 6.8"/><path d="M19.6 5.8a9 9 0 0 1 0 12.4"/></svg><span data-i18n="featg_loud">grupa</span></div>
-        <div class="card feat-list">
-          <div class="featl">
-            <div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div>
-            <div class="d" data-i18n="featl_vol_d">Zwykły suwak strony kończy się na 100%. Wtyczka przepuszcza dźwięk karty przez własny wzmacniacz, więc może grać do siedmiu razy głośniej. Każda karta ma osobny poziom.</div>
+          <div class="card pad">
+            <h2 data-i18n="access_h">Dostęp do stron</h2>
+            <p class="mini-d" data-i18n="access_s">Wtyczka prosi o dostęp do strony dopiero, gdy włączysz na niej funkcję, i oddaje go, gdy ją wyłączysz.</p>
+            <ul id="accessList" class="access-list">
+              <li class="muted" data-i18n="access_none">Żadna strona nie ma teraz dostępu.</li>
+            </ul>
+            <div class="access-btns">
+              <button class="btn danger" id="revokeAll" type="button" data-i18n="access_revoke" hidden>Zabierz dostęp wszystkim stronom</button>
+            </div>
+            <div class="saved" id="accessSaved" style="padding-top:12px"></div>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_limiter_t">Limiter</div>
-            <div class="d" data-i18n="featl_limiter_d">Automatyczny strażnik na wyjściu: przy mocnym podbiciu dociska szczyty, żeby dźwięk nie trzeszczał. Działa sam, nic nie trzeba włączać.</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_mono_t">Naprawa dźwięku na jedno ucho</div>
-            <div class="d" data-i18n="featl_mono_d">Część nagrań ma dźwięk tylko w lewym albo prawym kanale. Ta opcja miksuje oba kanały do środka, więc słychać w obu słuchawkach.</div>
-          </div>
-        </div>
-      </div>
 
-      <div class="feat-grp">
-        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21v-6M5 11V3M12 21v-9M12 8V3M19 21v-4M19 13V3"/><path d="M2.5 15h5M9.5 8h5M16.5 17h5"/></svg><span data-i18n="featg_mix">grupa</span></div>
-        <div class="card feat-list">
-          <div class="featl">
-            <div class="t" data-i18n="featl_mix_t">Miks: sped up, nightcore, slowed</div>
-            <div class="d" data-i18n="featl_mix_d">Nightcore to sposób przerabiania piosenek: utwór przyspiesza się o jakieś 10-30%, przez co wokal robi się wyraźnie wyższy. Nazwa wzięła się od norweskiego duetu Nightcore, który tak remiksował utwory na początku lat 2000. Sped up to nowsza odmiana tego samego pomysłu, znana głównie z TikToka, a slowed + reverb to jej przeciwieństwo: wolniej i z pogłosem. Suwak prędkości działa w zakresie 0.5x-1.6x.</div>
+          <div class="sec-h" data-i18n="perm_h">Uprawnienia wtyczki</div>
+          <div class="card perm">
+            <div class="row">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.6a5 5 0 0 1 0 6.8"/></svg></span><div class="rt"><h3 data-i18n="perm_capture_t"></h3><p class="mini-d" data-i18n="perm_capture_d"></p></div></div>
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9.5h18M8 5v4.5"/></svg></span><div class="rt"><h3 data-i18n="perm_tabs_t"></h3><p class="mini-d" data-i18n="perm_tabs_d"></p></div></div>
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21"/></svg></span><div class="rt"><h3 data-i18n="perm_off_t"></h3><p class="mini-d" data-i18n="perm_off_d"></p></div></div>
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="2.8"/><path d="M4.5 6v12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V6"/><path d="M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></svg></span><div class="rt"><h3 data-i18n="perm_store_t"></h3><p class="mini-d" data-i18n="perm_store_d"></p></div></div>
+            </div>
+            <div class="row sep">
+              <div class="lead-in"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4M13.5 5.5l-3 13"/></svg></span><div class="rt"><h3 data-i18n="perm_script_t"></h3><p class="mini-d" data-i18n="perm_script_d"></p></div></div>
+              <span class="tag" data-i18n="perm_opt">opcjonalne</span>
+            </div>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_drill_t">Drill / Rap i Chill Drill</div>
-            <div class="d" data-i18n="featl_drill_d">Dwa presety pod rap, oba w pełnym tempie, żeby bit nie tracił energii. Drill / Rap: ciężki sub-bas, mroczny pogłos, wokal wyciągnięty do przodu i szczypta kompresora dla kopa. Chill Drill to łagodniejsza wersja: umiarkowany sub-bas, delikatny pogłos i czytelny głos, do słuchania na spokojnie.</div>
+
+          <div class="card pad">
+            <h2 data-i18n="wipe_h">Dane wtyczki</h2>
+            <p class="mini-d" style="margin-bottom:16px" data-i18n="wipe_s">Kasuje ustawienia, własne miksy, listę pomijania i dostęp do stron. Wtyczka wróci do stanu jak po instalacji.</p>
+            <button class="btn danger" id="wipeBtn" type="button" data-i18n="wipe_btn">Wyczyść wszystkie dane wtyczki</button>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_styles_t">Phonk i NY Drill</div>
-            <div class="d" data-i18n="featl_styles_d">Dwa style prosto z remixów. Phonk gra w pełnym tempie: agresywny, kopiący bas, ostra, chrupiąca góra pasma i kompresor dociskający całość jak w memphis rapie lat 90. NY Drill to brzmienie nowojorskiego drillu: bardzo głęboki, ślizgający się sub-bas, ciemny pogłos i wokal, który mimo tego basu nie ginie.</div>
+        </section>
+
+        <section class="tabpane" data-pane="about">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="sec_about">Funkcje</h1></div>
+          <p class="feat-intro" data-i18n="feats_intro">Wtyczka bierze dźwięk karty wbudowanym mechanizmem przeglądarki i przepuszcza go przez własny silnik audio, w całości na twoim komputerze.</p>
+
+          <div class="feat-grp">
+            <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.6a5 5 0 0 1 0 6.8"/><path d="M19.6 5.8a9 9 0 0 1 0 12.4"/></svg><span data-i18n="featg_loud">grupa</span></div>
+            <div class="card feat-list">
+              <div class="featl"><div class="t" data-i18n="featl_vol_t">Podgłaśnianie do 700%</div><div class="d" data-i18n="featl_vol_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_limiter_t">Limiter</div><div class="d" data-i18n="featl_limiter_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_mono_t">Naprawa dźwięku na jedno ucho</div><div class="d" data-i18n="featl_mono_d"></div></div>
+            </div>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_full_t">Pełny mikser</div>
-            <div class="d" data-i18n="featl_full_d">Przełącznik w panelu Miks, który odsłania wszystkie suwaki naraz: prędkość, pogłos, jasność, bas i krążenie. Do kręcenia własnych wersji.</div>
+
+          <div class="feat-grp">
+            <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21v-6M5 11V3M12 21v-9M12 8V3M19 21v-4M19 13V3"/><path d="M2.5 15h5M9.5 8h5M16.5 17h5"/></svg><span data-i18n="featg_mix">grupa</span></div>
+            <div class="card feat-list">
+              <div class="featl"><div class="t" data-i18n="featl_mix_t">Miks: sped up, nightcore, slowed</div><div class="d" data-i18n="featl_mix_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_drill_t">Drill / Rap i Chill Drill</div><div class="d" data-i18n="featl_drill_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_styles_t">Phonk i NY Drill</div><div class="d" data-i18n="featl_styles_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_full_t">Pełny mikser</div><div class="d" data-i18n="featl_full_d"></div></div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="feat-grp">
-        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3.2l2.6-7.5L12 20l3-12.5 2 4.5h5"/></svg><span data-i18n="featg_fx">grupa</span></div>
-        <div class="card feat-list">
-          <div class="featl">
-            <div class="t" data-i18n="featl_bass_t">Podbicie basów</div>
-            <div class="d" data-i18n="featl_bass_d">Wzmacnia najniższe tony, czyli dół pasma, w którym siedzi bas i stopa perkusji. Muzyka brzmi pełniej, zwłaszcza na małych głośnikach laptopa.</div>
+          <div class="feat-grp">
+            <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h3.2l2.6-7.5L12 20l3-12.5 2 4.5h5"/></svg><span data-i18n="featg_fx">grupa</span></div>
+            <div class="card feat-list">
+              <div class="featl"><div class="t" data-i18n="featl_bass_t">Podbicie basów</div><div class="d" data-i18n="featl_bass_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_treble_t">Jasność</div><div class="d" data-i18n="featl_treble_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_reverb_t">Reverb (pogłos)</div><div class="d" data-i18n="featl_reverb_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_muffle_t">Tłumik</div><div class="d" data-i18n="featl_muffle_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_vocal_t">Wokal i Moc</div><div class="d" data-i18n="featl_vocal_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_8d_t">8D Audio i krążenie</div><div class="d" data-i18n="featl_8d_d"></div></div>
+            </div>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_treble_t">Jasność</div>
-            <div class="d" data-i18n="featl_treble_d">Podbija wysokie tony, dźwięk robi się ostrzejszy i bardziej klarowny. Suwak znajdziesz w panelu Miks.</div>
+
+          <div class="feat-grp">
+            <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5 4.5 14H11l-1 7.5L19 10h-6.5l.5-7.5z"/></svg><span data-i18n="featg_easy">grupa</span></div>
+            <div class="card feat-list">
+              <div class="featl"><div class="t" data-i18n="featl_tabs_t">Lista grających kart</div><div class="d" data-i18n="featl_tabs_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_resume_t">Auto-wznawianie</div><div class="d" data-i18n="featl_resume_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div><div class="d" data-i18n="featl_yt_d"></div></div>
+              <div class="featl"><div class="t" data-i18n="featl_skip_t">Auto-pomijanie artystów</div><div class="d" data-i18n="featl_skip_d"></div></div>
+            </div>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_reverb_t">Reverb (pogłos)</div>
-            <div class="d" data-i18n="featl_reverb_d">Pogłos to odbicia dźwięku od ścian, które wybrzmiewają chwilę po oryginale. Efekt dodaje je do utworu, więc brzmi on, jakby grał w dużej sali.</div>
+        </section>
+
+        <section class="tabpane" data-pane="changelog">
+          <div class="pane-top"><h1 class="pane-h" data-i18n="changelog_h">Historia zmian</h1></div>
+          <div id="clList"></div>
+          <div class="cl-foot">
+            <p id="clMoreNote" data-i18n="cl_more_d">Tutaj są tylko trzy ostatnie wydania. Pełna historia zmian jest na stronie wtyczki.</p>
+            <button class="btn primary" id="clFull" type="button" data-i18n="cl_full">Zobacz pełną historię zmian</button>
           </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_muffle_t">Tłumik</div>
-            <div class="d" data-i18n="featl_muffle_d">Ścisza wysokie tony jak przegroda z betonu: zostaje bas i zarys melodii, jakby muzyka grała w pokoju obok. Suwak znajdziesz w panelu Miks (pełny mikser).</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_vocal_t">Wokal i Moc</div>
-            <div class="d" data-i18n="featl_vocal_d">Wokal podbija środek pasma, w którym siedzi głos, więc raper czy wokalista nie ginie pod ciężkim basem i pogłosem. Moc to kompresor: ścisza szczyty i podnosi całość, przez co muzyka brzmi głośniej i gęściej, jak w radiu. Oba suwaki znajdziesz w pełnym mikserze.</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_8d_t">8D Audio i krążenie</div>
-            <div class="d" data-i18n="featl_8d_d">Dźwięk płynnie krąży wokół głowy (najlepiej w słuchawkach). Suwak Krążenie ustawia szybkość obrotu, a 0% wyłącza efekt.</div>
-          </div>
-        </div>
-      </div>
+        </section>
 
-      <div class="feat-grp">
-        <div class="feat-grp-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2.5 4.5 14H11l-1 7.5L19 10h-6.5l.5-7.5z"/></svg><span data-i18n="featg_easy">grupa</span></div>
-        <div class="card feat-list">
-          <div class="featl">
-            <div class="t" data-i18n="featl_tabs_t">Lista grających kart</div>
-            <div class="d" data-i18n="featl_tabs_d">W okienku widzisz wszystkie karty z dźwiękiem (wstrzymane też, jeśli są podgłośnione) i każdą włączasz lub wyłączasz jednym kliknięciem.</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_resume_t">Auto-wznawianie</div>
-            <div class="d" data-i18n="featl_resume_d">Po odświeżeniu strony podgłośnienie i efekty wracają same, bez ponownego klikania.</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_yt_t">Auto-kontynuacja YouTube</div>
-            <div class="d" data-i18n="featl_yt_d">Gdy YouTube wstrzymuje muzykę pytaniem, czy oglądasz dalej, wtyczka klika za ciebie. Wymaga zgody na youtube.com i oddaje ją przy wyłączeniu.</div>
-          </div>
-          <div class="featl">
-            <div class="t" data-i18n="featl_skip_t">Auto-pomijanie artystów</div>
-            <div class="d" data-i18n="featl_skip_d">Twoja lista artystów do pomijania na YouTube, YouTube Music, Spotify i SoundCloud. Gdy zacznie grać ktoś z listy, wtyczka od razu przeskakuje do następnego utworu.</div>
-          </div>
-        </div>
-      </div>
-
-
-      </div>
-
-      <div class="tabpane" data-pane="changelog">
-
-      <div class="sec-h" data-i18n="changelog_h">Historia zmian</div>
-
-      <div id="clList"></div>
-
-      <p class="note" id="clMoreNote" style="border:none;padding:0;margin:2px 0 12px" data-i18n="cl_more_d">Tutaj są tylko trzy ostatnie wydania. Pełna historia zmian jest na stronie wtyczki.</p>
-      <button class="btn" id="clFull" type="button" data-i18n="cl_full">Zobacz pełną historię zmian</button>
-
-      </div>
-
-      <div class="tabpane" data-pane="privacy">
-
-      <div class="sec-h" data-i18n="privacy_h">Prywatność</div>
-
-      <div class="card">
-        <ul style="margin:0">
-          <li data-i18n="privacy_1">Cała obróbka dźwięku dzieje się lokalnie, w twojej przeglądarce. Wtyczka niczego nie nagrywa, nie zapisuje i nigdzie nie wysyła: zero serwerów, zero analityki, zero kont i logowania.</li>
-          <li data-i18n="privacy_2">Domyślnie nie czyta ani nie zmienia zawartości stron. Bierze tylko sam dźwięk karty, dlatego w menu rozszerzeń siedzi w sekcji Nie potrzebują dostępu.</li>
-          <li data-i18n="privacy_3">Dostęp do konkretnej strony dostaje dopiero, gdy sam włączysz tam zmianę prędkości (Mix) albo auto-kontynuację YouTube, i oddaje go zaraz po wyłączeniu. Aktualną listę stron z dostępem widzisz wyżej, w sekcji Dostęp do stron, i możesz ją wyczyścić jednym przyciskiem.</li>
-          <li data-i18n="privacy_4">Stałe uprawnienia i po co są: dźwięk karty (tabCapture) do podgłaśniania i efektów, lista kart (tabs) do spisu grających kart w okienku, pamięć (storage) do zapamiętania twoich ustawień, dokument w tle (offscreen) jako niewidoczny silnik dźwięku. Żadne z nich nie daje wglądu w treść stron.</li>
-          <li data-i18n="privacy_5">Ustawienia (głośność, efekty, język) trzymane są wyłącznie na twoim komputerze. Po odinstalowaniu wtyczki nic po niej nie zostaje.</li>
-        </ul>
-        <div class="note" data-i18n="privacy_note">
-          Pasek Chrome "ta karta jest udostępniana" to wymóg przeglądarki przy braniu dźwięku karty. Dzięki temu działa też Spotify. Nie da się go schować w żadnej wtyczce tego typu.
-        </div>
-      </div>
-
-      <div class="card">
-        <h2 data-i18n="wipe_h">Dane wtyczki</h2>
-        <p class="mini-d" style="max-width:none" data-i18n="wipe_d">Wtyczka nie trzyma żadnych cache, historii ani danych stron - tylko twoje ustawienia: głośności, motyw, język, listy auto-pomijania i własne mixy, wszystko lokalnie na tym komputerze. Ten przycisk czyści to do zera i wtyczka wraca do stanu jak po świeżej instalacji.</p>
-        <button class="btn danger" id="wipeBtn" data-i18n="wipe_btn">Wyczyść wszystkie dane wtyczki</button>
-      </div>
-
-      </div>
-
-      <p class="foot" data-i18n="foot">Tę stronę otworzysz zawsze przez okienko wtyczki, przycisk Ustawienia.</p>
-      <p class="foot">Turn It Up, Son! · © 2026 romanzbudowy · <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a></p>
+        <footer class="foot">
+          Turn It Up, Son! · © 2026 romanzbudowy · <a href="https://github.com/jestemKox123/Turn-It-Up-Son-Volume-Booster-Mixer" target="_blank" rel="noopener">GitHub</a>
+        </footer>
+      </main>
     </div>
 
-
     <script src="i18n.js"></script>
+    <script src="settings-viz.js"></script>
     <script src="settings.js"></script>
+    <script src="settings-bg.js"></script>
   </body>
 </html>

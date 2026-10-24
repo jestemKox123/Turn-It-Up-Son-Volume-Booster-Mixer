@@ -8,6 +8,28 @@
   }
 
   const state = { rate: 1, pitchOff: true };
+  let engaged = false;
+  let mainOk = false;
+  let mainStatus = null;
+
+  function toMain() {
+    try {
+      window.postMessage({ __vb: "mix-set", on: engaged, rate: state.rate, pitchOff: state.pitchOff }, "*");
+    } catch (e) {}
+  }
+
+  window.addEventListener("message", (e) => {
+    if (e.source !== window || !e.data) return;
+    if (e.data.__vb === "mix-hello") {
+      mainOk = true;
+      stopFallback();
+      if (engaged) toMain();
+    } else if (e.data.__vb === "mix-status") {
+      mainOk = true;
+      stopFallback();
+      mainStatus = e.data.status;
+    }
+  });
 
   function setPitch(el, off) {
     try { el.preservesPitch = !off; } catch (e) {}
@@ -59,6 +81,7 @@
   }
 
   function applyAll() {
+    if (mainOk) return;
     document.querySelectorAll("video, audio").forEach((el) => {
       applyTo(el);
       drift(el);
@@ -76,6 +99,7 @@
   }
 
   function computeStatus() {
+    if (mainOk) return mainStatus || "checking";
     const media = document.querySelectorAll("video, audio");
     if (!media.length) return "none";
     let anyPlaying = false;
@@ -87,6 +111,7 @@
 
   const SRC_EVENTS = { loadstart: 1, emptied: 1, loadedmetadata: 1, canplay: 1, durationchange: 1 };
   function onMedia(e) {
+    if (mainOk) return;
     const el = e.target;
     if (!el || (el.tagName !== "VIDEO" && el.tagName !== "AUDIO")) return;
     applyTo(el);
@@ -127,22 +152,40 @@
           teardown();
           return;
         }
+        const changed = state.rate !== resp.rate || state.pitchOff !== (resp.pitchOff !== false);
         state.rate = resp.rate;
         state.pitchOff = resp.pitchOff !== false;
+        if (changed) toMain();
       });
     } catch (e) {
       teardown();
     }
   }
 
-  function arm() {
-    if (armed) return;
-    armed = true;
+  let fallback = false;
+  function startFallback() {
+    if (fallback || mainOk) return;
+    fallback = true;
     MEDIA_EVENTS.forEach((ev) => document.addEventListener(ev, onMedia, true));
     try {
       mo.observe(document.documentElement || document, { childList: true, subtree: true });
     } catch (e) {}
     iv = setInterval(applyAll, 500);
+  }
+
+  function stopFallback() {
+    if (!fallback) return;
+    fallback = false;
+    clearInterval(iv);
+    clearBurst();
+    try { mo.disconnect(); } catch (e) {}
+    MEDIA_EVENTS.forEach((ev) => document.removeEventListener(ev, onMedia, true));
+  }
+
+  function arm() {
+    if (armed) return;
+    armed = true;
+    startFallback();
     rcStrikes = 0;
     rc = setInterval(recheckTick, 4000);
   }
@@ -150,15 +193,15 @@
   function disarm() {
     if (!armed) return;
     armed = false;
-    clearInterval(iv);
     clearInterval(rc);
-    clearBurst();
-    try { mo.disconnect(); } catch (e) {}
-    MEDIA_EVENTS.forEach((ev) => document.removeEventListener(ev, onMedia, true));
+    stopFallback();
   }
 
   function teardown() {
     disarm();
+    engaged = false;
+    toMain();
+    if (mainOk) return;
     document.querySelectorAll("video, audio").forEach((el) => {
       setPitch(el, false);
       try { el.defaultPlaybackRate = 1; } catch (e) {}
@@ -169,6 +212,8 @@
   function engage(rate, pitchOff) {
     state.rate = rate;
     state.pitchOff = pitchOff;
+    engaged = true;
+    toMain();
     arm();
     applyAll();
     burst();
@@ -202,6 +247,6 @@
     }
   });
 
-  window.__vbMix = { refresh, state };
+  window.__vbMix = { refresh };
   refresh();
 })();

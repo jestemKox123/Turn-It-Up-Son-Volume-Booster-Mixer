@@ -149,7 +149,8 @@ if (!window.__vbSkip) {
 
   const keyOf = () => norm(curArtist) + "|#|" + norm(curTitle);
 
-  const resetStreak = () => {
+  const resetStreak = (e) => {
+    if (e && e.isTrusted === false) return;
     streak = 0;
   };
   window.addEventListener("pointerdown", resetStreak, true);

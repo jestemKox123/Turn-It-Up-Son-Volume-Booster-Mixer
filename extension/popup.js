@@ -17,7 +17,6 @@ let isActive = false;
 let tabsTimer = null;
 let mixRate = 1;
 let mixSupported = true;
-let mixHostUnsupported = false;
 
 const powerEl = document.getElementById("power");
 const powerLabelEl = document.getElementById("powerLabel");
@@ -38,6 +37,8 @@ const settingsLink = document.getElementById("settingsLink");
 const restoreBtn = document.getElementById("restoreBtn");
 const mixReadoutEl = document.getElementById("mixReadout");
 const mixSpeedEl = document.getElementById("mixSpeed");
+const mixSpeedValEl = document.getElementById("mixSpeedVal");
+let mixSpeedDragging = false;
 const mixHintEl = document.getElementById("mixHint");
 const builtinPresetEls = document.querySelectorAll(".mixp:not(.mixp-add)");
 let userMixes = [];
@@ -182,7 +183,6 @@ const guardEl = document.getElementById("guard");
 const guardTextEl = document.getElementById("guardText");
 const guardDbEl = document.getElementById("guardDb");
 const guardBtnEl = document.getElementById("guardBtn");
-const GUARD_FROM = 250;
 let limiterOn = true;
 let guardTimer = null;
 let guardPeak = 0;
@@ -197,13 +197,9 @@ if (guardBtnEl) {
 
 function paintGuard(red) {
   if (!guardEl) return;
-  const pct = Math.round(settings.volume * 100);
-  if (!anyActive() || pct < GUARD_FROM) {
-    guardEl.hidden = true;
-    return;
-  }
-  const holding = limiterOn && red >= 0.1;
+  const holding = anyActive() && limiterOn && red >= 0.1;
   guardEl.hidden = false;
+  guardEl.classList.toggle("idle", !anyActive());
   guardEl.classList.toggle("risk", !limiterOn);
   guardEl.classList.toggle("safe", holding);
   if (!limiterOn) {
@@ -229,8 +225,7 @@ function guardTick() {
 }
 
 function syncGuard() {
-  const pct = Math.round(settings.volume * 100);
-  const chce = anyActive() && pct >= GUARD_FROM;
+  const chce = anyActive();
   if (chce && !guardTimer) {
     guardTimer = setInterval(guardTick, 200);
     guardTick();
@@ -601,8 +596,9 @@ function showCtls(list) {
 
 function renderMix() {
   const pct = Math.round(mixRate * 100);
-  mixSpeedEl.value = pct;
-  mixReadoutEl.textContent = mixRate.toFixed(2) + "x";
+  if (!mixSpeedDragging) mixSpeedEl.value = pct;
+  mixReadoutEl.textContent = (mixSpeedDragging ? Number(mixSpeedEl.value) / 100 : mixRate).toFixed(2) + "x";
+  if (mixSpeedValEl) mixSpeedValEl.textContent = mixReadoutEl.textContent;
   mixReadoutEl.classList.toggle("active", mixRate !== 1 || mixFxOn());
   const rev = fxReverb();
   const tre = fxTreble();
@@ -673,7 +669,6 @@ function renderMix() {
   }
   if (mixAppliedEl) {
     const parts = [];
-    if (mixRate !== 1) parts.push(VBI18N.t("mix_speed_l") + " " + mixRate.toFixed(2) + "x");
     if (bas > 0) parts.push(VBI18N.t("mix_bass_l") + " " + Math.round(bas * 100) + "% " + VBI18N.t("bm_" + bassMode));
     if (rev > 0) parts.push(VBI18N.t("mix_reverb_l") + " " + Math.round(rev * 100) + "%");
     if (tre > 0) parts.push(VBI18N.t("mix_treble_l") + " " + Math.round(tre * 100) + "%");
@@ -708,32 +703,24 @@ function closeMix() {
   stopMixPoll();
 }
 
-function knownUnsupportedHost(url) {
-  try {
-    return /(^|\.)spotify\.com$/i.test(new URL(url).host);
-  } catch (e) {
-    return false;
-  }
-}
-
 function setMixStatus(kind) {
   mixWarnEl.className = "mix-status";
   let text = "";
   if (kind === "ok") {
     mixWarnEl.classList.add("ok");
-    text = "✓ " + VBI18N.t("mix_ok");
+    text = VBI18N.t("mix_ok");
   } else if (kind === "ready") {
     mixWarnEl.classList.add("ok");
-    text = "✓ " + VBI18N.t("mix_ready");
+    text = VBI18N.t("mix_ready");
   } else if (kind === "idle") {
     mixWarnEl.classList.add("info");
     text = VBI18N.t("mix_idle");
+  } else if (kind === "live") {
+    mixWarnEl.classList.add("info");
+    text = VBI18N.t("mix_live");
   } else if (kind === "unavailable") {
     mixWarnEl.classList.add("bad");
-    text = "⚠ " + VBI18N.t("mix_unavailable");
-  } else if (kind === "norate") {
-    mixWarnEl.classList.add("bad");
-    text = "⚠ " + VBI18N.t("mix_rate_unavailable");
+    text = VBI18N.t("mix_unavailable");
   } else if (kind === "checking") {
     mixWarnEl.classList.add("info");
     text = VBI18N.t("mix_checking");
@@ -745,10 +732,8 @@ function setMixStatus(kind) {
   mixWarnEl.hidden = false;
 }
 
-let mixNoneStreak = 0;
 function refreshMixStatus() {
   if (!mixSupported) return setMixStatus("unavailable");
-  if (mixHostUnsupported) return setMixStatus("norate");
   if (mixRate === 1) {
     chrome.tabs.get(currentTabId, (tab) => {
       if (chrome.runtime.lastError || !tab) return setMixStatus("off");
@@ -761,20 +746,13 @@ function refreshMixStatus() {
       setMixStatus("checking");
       return;
     }
-    if (resp.status === "none") {
-      mixNoneStreak++;
-      setMixStatus(mixNoneStreak >= 2 ? "norate" : "checking");
-    } else {
-      mixNoneStreak = 0;
-      setMixStatus(resp.status);
-    }
+    setMixStatus(resp.status === "none" ? "off" : resp.status);
   });
 }
 
 let mixPollTimer = null;
 function startMixPoll() {
   stopMixPoll();
-  mixNoneStreak = 0;
   refreshMixStatus();
   mixPollTimer = setInterval(refreshMixStatus, 1000);
 }
@@ -786,12 +764,10 @@ function stopMixPoll() {
 }
 
 function renderMixSupport() {
-  const rateOk = mixSupported && !mixHostUnsupported;
   const fxOk = mixSupported;
-  mixSpeedEl.disabled = !rateOk;
+  mixSpeedEl.disabled = !fxOk;
   allPresetEls().forEach((b) => {
-    const needsRate = (Number(b.dataset.mix) || 1) !== 1;
-    b.disabled = needsRate ? !rateOk : !fxOk;
+    b.disabled = !fxOk;
   });
   if (mixReverbEl) mixReverbEl.disabled = !fxOk;
   if (mixTrebleEl) mixTrebleEl.disabled = !fxOk;
@@ -826,7 +802,7 @@ async function setMixRate(rate) {
       });
       let granted = false;
       try {
-        granted = await chrome.permissions.request(need);
+        granted = (await chrome.permissions.contains(need)) || (await chrome.permissions.request(need));
       } catch (e) {}
       if (!granted) {
         chrome.storage.session.remove("vb_pending_mix");
@@ -844,7 +820,6 @@ async function setMixRate(rate) {
       await sendMsg({ type: "vb-mix-set", tabId: currentTabId, rate: 1 });
     }
     renderStatus();
-    mixNoneStreak = 0;
     refreshMixStatus();
   } finally {
     mixBusy = false;
@@ -1051,10 +1026,42 @@ async function applyMixPreset(p) {
   }
 }
 
+let speedTimer = null;
+mixSpeedEl.addEventListener("pointerdown", () => {
+  mixSpeedDragging = true;
+});
+window.addEventListener("pointerup", () => {
+  mixSpeedDragging = false;
+});
+window.addEventListener("pointercancel", () => {
+  mixSpeedDragging = false;
+});
 mixSpeedEl.addEventListener("input", () => {
   mixReadoutEl.textContent = (Number(mixSpeedEl.value) / 100).toFixed(2) + "x";
+  if (mixSpeedValEl) mixSpeedValEl.textContent = mixReadoutEl.textContent;
+  if (speedTimer) return;
+  speedTimer = setTimeout(() => {
+    speedTimer = null;
+    setMixRate(Number(mixSpeedEl.value) / 100);
+  }, 90);
 });
-mixSpeedEl.addEventListener("change", () => setMixRate(Number(mixSpeedEl.value) / 100));
+mixSpeedEl.addEventListener("change", () => {
+  clearTimeout(speedTimer);
+  speedTimer = null;
+  mixSpeedDragging = false;
+  setMixRate(Number(mixSpeedEl.value) / 100);
+});
+
+async function fxStart() {
+  if (isActive) {
+    fxLive();
+    return;
+  }
+  if (activating) return;
+  activating = true;
+  await ensureActiveAndApply();
+  activating = false;
+}
 
 let fxTimer = null;
 function fxLive() {
@@ -1074,7 +1081,7 @@ function wireFxSlider(el, valEl, key) {
     valEl.textContent = el.value + "%";
     settings[key] = Number(el.value) / 100;
     if (key === "bassBoost") claimBass();
-    fxLive();
+    fxStart();
   });
   el.addEventListener("change", async () => {
     settings[key] = Number(el.value) / 100;
@@ -1102,7 +1109,7 @@ if (mixSpinEl) {
     const v = Number(mixSpinEl.value) / 100;
     settings.spin = v > 0;
     if (v > 0) settings.spinSpeed = v;
-    fxLive();
+    fxStart();
   });
   mixSpinEl.addEventListener("change", async () => {
     const v = Number(mixSpinEl.value) / 100;
@@ -1361,7 +1368,6 @@ async function init() {
   currentTabId = tab.id;
   currentTabUrl = tab.url || "";
   mixSupported = !!originPattern(currentTabUrl);
-  mixHostUnsupported = knownUnsupportedHost(currentTabUrl);
   renderMixSupport();
 
   chrome.storage.local.get(["vbUserMixes", "vbMixTab", "vbPresetNames"], (d) => {

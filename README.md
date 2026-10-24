@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.7.0-4a90ff" alt="Version 4.7.0">
+  <img src="https://img.shields.io/badge/version-5.0.0-4a90ff" alt="Version 5.0.0">
   <img src="https://img.shields.io/badge/Manifest-V3-5c6bc0" alt="Manifest V3">
   <img src="https://img.shields.io/badge/Chrome-116%2B-4a90ff" alt="Chrome 116 or newer">
   <img src="https://img.shields.io/badge/languages-44-2ea44f" alt="44 languages">
@@ -31,6 +31,7 @@
 
 ## Highlights
 
+- **Sped Up on Spotify too.** Sped Up, Nightcore and Slowed work on Spotify, SoundCloud, Deezer and Bandcamp, not only on YouTube, and stay on after a refresh.
 - **Up to 700 percent per tab.** Boost one tab while every other tab keeps playing at its normal level.
 - **Honest at 100 percent.** With the boost at 100 and the effects off, the extension is transparent: measured on real material, the difference between what goes in and what comes out stays below -95 dB. Nothing is colored until you ask for it, or until the material itself reaches the ceiling and the limiter steps in.
 - **No site access needed.** The extension reads only the tab audio, so it sits in the extensions menu under "No access needed". Site permission is asked for only if you turn on speed change or auto-skip, and it is handed back when you turn them off.
