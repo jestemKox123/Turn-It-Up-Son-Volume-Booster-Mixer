@@ -25,7 +25,7 @@ if (!window.__vbYtContinue) {
     (s || "")
       .normalize("NFD")
       .replace(/[̀-ͯ]/g, "")
-      .replace(/ł/g, "l")
+      .replace(/[łŁ]/g, "l")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
@@ -88,19 +88,14 @@ if (!window.__vbYtContinue) {
     }
   }
 
-  let scheduled = false;
-  function schedule() {
-    if (scheduled) return;
-    scheduled = true;
-    setTimeout(() => {
-      scheduled = false;
-      clickIdleDialog();
-    }, 400);
-  }
-
-  new MutationObserver(schedule).observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
+  document.addEventListener(
+    "pause",
+    () => {
+      if (!vbEnabled) return;
+      setTimeout(clickIdleDialog, 300);
+      setTimeout(clickIdleDialog, 1500);
+    },
+    true
+  );
   setInterval(clickIdleDialog, 5000);
 }

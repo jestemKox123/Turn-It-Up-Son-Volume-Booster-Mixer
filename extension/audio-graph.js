@@ -300,6 +300,10 @@
     };
 
     m.shiftDb = 0;
+    m.resetShift = function () {
+      m.shiftDb = 0;
+      if (m.limWL) m.limWL.parameters.get("shift").setValueAtTime(0, ctx.currentTime);
+    };
     m.noteVolume = function (from, to) {
       if (!(from > 0) || !(to > 0) || from === to) return;
       m.shiftDb += 20 * Math.log10(to / from);
@@ -316,6 +320,7 @@
         m.brightWL = true;
         m.monoWL = true;
         m.muffleWL = true;
+        m.cleanWL = true;
         try {
           const safe = new AudioWorkletNode(ctx, "vb-safety", { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2] });
           SAT_POST.disconnect();
@@ -333,6 +338,7 @@
         m.brightWL = false;
         m.monoWL = false;
         m.muffleWL = false;
+        m.cleanWL = false;
       }
       try {
         await ctx.audioWorklet.addModule(url);
@@ -354,7 +360,7 @@
         try { bassComp.disconnect(); } catch (e) {}
         try { mainComp.disconnect(); } catch (e) {}
         m.useWL = true;
-        m.applyLimiter(m.limOn, m.limMain, m.limBass, m.limMaxRed);
+        m.applyLimiter(m.limOn, m.limMain, m.limBass, m.limMaxRed, m.guardOn);
         return true;
       } catch (e) {
         return false;
@@ -755,7 +761,27 @@
     const sendHP2 = mkSend("highpass", VERB_HP, 20 * Math.log10(1.3066));
     const sendLP = mkSend("lowpass", VERB_LP, BW_Q_DB);
 
-    source.connect(inGain);
+    let cleanNode = null;
+    if (master.cleanWL) {
+      try {
+        cleanNode = new AudioWorkletNode(ctx, "vb-clean", {
+          numberOfInputs: 1,
+          numberOfOutputs: 1,
+          outputChannelCount: [2],
+          channelCount: 2,
+          channelCountMode: "explicit",
+          channelInterpretation: "speakers",
+        });
+      } catch (e) {
+        cleanNode = null;
+      }
+    }
+    if (cleanNode) {
+      source.connect(cleanNode);
+      cleanNode.connect(inGain);
+    } else {
+      source.connect(inGain);
+    }
     let monoNode = null;
     if (master.monoWL) {
       try {
@@ -902,7 +928,7 @@
     dry.connect(master.MASTER);
 
     const engine = {
-      ctx, master, source, inGain, gLL, gLR, gRL, gRR, monoNode,
+      ctx, master, source, cleanNode, inGain, gLL, gLR, gRL, gRR, monoNode,
       slot1, slot2, bassTrim, subLP, shaper, harmGain, bassNode, treble, brightNode, muffle, muffleNode, vocal, vocal2, vocalNode, powerNode, comp, makeup, spIn, dry8,
       spin: null,
       spinOffTimer: null,
@@ -950,6 +976,7 @@
         }
         try {
           engine.source.disconnect();
+          if (engine.cleanNode) engine.cleanNode.disconnect();
           engine.inGain.disconnect();
           if (engine.monoNode) engine.monoNode.disconnect();
           if (engine.bassNode) engine.bassNode.disconnect();
@@ -977,6 +1004,11 @@
             engine.verbNode.disconnect();
           }
         } catch (e) {}
+        for (const n of [engine.cleanNode, engine.monoNode, engine.bassNode, engine.brightNode, engine.muffleNode, engine.vocalNode, engine.powerNode]) {
+          try {
+            if (n) n.port.postMessage("stop");
+          } catch (e) {}
+        }
         if (done) done();
       }, 140);
     };

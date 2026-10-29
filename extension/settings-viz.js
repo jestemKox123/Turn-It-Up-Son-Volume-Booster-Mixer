@@ -2,26 +2,26 @@
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
 window.VBCLVIZ = function (box, kind) {
-  if (kind !== "speed") return;
+  if (kind !== "steady") return;
   const t = (k, f) => (window.VBI18N ? VBI18N.t(k) : f);
   const wrap = document.createElement("div");
   wrap.className = "clv";
   const k = document.createElement("p");
   k.className = "clv-k";
-  k.textContent = "Sped Up · Nightcore · Slowed";
+  k.textContent = "Fix patch · 5.0.1";
   const h = document.createElement("p");
   h.className = "clv-t";
-  h.textContent = t("clv_t", "Sped Up now works on Spotify");
+  h.textContent = t("clv_t", "No more sound cutting out");
   const s = document.createElement("p");
   s.className = "clv-s";
-  s.textContent = t("clv_s", "and on other sites where it did not work before");
+  s.textContent = t("clv_s", "just bug fixes, no new features");
   const ul = document.createElement("ul");
   ul.className = "clv-list";
-  ["Spotify", "SoundCloud", "Deezer", "Bandcamp"].forEach((name, i) => {
+  ["clv_i1", "clv_i2", "clv_i3", "clv_i4"].forEach((key, i) => {
     const li = document.createElement("li");
     li.style.setProperty("--i", String(i));
     li.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
-    li.appendChild(document.createTextNode(name));
+    li.appendChild(document.createTextNode(t(key, "")));
     ul.appendChild(li);
   });
   wrap.append(k, h, s, ul);

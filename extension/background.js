@@ -274,6 +274,7 @@ async function startCapture(tabId, streamId, settings) {
     resp = await sendToEngine({ type: "vb-start", tabId, streamId, settings });
   }
   if (!resp || !resp.ok) {
+    chrome.storage.session.remove(keyFor(tabId));
     return { active: false, error: (resp && resp.error) || "start-failed" };
   }
   cachedActiveIds = resp.tabIds || cachedActiveIds;
@@ -337,7 +338,11 @@ async function unregisterYt() {
   } catch (e) {}
 }
 
-async function syncYt() {
+function syncYt() {
+  return runChained("yt", syncYtNow);
+}
+
+async function syncYtNow() {
   const { ytAutoContinue } = await chrome.storage.local.get("ytAutoContinue");
   const has = await chrome.permissions.contains({
     permissions: ["scripting"],
@@ -406,7 +411,11 @@ async function registerSkip(matches) {
   } catch (e) {}
 }
 
-async function syncSkip() {
+function syncSkip() {
+  return runChained("skip", syncSkipNow);
+}
+
+async function syncSkipNow() {
   const { skipEnabled } = await chrome.storage.local.get("skipEnabled");
   if (!skipEnabled || !chrome.scripting) {
     await unregisterSkip();
@@ -427,14 +436,46 @@ async function syncSkip() {
   else await unregisterSkip();
 }
 
+function patternHost(p) {
+  const m = /^[^:]+:\/\/([^/]+)\//.exec(String(p || ""));
+  return m ? m[1] : "";
+}
+
+function urlPattern(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol + "//" + u.host + "/*";
+  } catch (e) {
+    return "";
+  }
+}
+
+async function mixFitsTab(tabId, mix) {
+  if (!mix || !mix.origin) return true;
+  try {
+    const t = await chrome.tabs.get(tabId);
+    return !t.url || coversHost(mix.origin, urlPattern(t.url));
+  } catch (e) {
+    return true;
+  }
+}
+
+function coversHost(pattern, origin) {
+  const ph = patternHost(pattern);
+  const oh = patternHost(origin);
+  if (!ph || !oh) return false;
+  if (ph.startsWith("*.")) return oh === ph.slice(2) || oh.endsWith(ph.slice(1));
+  return ph === oh;
+}
+
 async function releaseUnusedAccess() {
   const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
   const mixTabs = await activeMixTabs();
-  const mixOrigins = new Set(mixTabs.map((t) => t.origin).filter(Boolean));
+  const mixOrigins = mixTabs.map((t) => t.origin).filter(Boolean);
   const drop = [];
   for (const o of SKIP_ORIGINS) {
     if (skipEnabled) continue;
-    if (mixOrigins.has(o)) continue;
+    if (mixOrigins.some((m) => coversHost(o, m))) continue;
     if (ytAutoContinue && /youtube\.com/.test(o)) continue;
     drop.push(o);
   }
@@ -443,6 +484,16 @@ async function releaseUnusedAccess() {
       await chrome.permissions.remove({ origins: drop });
     } catch (e) {}
   }
+}
+
+const syncChains = {};
+
+function runChained(key, fn) {
+  const prev = syncChains[key] || Promise.resolve();
+  const run = () => Promise.race([fn(), new Promise((resolve) => setTimeout(resolve, 15000))]);
+  const next = prev.then(run, run);
+  syncChains[key] = next.catch(() => {});
+  return next;
 }
 
 const MIX_SCRIPT_ID = "vb-mix";
@@ -469,7 +520,11 @@ async function activeMixTabs() {
   return out;
 }
 
-async function syncMixScript() {
+function syncMixScript() {
+  return runChained("mix", syncMixScriptNow);
+}
+
+async function syncMixScriptNow() {
   if (!chrome.scripting) return;
   const tabs = await activeMixTabs();
   const origins = [...new Set(tabs.map((t) => t.origin).filter(Boolean))];
@@ -506,6 +561,7 @@ async function injectMix(tabId) {
   try {
     await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["mix.js"] });
   } catch (e) {}
+  await injectMixMain(tabId);
 }
 
 async function maybeRevokeOrigin(origin) {
@@ -513,8 +569,8 @@ async function maybeRevokeOrigin(origin) {
   const tabs = await activeMixTabs();
   if (tabs.some((t) => t.origin === origin)) return;
   const { ytAutoContinue, skipEnabled } = await chrome.storage.local.get(["ytAutoContinue", "skipEnabled"]);
-  if (ytAutoContinue && origin === YT_ORIGIN) return;
-  if (skipEnabled && SKIP_ORIGINS.includes(origin)) return;
+  if (ytAutoContinue && coversHost(YT_ORIGIN, origin)) return;
+  if (skipEnabled && SKIP_ORIGINS.some((p) => coversHost(p, origin))) return;
   try {
     await chrome.permissions.remove({ origins: [origin] });
   } catch (e) {}
@@ -565,6 +621,37 @@ async function setMix(tabId, rate, origin) {
   return { rate };
 }
 
+const mixQueues = new Map();
+
+function queueMix(tabId, rate, origin) {
+  let q = mixQueues.get(tabId);
+  if (!q) {
+    q = { busy: false, next: null, waiters: [] };
+    mixQueues.set(tabId, q);
+  }
+  q.next = { rate, origin };
+  const done = new Promise((resolve) => q.waiters.push(resolve));
+  if (!q.busy) runMixQueue(tabId, q);
+  return done;
+}
+
+async function runMixQueue(tabId, q) {
+  q.busy = true;
+  let res = { rate: 1 };
+  while (q.next) {
+    const job = q.next;
+    q.next = null;
+    try {
+      res = await setMix(tabId, job.rate, job.origin);
+    } catch (e) {
+      res = { rate: 1, error: true };
+    }
+  }
+  q.busy = false;
+  mixQueues.delete(tabId);
+  q.waiters.splice(0).forEach((resolve) => resolve(res));
+}
+
 async function clearAllMix() {
   await clearMixWhere(() => true);
 }
@@ -579,25 +666,7 @@ async function clearMixWhere(match) {
     }
   }
   if (!tabs.length) return;
-  await chrome.storage.session.remove(tabs.map((t) => mixKey(t.tabId)));
-  await Promise.all(
-    tabs.map(
-      (t) =>
-        new Promise((resolve) => {
-          try {
-            chrome.tabs.sendMessage(t.tabId, { type: "vb-mix-apply", off: true }, () => {
-              void chrome.runtime.lastError;
-              resolve();
-            });
-          } catch (e) {
-            resolve();
-          }
-        })
-    )
-  );
-  await syncMixScript();
-  const origins = [...new Set(tabs.map((t) => t.origin).filter(Boolean))];
-  for (const o of origins) await maybeRevokeOrigin(o);
+  await Promise.all(tabs.map((t) => queueMix(t.tabId, 1)));
 }
 
 const PAGE_MESSAGES = new Set(["vb-mix-get", "vb-skip-allowed"]);
@@ -619,13 +688,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         getMixState(msg.tabId),
       ]);
       const backup = await getBackup();
+      let mixRate = mix && mix.rate ? mix.rate : 1;
+      if (mixRate !== 1 && !(await mixFitsTab(msg.tabId, mix))) {
+        queueMix(msg.tabId, 1);
+        mixRate = 1;
+      }
       sendResponse({
         active: activeIds.includes(msg.tabId),
         settings: data[keyFor(msg.tabId)] || PER_TAB_DEFAULTS,
         ytAutoContinue: !!local.ytAutoContinue,
         skipEnabled: !!local.skipEnabled,
         backup: backup[msg.tabId] || null,
-        mix: mix && mix.rate ? mix.rate : 1,
+        mix: mixRate,
       });
     })();
     return true;
@@ -679,7 +753,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === "vb-mix-set") {
-    setMix(msg.tabId, msg.rate, msg.origin).then(sendResponse);
+    queueMix(msg.tabId, msg.rate, msg.origin).then(sendResponse);
     return true;
   }
 
@@ -687,7 +761,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
       const tabId = sender && sender.tab && sender.tab.id;
       const st = tabId != null ? await getMixState(tabId) : null;
-      if (st && st.rate && st.rate !== 1) sendResponse({ rate: st.rate, pitchOff: st.pitchOff !== false });
+      const fits = !st || !st.origin || !sender.tab.url || coversHost(st.origin, urlPattern(sender.tab.url));
+      if (st && st.rate && st.rate !== 1 && fits) sendResponse({ rate: st.rate, pitchOff: st.pitchOff !== false });
       else sendResponse({ off: true });
     })();
     return true;
@@ -696,7 +771,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "vb-access-revoke-one") {
     (async () => {
       const origin = String(msg.origin || "");
-      await clearMixWhere((t) => t.origin === origin);
+      await clearMixWhere((t) => t.origin === origin || coversHost(origin, t.origin));
       try {
         await chrome.permissions.remove({ origins: [origin] });
       } catch (e) {}
@@ -868,12 +943,9 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   chrome.storage.session.remove(keyFor(tabId));
   restoreWindowByTab(tabId).then(() => tabWin.delete(tabId));
   (async () => {
+    await clearBackupTab(tabId);
     const mix = await getMixState(tabId);
-    if (mix) {
-      await chrome.storage.session.remove(mixKey(tabId));
-      await syncMixScript();
-      if (mix.origin) await maybeRevokeOrigin(mix.origin);
-    }
+    if (mix || mixQueues.has(tabId)) await queueMix(tabId, 1);
     if (cachedActiveIds.includes(tabId)) stopCapture(tabId);
   })();
 });
@@ -958,7 +1030,7 @@ async function finishPendingMix() {
   } catch (e) {
     return;
   }
-  await setMix(p.tabId, p.rate, p.origin);
+  await queueMix(p.tabId, p.rate, p.origin);
 }
 
 chrome.storage.onChanged.addListener((ch, area) => {
@@ -996,6 +1068,7 @@ async function releaseStaleAccess() {
 
 chrome.runtime.onStartup.addListener(() => {
   (async () => {
+    await chrome.storage.local.remove("vbBackup");
     await syncMixScript();
     await releaseStaleAccess();
     await syncYt();

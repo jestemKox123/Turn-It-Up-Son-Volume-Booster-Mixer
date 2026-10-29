@@ -1,19 +1,33 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
-const CTX = new AudioContext({ latencyHint: "playback" });
+const CTX = (() => {
+  const ctx = new AudioContext({ latencyHint: "playback" });
+  if (ctx.sampleRate >= 44100 && ctx.sampleRate <= 48000) return ctx;
+  try { ctx.close(); } catch (e) {}
+  return new AudioContext({ latencyHint: "playback", sampleRate: 48000 });
+})();
 const MASTER = VBAudio.createMaster(CTX);
 const engines = new Map();
 
 const WORKLET = MASTER.loadWorklet(chrome.runtime.getURL("limiter-worklet.js"));
 
 const IDLE_MS = 300000;
+const SLEEP_MS = 30000;
 let idleTimer = null;
+let sleepTimer = null;
 
 function cancelIdle() {
   clearTimeout(idleTimer);
   idleTimer = null;
+  clearTimeout(sleepTimer);
+  sleepTimer = null;
 }
+
+CTX.onstatechange = () => {
+  if (CTX.state === "running" || CTX.state === "closed") return;
+  if (engines.size > 0 || starting.size > 0) CTX.resume().catch(() => {});
+};
 
 function armIdle() {
   cancelIdle();
@@ -30,11 +44,15 @@ function teardown(tabId) {
   engines.delete(tabId);
   engine.stop(() => {
     try { engine.stream.getTracks().forEach((t) => t.stop()); } catch (e) {}
-    if (engines.size === 0 && starting.size === 0 && CTX.state === "running") {
-      try { CTX.suspend(); } catch (e) {}
-    }
   });
-  if (engines.size === 0) armIdle();
+  if (engines.size === 0) {
+    MASTER.resetShift();
+    armIdle();
+    sleepTimer = setTimeout(() => {
+      sleepTimer = null;
+      if (engines.size === 0 && starting.size === 0 && CTX.state === "running") CTX.suspend().catch(() => {});
+    }, SLEEP_MS);
+  }
 }
 
 const starting = new Map();
@@ -72,11 +90,10 @@ async function start(tabId, streamId, settings) {
       try {
         stream = await grab();
       } catch (e2) {
-        chrome.runtime.sendMessage({ type: "vb-ended", tabId });
         return false;
       }
     }
-    if (CTX.state === "suspended") { try { await CTX.resume(); } catch (e) {} }
+    if (CTX.state !== "running") await Promise.race([CTX.resume().catch(() => {}), new Promise((r) => setTimeout(r, 1500))]);
     const source = CTX.createMediaStreamSource(stream);
     const engine = VBAudio.createVoice(MASTER, source, settings);
     engine.stream = stream;

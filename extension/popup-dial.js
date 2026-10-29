@@ -38,12 +38,20 @@
 
   if (slider) {
     let wheelTimer = null;
+    let wheelAcc = 0;
     block.addEventListener(
       "wheel",
       (e) => {
         if (e.target.closest("#status, #guard")) return;
+        if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
         e.preventDefault();
-        setVolume(Number(vol.value) + (e.deltaY < 0 ? 1 : -1) * stepOf());
+        const dy = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 400 : 1);
+        if (wheelAcc && Math.sign(dy) !== Math.sign(wheelAcc)) wheelAcc = 0;
+        wheelAcc += dy;
+        const steps = Math.trunc(wheelAcc / 100);
+        if (!steps) return;
+        wheelAcc -= steps * 100;
+        setVolume(Number(vol.value) - steps * stepOf());
         clearTimeout(wheelTimer);
         wheelTimer = setTimeout(() => vol.dispatchEvent(new Event("change", { bubbles: true })), 250);
       },

@@ -1,6 +1,98 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
+function dup(v) {
+  if (v === null || typeof v !== "object") return v;
+  if (ArrayBuffer.isView(v)) return v.slice();
+  if (Array.isArray(v)) return v.map(dup);
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  const o = {};
+  for (const k in v) o[k] = dup(v[k]);
+  return o;
+}
+
+const dead = new WeakSet();
+const fed = new WeakSet();
+
+function guard(Base, endOnEmpty) {
+  return class extends Base {
+    constructor(options) {
+      super(options);
+      const prev = this.port.onmessage;
+      this.port.onmessage = (e) => {
+        if (e.data === "stop") dead.add(this);
+        if (prev) prev(e);
+      };
+      const s = {};
+      for (const k of Object.keys(this)) s[k] = dup(this[k]);
+      this.__init = s;
+    }
+
+    process(inputs, outputs, parameters) {
+      if (dead.has(this)) return false;
+      if (endOnEmpty) {
+        const inp = inputs[0];
+        if (inp && inp.length) {
+          fed.add(this);
+        } else if (fed.has(this)) {
+          for (const out of outputs) for (const ch of out) ch.fill(0);
+          return false;
+        }
+      }
+      const keep = super.process(inputs, outputs, parameters);
+      for (const out of outputs) {
+        for (const ch of out) {
+          for (let i = 0; i < ch.length; i++) {
+            const v = ch[i];
+            if (!(v > -1e4 && v < 1e4)) {
+              this.heal(outputs);
+              return keep;
+            }
+          }
+        }
+      }
+      return keep;
+    }
+
+    heal(outputs) {
+      for (const out of outputs) for (const ch of out) ch.fill(0);
+      const s = this.__init;
+      for (const k of Object.keys(this)) if (k !== "__init" && !(k in s)) delete this[k];
+      for (const k of Object.keys(s)) this[k] = dup(s[k]);
+    }
+  };
+}
+
+class VBClean extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.port.onmessage = (e) => {
+      if (e.data === "stop") dead.add(this);
+    };
+  }
+
+  process(inputs, outputs) {
+    if (dead.has(this)) return false;
+    const inp = inputs[0];
+    const out = outputs[0];
+    if (!inp || !inp.length) {
+      for (const ch of out) ch.fill(0);
+      return !fed.has(this);
+    }
+    fed.add(this);
+    for (let c = 0; c < out.length; c++) {
+      const s = inp[c < inp.length ? c : inp.length - 1];
+      const d = out[c];
+      for (let i = 0; i < d.length; i++) {
+        const v = s[i];
+        d[i] = v - v === 0 ? v : 0;
+      }
+    }
+    return true;
+  }
+}
+registerProcessor("vb-clean", VBClean);
+
 const MODES = ["classic", "sub", "punch", "rumble", "808", "warm"];
 
 const EQ = {
@@ -35,6 +127,7 @@ const GATE_HI = 0.0032;
 const H_LP = 450;
 
 function peaking(f, q, g) {
+  f = Math.min(f, 0.45 * sampleRate);
   const A = Math.pow(10, g / 40);
   const w0 = (2 * Math.PI * f) / sampleRate;
   const al = Math.sin(w0) / (2 * q);
@@ -44,6 +137,7 @@ function peaking(f, q, g) {
 }
 
 function pass(type, f, q) {
+  f = Math.min(f, 0.45 * sampleRate);
   const w0 = (2 * Math.PI * f) / sampleRate;
   const al = Math.sin(w0) / (2 * q);
   const cw = Math.cos(w0);
@@ -60,6 +154,10 @@ function run(c, s, x) {
 }
 
 const st = () => [0, 0, 0, 0];
+
+function prime(s, x1, x2) {
+  s[0] = x1; s[1] = x2; s[2] = x1; s[3] = x2;
+}
 
 class VBBass extends AudioWorkletProcessor {
   static get parameterDescriptors() {
@@ -111,7 +209,7 @@ class VBBass extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -230,7 +328,7 @@ class VBBass extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-bass", VBBass);
+registerProcessor("vb-bass", guard(VBBass, true));
 
 const DUCK_MAX = 4;
 const DUCK_K = 0.6;
@@ -294,7 +392,7 @@ class VBVerb extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-verb", VBVerb);
+registerProcessor("vb-verb", guard(VBVerb));
 
 const SAFE_CEIL = Math.pow(10, -0.3 / 20);
 const SAFE_LA = 0.0015;
@@ -372,7 +470,7 @@ class VBSafety extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-safety", VBSafety);
+registerProcessor("vb-safety", guard(VBSafety));
 
 const VOX_G = 6;
 const VOX_SIDE = -3;
@@ -443,7 +541,7 @@ class VBVocal extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -496,7 +594,7 @@ class VBVocal extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-vocal", VBVocal);
+registerProcessor("vb-vocal", guard(VBVocal, true));
 
 const PW_FC = 120;
 const PW_DET_LO = 120;
@@ -553,7 +651,7 @@ class VBPower extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -626,7 +724,7 @@ class VBPower extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-power", VBPower);
+registerProcessor("vb-power", guard(VBPower, true));
 
 const BR_AIR_F = 9000;
 const BR_AIR_G = 12;
@@ -673,7 +771,7 @@ class VBBright extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -719,7 +817,7 @@ class VBBright extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-bright", VBBright);
+registerProcessor("vb-bright", guard(VBBright, true));
 
 const MONO_PW = 1;
 const MONO_G = 0.3;
@@ -751,7 +849,7 @@ class VBMono extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -801,7 +899,7 @@ class VBMono extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-mono", VBMono);
+registerProcessor("vb-mono", guard(VBMono, true));
 
 const MU_TOP = 22500;
 const MU_K = 0.022;
@@ -838,7 +936,7 @@ class VBMuffle extends AudioWorkletProcessor {
     const n = out[0].length;
     if (!inp || !inp.length || !inp[0] || !inp[0].length) {
       for (let c = 0; c < out.length; c++) out[c].fill(0);
-      return false;
+      return true;
     }
     const L = inp[0];
     const R = inp.length > 1 ? inp[1] : inp[0];
@@ -852,10 +950,15 @@ class VBMuffle extends AudioWorkletProcessor {
     if (a === 0) {
       oL.set(L);
       if (oR) oR.set(R);
-      if (!this.clean) this.reset();
+      const l1 = L[n - 1], l2 = n > 1 ? L[n - 2] : l1, r1 = R[n - 1], r2 = n > 1 ? R[n - 2] : r1;
+      prime(this.s1[0], l1, l2);
+      prime(this.s1[1], r1, r2);
+      prime(this.s2[0], l1, l2);
+      prime(this.s2[1], r1, r2);
+      prime(this.sb[0], l1, l2);
+      prime(this.sb[1], r1, r2);
       return true;
     }
-    this.clean = false;
 
     const top = 0.45 * sampleRate;
     const fc = MU_TOP * Math.pow(MU_K, a);
@@ -882,4 +985,4 @@ class VBMuffle extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-muffle", VBMuffle);
+registerProcessor("vb-muffle", guard(VBMuffle, true));

@@ -319,9 +319,10 @@ function update() {
   });
 }
 
-async function ensureActiveAndApply() {
-  lastLocalEdit = Date.now();
-  const resp = isActive ? await update() : await activate();
+let activating = null;
+let applyAgain = false;
+
+function afterApply(resp) {
   isActive = !!resp.active;
   if (!resp.active) {
     setStatus("unsupported", VBI18N.t("status_unsupported"));
@@ -333,8 +334,33 @@ async function ensureActiveAndApply() {
   refreshTabs();
 }
 
+async function ensureActiveAndApply() {
+  lastLocalEdit = Date.now();
+  if (activating) {
+    applyAgain = true;
+    return activating;
+  }
+  if (isActive) {
+    afterApply(await update());
+    return;
+  }
+  activating = (async () => {
+    afterApply(await activate());
+    while (applyAgain && isActive) {
+      applyAgain = false;
+      await update();
+      renderStatus();
+    }
+    applyAgain = false;
+  })();
+  try {
+    await activating;
+  } finally {
+    activating = null;
+  }
+}
+
 let volTimer = null;
-let activating = false;
 
 function liveUpdate() {
   if (volTimer) return;
@@ -351,10 +377,8 @@ volumeEl.addEventListener("input", async () => {
   paintReadout(Number(volumeEl.value));
   if (isActive) {
     liveUpdate();
-  } else if (!activating) {
-    activating = true;
+  } else {
     await ensureActiveAndApply();
-    activating = false;
   }
 });
 volumeEl.addEventListener("change", () => {
@@ -466,14 +490,14 @@ const banNorm = (s) =>
   (s || "")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/ł/g, "l")
+    .replace(/[łŁ]/g, "l")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 
 function tabVideoId(url) {
   const s = String(url || "");
-  const m = s.match(/[?&]v=([\w-]{8,})/) || s.match(/youtu\.be\/([\w-]{8,})/) || s.match(/\/shorts\/([\w-]{8,})/);
+  const m = s.match(/[?&]v=([\w-]{8,})/) || s.match(/youtu\.be\/([\w-]{8,})/) || s.match(/\/(?:shorts|live|embed)\/([\w-]{8,})/);
   return m ? m[1] : "";
 }
 
@@ -660,7 +684,17 @@ function renderMix() {
     showCtls(["speed", "reverb", "treble", "muffle", "bass", "vocal", "power", "spin"]);
   } else if (matched) {
     const shown = matched.ctl.slice();
-    if (bas > 0 && !shown.includes("bass")) shown.push("bass");
+    const add = (k, on) => {
+      if (on && !shown.includes(k)) shown.push(k);
+    };
+    add("speed", Math.abs(mixRate - 1) > 0.001);
+    add("reverb", rev > 0);
+    add("treble", tre > 0);
+    add("muffle", muf > 0);
+    add("bass", bas > 0);
+    add("vocal", voc > 0);
+    add("power", pow > 0);
+    add("spin", !!settings.spin);
     showCtls(shown);
   } else {
     const all = ["speed", "reverb", "treble", "muffle", "bass", "vocal", "power"];
@@ -779,12 +813,25 @@ function renderMixSupport() {
 
 let mixBusy = false;
 let mixPendingRate = null;
+let mixSeq = 0;
+let mixGrantedOrigin = null;
 async function setMixRate(rate) {
   if (mixBusy) {
+    const origin = rate !== 1 ? originPattern(currentTabUrl) : null;
+    if (rate === 1 || (origin && origin === mixGrantedOrigin)) {
+      mixSeq++;
+      mixPendingRate = null;
+      lastLocalEdit = Date.now();
+      mixRate = rate;
+      renderMix();
+      sendMsg(rate === 1 ? { type: "vb-mix-set", tabId: currentTabId, rate: 1 } : { type: "vb-mix-set", tabId: currentTabId, rate, origin });
+      return;
+    }
     mixPendingRate = rate;
     return;
   }
   if (!mixSupported && rate !== 1) return;
+  const seq = ++mixSeq;
   lastLocalEdit = Date.now();
   mixBusy = true;
   try {
@@ -810,6 +857,8 @@ async function setMixRate(rate) {
         return;
       }
       chrome.storage.session.remove("vb_pending_mix");
+      mixGrantedOrigin = origin;
+      if (seq !== mixSeq) return;
       mixRate = rate;
       renderMix();
       await sendMsg({ type: "vb-mix-set", tabId: currentTabId, rate, origin });
@@ -1057,10 +1106,7 @@ async function fxStart() {
     fxLive();
     return;
   }
-  if (activating) return;
-  activating = true;
   await ensureActiveAndApply();
-  activating = false;
 }
 
 let fxTimer = null;

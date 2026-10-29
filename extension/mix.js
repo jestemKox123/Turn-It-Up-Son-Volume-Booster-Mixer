@@ -46,6 +46,7 @@
   }
 
   const track = new WeakMap();
+  const kicks = new WeakMap();
 
   function drift(el) {
     if (el.paused || el.seeking || el.readyState < 3 || !isFinite(el.duration)) {
@@ -56,7 +57,7 @@
     const ct = el.currentTime;
     const rec = track.get(el);
     if (!rec) {
-      track.set(el, { t: ct, w: now, bad: 0, kicks: 0 });
+      track.set(el, { t: ct, w: now, bad: 0 });
       return;
     }
     const dw = (now - rec.w) / 1000;
@@ -70,9 +71,13 @@
     } else {
       rec.bad = 0;
     }
-    if (rec.bad >= 4 && rec.kicks < 2) {
+    if (rec.bad >= 4) {
       rec.bad = 0;
-      rec.kicks++;
+      const src = el.currentSrc || "";
+      const k = kicks.get(el);
+      const done = k && k.src === src ? k.n : 0;
+      if (done >= 2) return;
+      kicks.set(el, { src, n: done + 1 });
       try {
         el.playbackRate = state.rate;
         if (el.duration - ct > 1) el.currentTime = ct + 0.01;
@@ -81,7 +86,7 @@
   }
 
   function applyAll() {
-    if (mainOk) return;
+    if (mainOk || !fallback) return;
     document.querySelectorAll("video, audio").forEach((el) => {
       applyTo(el);
       drift(el);
@@ -111,7 +116,7 @@
 
   const SRC_EVENTS = { loadstart: 1, emptied: 1, loadedmetadata: 1, canplay: 1, durationchange: 1 };
   function onMedia(e) {
-    if (mainOk) return;
+    if (mainOk || !fallback) return;
     const el = e.target;
     if (!el || (el.tagName !== "VIDEO" && el.tagName !== "AUDIO")) return;
     applyTo(el);
@@ -122,16 +127,13 @@
   }
   const MEDIA_EVENTS = ["ratechange", "play", "playing", "loadstart", "loadeddata", "loadedmetadata", "canplay", "seeked", "emptied", "durationchange"];
 
-  const mo = new MutationObserver((records) => {
-    applyAll();
-    for (const r of records) {
-      for (const n of r.addedNodes) {
-        if (n && (n.tagName === "VIDEO" || n.tagName === "AUDIO" || (n.querySelector && n.querySelector("video, audio")))) {
-          burst();
-          return;
-        }
-      }
-    }
+  let moTimer = null;
+  const mo = new MutationObserver(() => {
+    if (moTimer) return;
+    moTimer = setTimeout(() => {
+      moTimer = null;
+      applyAll();
+    }, 250);
   });
 
   let armed = false;
@@ -163,17 +165,23 @@
   }
 
   let fallback = false;
+  let fbTimer = null;
   function startFallback() {
-    if (fallback || mainOk) return;
+    fbTimer = null;
+    if (fallback || mainOk || !armed) return;
     fallback = true;
     MEDIA_EVENTS.forEach((ev) => document.addEventListener(ev, onMedia, true));
     try {
       mo.observe(document.documentElement || document, { childList: true, subtree: true });
     } catch (e) {}
     iv = setInterval(applyAll, 500);
+    applyAll();
+    burst();
   }
 
   function stopFallback() {
+    clearTimeout(fbTimer);
+    fbTimer = null;
     if (!fallback) return;
     fallback = false;
     clearInterval(iv);
@@ -185,7 +193,7 @@
   function arm() {
     if (armed) return;
     armed = true;
-    startFallback();
+    if (!mainOk && !fallback && !fbTimer) fbTimer = setTimeout(startFallback, 700);
     rcStrikes = 0;
     rc = setInterval(recheckTick, 4000);
   }
@@ -220,14 +228,16 @@
   }
 
   function refresh() {
-    chrome.runtime.sendMessage({ type: "vb-mix-get" }, (resp) => {
-      if (chrome.runtime.lastError || !resp) return;
-      if (resp.off || !resp.rate || resp.rate === 1) {
-        teardown();
-        return;
-      }
-      engage(resp.rate, resp.pitchOff !== false);
-    });
+    try {
+      chrome.runtime.sendMessage({ type: "vb-mix-get" }, (resp) => {
+        if (chrome.runtime.lastError || !resp) return;
+        if (resp.off || !resp.rate || resp.rate === 1) {
+          teardown();
+          return;
+        }
+        engage(resp.rate, resp.pitchOff !== false);
+      });
+    } catch (e) {}
   }
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -248,5 +258,6 @@
   });
 
   window.__vbMix = { refresh };
+  window.postMessage({ __vb: "mix-ping" }, "*");
   refresh();
 })();

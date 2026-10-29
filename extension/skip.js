@@ -9,6 +9,7 @@ if (!window.__vbSkip) {
   let lastAskAt = 0;
   let list = [];
   let listRx = [];
+  let startRx = [];
   let songs = [];
   let curArtist = "";
   let curTitle = "";
@@ -21,7 +22,7 @@ if (!window.__vbSkip) {
     (s || "")
       .normalize("NFD")
       .replace(/[̀-ͯ]/g, "")
-      .replace(/ł/g, "l")
+      .replace(/[łŁ]/g, "l")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
@@ -34,15 +35,17 @@ if (!window.__vbSkip) {
   function rebuild(arr) {
     list = (Array.isArray(arr) ? arr : []).map((x) => clean(norm(x))).filter(Boolean);
     listRx = list.map((e) => wordRx(e));
+    startRx = list.map((e) => new RegExp("^" + escRx(e) + "($|[^a-z0-9])"));
   }
 
   function rebuildSongs(arr) {
     songs = (Array.isArray(arr) ? arr : [])
-      .map((s) => ({
-        id: s && typeof s.id === "string" ? s.id : "",
-        t: norm(s && s.t),
-        a: clean(norm(s && s.a)),
-      }))
+      .map((s) => {
+        const a = clean(norm(s && s.a));
+        let t = norm(s && s.t);
+        if (a && t.endsWith(" by " + a)) t = t.slice(0, -(" by " + a).length).trim();
+        return { id: s && typeof s.id === "string" ? s.id : "", t, a };
+      })
       .filter((s) => s.id || s.t);
   }
 
@@ -65,13 +68,36 @@ if (!window.__vbSkip) {
 
   const SEP = /,|;|&|·|•|\bfeat\.?\b|\bft\.?\b/;
 
+  function videoId() {
+    const s = String(window.location.href || "");
+    const m = s.match(/[?&]v=([\w-]{8,})/) || s.match(/youtu\.be\/([\w-]{8,})/) || s.match(/\/(?:shorts|live|embed)\/([\w-]{8,})/);
+    return m ? m[1] : "";
+  }
+
+  function pageIds() {
+    const ids = [];
+    const v = videoId();
+    if (v) ids.push(v);
+    const host = String(window.location.hostname || "");
+    const path = String(window.location.pathname || "");
+    if (/(^|\.)spotify\.com$/.test(host)) {
+      const m = path.match(/\/track\/([A-Za-z0-9]+)/);
+      if (m) ids.push(m[1]);
+    }
+    if (/(^|\.)soundcloud\.com$/.test(host)) {
+      const parts = path.split("/").filter(Boolean);
+      if (parts.length >= 2 && parts[1] !== "sets") ids.push(parts[0] + "/" + parts[1]);
+    }
+    return ids;
+  }
+
   function songMatch(artist, title) {
     if (!songs.length) return false;
-    const href = String(window.location.href || "");
+    const ids = pageIds();
     const t = norm(title);
     const a = clean(norm(artist));
     for (const s of songs) {
-      if (s.id && href.indexOf(s.id) !== -1) return true;
+      if (s.id && ids.includes(s.id)) return true;
       if (s.t && t && s.t === t) {
         if (!s.a || !a || s.a === a) return true;
         if (wordRx(s.a).test(a) || wordRx(a).test(s.a)) return true;
@@ -89,13 +115,19 @@ if (!window.__vbSkip) {
       .map((s) => clean(s.trim()))
       .filter(Boolean);
     const t = norm(title);
+    const parts = t.split(/\s[-–—|]\s|:\s/).map((x) => x.trim()).filter(Boolean);
+    const multi = parts.length > 1;
+    const feats = (t.match(/\b(?:feat\.?|ft\.?|featuring|prod\.?(?:\s+by)?)\s+[^()[\]]+/g) || []).join(" ");
     for (let i = 0; i < list.length; i++) {
       const e = list[i];
       if (full && (full === e || listRx[i].test(full))) return true;
       for (const s of segs) {
         if (s === e) return true;
       }
-      if (t && listRx[i].test(t)) return true;
+      if (t && startRx[i].test(t)) return true;
+      if (multi && listRx[i].test(parts[0])) return true;
+      if (parts.some((x) => x === e)) return true;
+      if (feats && listRx[i].test(feats)) return true;
     }
     return false;
   }

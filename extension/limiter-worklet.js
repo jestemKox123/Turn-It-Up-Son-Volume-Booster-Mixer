@@ -1,6 +1,58 @@
 // Turn It Up, Son! Volume Booster & Mixer - (c) 2026 romanzbudowy.
 // All rights reserved / Wszelkie prawa zastrzezone. Copying and publication prohibited / Kopiowanie i publikacja zabronione (LICENSE.txt).
 
+function dup(v) {
+  if (v === null || typeof v !== "object") return v;
+  if (ArrayBuffer.isView(v)) return v.slice();
+  if (Array.isArray(v)) return v.map(dup);
+  if (Object.getPrototypeOf(v) !== Object.prototype) return v;
+  const o = {};
+  for (const k in v) o[k] = dup(v[k]);
+  return o;
+}
+
+const dead = new WeakSet();
+
+function guard(Base) {
+  return class extends Base {
+    constructor(options) {
+      super(options);
+      const prev = this.port.onmessage;
+      this.port.onmessage = (e) => {
+        if (e.data === "stop") dead.add(this);
+        if (prev) prev(e);
+      };
+      const s = {};
+      for (const k of Object.keys(this)) s[k] = dup(this[k]);
+      this.__init = s;
+    }
+
+    process(inputs, outputs, parameters) {
+      if (dead.has(this)) return false;
+      const keep = super.process(inputs, outputs, parameters);
+      for (const out of outputs) {
+        for (const ch of out) {
+          for (let i = 0; i < ch.length; i++) {
+            const v = ch[i];
+            if (!(v > -1e4 && v < 1e4)) {
+              this.heal(outputs);
+              return keep;
+            }
+          }
+        }
+      }
+      return keep;
+    }
+
+    heal(outputs) {
+      for (const out of outputs) for (const ch of out) ch.fill(0);
+      const s = this.__init;
+      for (const k of Object.keys(this)) if (k !== "__init" && !(k in s)) delete this[k];
+      for (const k of Object.keys(s)) this[k] = dup(s[k]);
+    }
+  };
+}
+
 const XOVER = 150;
 const KNEE = 3;
 const HK = KNEE / 2;
@@ -353,4 +405,4 @@ class VBLimiter extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor("vb-limiter", VBLimiter);
+registerProcessor("vb-limiter", guard(VBLimiter));

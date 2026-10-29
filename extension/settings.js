@@ -237,7 +237,8 @@ if (limiterToggle && limiterCeiling && limiterBass && HAS_STORAGE) {
   chrome.storage.onChanged.addListener((ch, area) => {
     if (area !== "local") return;
     if (ch.vbLimiterMaxRed) {
-      const v = Number(ch.vbLimiterMaxRed.newValue);
+      const nv = ch.vbLimiterMaxRed.newValue;
+      const v = typeof nv === "number" ? Math.max(1, Math.min(8, nv)) : 6;
       if (limiterMax) limiterMax.value = String(v);
       if (limiterMaxVal) limiterMaxVal.textContent = v + " dB";
       syncChars(v);
@@ -494,9 +495,22 @@ function flashAccess(key) {
   setTimeout(() => (accessSaved.textContent = ""), 1600);
 }
 
+function patternHost(p) {
+  const m = /^[^:]+:\/\/([^/]+)\//.exec(String(p || ""));
+  return m ? m[1] : "";
+}
+
+function coversHost(pattern, origin) {
+  const ph = patternHost(pattern);
+  const oh = patternHost(origin);
+  if (!ph || !oh) return false;
+  if (ph.startsWith("*.")) return oh === ph.slice(2) || oh.endsWith(ph.slice(1));
+  return ph === oh;
+}
+
 function accessUses(origin, local, sess) {
   const uses = [];
-  const mix = Object.keys(sess).some((k) => k.indexOf("vb_mix_") === 0 && sess[k] && sess[k].rate && sess[k].rate !== 1 && sess[k].origin === origin);
+  const mix = Object.keys(sess).some((k) => k.indexOf("vb_mix_") === 0 && sess[k] && sess[k].rate && sess[k].rate !== 1 && (sess[k].origin === origin || coversHost(origin, sess[k].origin)));
   if (mix) uses.push("access_use_tempo");
   if (local.ytAutoContinue && origin === YT_ORIGIN) uses.push("access_use_yt");
   if (local.skipEnabled && MUSIC_ORIGINS.includes(origin)) uses.push("access_use_skip");
@@ -635,6 +649,7 @@ if (bugText && bugSend) {
     const body =
       "entry.225153063=" + encodeURIComponent("Other reason") +
       "&entry.688777186=" + encodeURIComponent("[BUG v" + ver + "] " + txt);
+    let sent = true;
     try {
       await fetch(FEEDBACK_FORM, {
         method: "POST",
@@ -642,8 +657,22 @@ if (bugText && bugSend) {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body,
       });
-    } catch (e) {}
-    if (bugSent) bugSent.hidden = false;
+    } catch (e) {
+      sent = false;
+    }
+    if (!sent) {
+      bugSend.disabled = false;
+      bugText.disabled = false;
+      if (bugSent) {
+        bugSent.textContent = VBI18N.t("bug_fail");
+        bugSent.hidden = false;
+      }
+      return;
+    }
+    if (bugSent) {
+      bugSent.textContent = VBI18N.t("bug_sent");
+      bugSent.hidden = false;
+    }
     bugCloseTimer = setTimeout(() => setBugOpen(false), 2500);
   });
 }
@@ -706,7 +735,7 @@ if (clList && window.VBCHANGELOG) {
   VBI18N.ready(() => {
     clList.innerHTML = "";
     const ver = VBCHANGELOG.list[0];
-    const txt = ver ? VBI18N.t(VBCHANGELOG.key(ver)) : "";
+    const txt = ver ? clText(VBCHANGELOG.key(ver)) : "";
     if (!txt) return;
     const items = txt.split("\n- ").map((x) => x.replace(/^- /, "")).filter(Boolean);
     const short = ver.replace(/\./g, "");
@@ -827,7 +856,7 @@ const skipNorm = (s) =>
   (s || "")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
-    .replace(/ł/g, "l")
+    .replace(/[łŁ]/g, "l")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
@@ -923,7 +952,7 @@ function parseSongLink(raw) {
   if (h === "youtube.com" || h === "youtu.be") {
     let id = "";
     if (h === "youtu.be") id = u.pathname.split("/")[1] || "";
-    else if (u.pathname.indexOf("/shorts/") === 0) id = u.pathname.split("/")[2] || "";
+    else if (/^\/(shorts|live|embed)\//.test(u.pathname)) id = u.pathname.split("/")[2] || "";
     else id = u.searchParams.get("v") || "";
     if (!/^[\w-]{8,}$/.test(id)) return null;
     return { u: u.href, id, kind: "yt" };
@@ -962,15 +991,22 @@ async function resolveSong(link) {
   }
 }
 
-function addSongLink(link) {
-  getSkipState(async (en, cur, songs) => {
+async function addSongLink(link) {
+  skipInput.disabled = true;
+  let meta = null;
+  try {
+    meta = await resolveSong(link);
+  } catch (e) {}
+  meta = meta || {};
+  skipInput.disabled = false;
+  skipInput.focus();
+  getSkipState((en, cur, songs) => {
     if (songs.some((s) => s && s.id === link.id)) {
       skipInput.value = "";
       flashSkipMsg("skip_dup");
       return;
     }
     if (cur.length + songs.length >= 100) return;
-    const meta = await resolveSong(link);
     const next = songs.concat({ u: link.u, id: link.id, t: meta.t || "", a: meta.a || "" });
     chrome.storage.local.set({ skipSongs: next }, () => {
       skipInput.value = "";

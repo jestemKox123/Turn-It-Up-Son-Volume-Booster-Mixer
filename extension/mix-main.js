@@ -20,6 +20,7 @@
   const seen = new WeakSet();
   const held = new WeakMap();
   const drift = new WeakMap();
+  const kicks = new WeakMap();
   let refs = [];
   let lastStatus = "";
   let tick = null;
@@ -42,7 +43,9 @@
     }
     let st = held.get(el);
     if (!st) {
-      st = { rate: rateOf(el), def: dDef.get.call(el), pitch: dPitch ? dPitch.get.call(el) : true };
+      const ours = (v) => Math.abs(v - S.rate) < 0.001;
+      const r0 = rateOf(el), d0 = dDef.get.call(el), p0 = dPitch ? dPitch.get.call(el) : true;
+      st = { rate: ours(r0) ? 1 : r0, def: ours(d0) ? 1 : d0, pitch: ours(r0) && p0 === !S.pitchOff ? true : p0 };
       held.set(el, st);
       try {
         Object.defineProperty(el, "playbackRate", { configurable: true, get: () => st.rate, set: (v) => { st.rate = Number(v) || 1; } });
@@ -87,7 +90,7 @@
     const ct = dTime.get.call(el);
     const rec = drift.get(el);
     if (!rec) {
-      drift.set(el, { t: ct, w: now, bad: 0, kicks: 0 });
+      drift.set(el, { t: ct, w: now, bad: 0 });
       return;
     }
     const dw = (now - rec.w) / 1000;
@@ -98,9 +101,13 @@
     const exp = S.rate;
     if (measured > 0.05 && Math.abs(measured - exp) / exp > 0.04 && Math.abs(measured - exp) > 0.02) rec.bad++;
     else rec.bad = 0;
-    if (rec.bad >= 4 && rec.kicks < 2) {
+    if (rec.bad >= 4) {
       rec.bad = 0;
-      rec.kicks++;
+      const src = el.currentSrc || "";
+      const k = kicks.get(el);
+      const done = k && k.src === src ? k.n : 0;
+      if (done >= 2) return;
+      kicks.set(el, { src, n: done + 1 });
       try {
         dRate.set.call(el, S.rate);
         if (el.duration - ct > 1) dTime.set.call(el, ct + 0.01);
@@ -203,7 +210,12 @@
   }
 
   window.addEventListener("message", (e) => {
-    if (e.source !== window || !e.data || e.data.__vb !== "mix-set") return;
+    if (e.source !== window || !e.data) return;
+    if (e.data.__vb === "mix-ping") {
+      window.postMessage({ __vb: "mix-hello" }, "*");
+      return;
+    }
+    if (e.data.__vb !== "mix-set") return;
     apply(e.data.on, e.data.rate, e.data.pitchOff);
     lastStatus = "";
     report();
